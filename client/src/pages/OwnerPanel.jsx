@@ -76,17 +76,6 @@ const OwnerPanel = () => {
 
 
 
-  // Handle PDF deletion
-  const handleDeletePdf = (pdfId) => {
-    const updatedPdfs = pdfs.filter((pdf) => pdf.id !== pdfId);
-    setPdfs(updatedPdfs);
-    localStorage.setItem("uploadedPdfs", JSON.stringify(updatedPdfs));
-
-    if (selectedPdf?.id === pdfId) {
-      setSelectedPdf(null);
-    }
-  };
-
   // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("isOwner");
@@ -95,15 +84,7 @@ const OwnerPanel = () => {
     setReadMessages(new Set());
   };
 
-  // Delete a message
-  const handleDeleteMessage = (messageId) => {
-    setMessages(messages.filter((msg) => msg._id !== messageId));
-  };
-
-  // Mark message as read
-  const handleMarkAsRead = (messageId) => {
-    setReadMessages(new Set([...readMessages, messageId]));
-  };
+  
 
   // Login Screen - if not authorized
   if (!isAuthorized) {
@@ -359,13 +340,13 @@ const OwnerPanel = () => {
             Download our training plan
           </p>
           <iframe
-            src="/src/assets/A5 lesson plan.pdf"
+            src="A5 lesson plan.pdf"
             width="100%"
             height="600px"
             style={{ borderRadius: "8px", marginBottom: "20px" }}
           />
           <a
-            href="/src/assets/A5 lesson plan.pdf"
+            href="A5 lesson plan.pdf"
             download="Bluefins_Training_Plan.pdf"
             style={{
               display: "inline-flex",
