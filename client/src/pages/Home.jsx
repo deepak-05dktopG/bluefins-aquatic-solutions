@@ -18,7 +18,7 @@ const Home = () => {
 
   return (
     <div style={{ fontFamily: "Poppins, system-ui, -apple-system, sans-serif", overflowX: "hidden" }}>
-      {/* === Inline keyframes + utility styles (no external CSS needed) === */}
+      {/* === Inline keyframes + uility styles (no external CSS needed) === */}
       <style>{`
         @keyframes gradientShift {
           0% {background-position: 0% 50%;}
