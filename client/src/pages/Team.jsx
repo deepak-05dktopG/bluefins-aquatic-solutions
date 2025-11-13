@@ -27,28 +27,28 @@ const Team = () => {
         { 
           name: "Mr. V. Vijeesh", 
           position: "CEO & Chairman", 
-          image: "/public/assets/vijeesh.jpg", 
+          image: "/assets/vijeesh.jpg", 
           color: "#FF6B6B",
           eligibilities: ["Represented India - FINA Masters World Championships(2015 & 2025)","NIS,ASCA Level 3 Certified"]
         },
         { 
           name: "Mr. Manikandan", 
           position: "Director", 
-          image: "/public/assets/manikandan.jpg", 
+          image: "/assets/manikandan.jpg", 
           color: "#FF6B6B",
           eligibilities: ["National-Level Swimmer","NIS,ASCA Level 3 Certified"]
         },
         { 
           name: "Mr. Pramod", 
           position: "Director", 
-          image: "/public/assets/pramod.jpg", 
+          image: "/assets/pramod.jpg", 
           color: "#FF6B6B",
           eligibilities: ["National Gold Medalist","NIS,ASCA Certified"]
         },
         { 
           name: "Mr. Sunil", 
           position: "Director", 
-          image: "/public/assets/sunil.jpg", 
+          image: "/assets/sunil.jpg", 
           color: "#FF6B6B",
           eligibilities: ["State_Level Swimmer","15 years coaching & Management Experience"]
         }
@@ -58,35 +58,35 @@ const Team = () => {
       title: "Coaching Team",
       color: "#667eea",
       members: [
-        { name: "Ms. Vijitha", position: "Head Coach", image: "/public/assets/vijitha.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
-        { name: "Mr. Lalith Kumar", position: "Head Coach", image:"/public/assets/lalithkumar.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
-        { name: "Mr. Sathish", position: "Head Coach", image:"/public/assets/sathish.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
-        { name: "Mr. S. Ajayan", position: "Head Coach", image:"/public/assets/ajayan.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
-        { name: "Mr. Vishnu Das S", position: "Coach", image:"/public/assets/vishnudas.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
-        { name: "Mr. Ajeesh", position: "Coach", image:"/public/assets/ajeesh.jpg", color: "#667eea", eligibilities: ["National Swimmer","ASCA Certified"] },
-        { name: "Mr. Lokeshwaran", position: "Coach", image:"/public/assets/lokeshwaran.jpg", color: "#667eea", eligibilities: ["National Swimmer","ASCA Certified"]},
-        { name: "Mr. Kururaj", position: "Coach", image:"/public/assets/gururaj.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
-        { name: "Mr. Naveen Kumar", position: "Coach", image:"/public/assets/naveenkumar.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"] },
-        { name: "Ms. Reena Augustine", position: "Coach", image:"/public/assets/reenaagustine.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"]},
-        { name: "Mr. Nishant", position: "Assistant Coach", image:"/public/assets/nishant.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"] },
-        { name: "Mr. Sreerag", position: "Assistant Coach", image:"/public/assets/sreerag.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"] },
-        { name: "Mr. Aneesh", position: "Assistant Coach", image:"/public/assets/aneesh.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"] }
+        { name: "Ms. Vijitha", position: "Head Coach", image: "/assets/vijitha.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
+        { name: "Mr. Lalith Kumar", position: "Head Coach", image:"/assets/lalithkumar.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
+        { name: "Mr. Sathish", position: "Head Coach", image:"/assets/sathish.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
+        { name: "Mr. S. Ajayan", position: "Head Coach", image:"/assets/ajayan.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
+        { name: "Mr. Vishnu Das S", position: "Coach", image:"/assets/vishnudas.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
+        { name: "Mr. Ajeesh", position: "Coach", image:"/assets/ajeesh.jpg", color: "#667eea", eligibilities: ["National Swimmer","ASCA Certified"] },
+        { name: "Mr. Lokeshwaran", position: "Coach", image:"/assets/lokeshwaran.jpg", color: "#667eea", eligibilities: ["National Swimmer","ASCA Certified"]},
+        { name: "Mr. Kururaj", position: "Coach", image:"/assets/gururaj.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
+        { name: "Mr. Naveen Kumar", position: "Coach", image:"/assets/naveenkumar.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"] },
+        { name: "Ms. Reena Augustine", position: "Coach", image:"/assets/reenaagustine.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"]},
+        { name: "Mr. Nishant", position: "Assistant Coach", image:"/assets/nishant.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"] },
+        { name: "Mr. Sreerag", position: "Assistant Coach", image:"/assets/sreerag.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"] },
+        { name: "Mr. Aneesh", position: "Assistant Coach", image:"/assets/aneesh.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"] }
       ]
     },
     safety: {
       title: "Safety & Support",
       color: "#FF9FF3",
       members: [
-        { name: "Mr. Udaya Kumar", position: "Lifeguard", image:"/public/assets/udayakumar.jpg", color: "#FF9FF3", eligibilities: ["Lifeguard Course - Level 2 Certified"] },
-        { name: "Mr. Hariharan", position: "Lifeguard", image:"/public/assets/hariharan.jpg", color: "#FF9FF3", eligibilities: ["Lifeguard Course - Level 2 Certified"] }
+        { name: "Mr. Udaya Kumar", position: "Lifeguard", image:"/assets/udayakumar.jpg", color: "#FF9FF3", eligibilities: ["Lifeguard Course - Level 2 Certified"] },
+        { name: "Mr. Hariharan", position: "Lifeguard", image:"/assets/hariharan.jpg", color: "#FF9FF3", eligibilities: ["Lifeguard Course - Level 2 Certified"] }
       ]
     },
     administration: {
       title: "Administration & Promotion",
       color: "#54A0FF",
       members: [
-        { name: "Ms. Elakiya", position: "Reception & Promotion", image:"/public/assets/ilakiya.jpg", color: "#54A0FF", eligibilities: ["M.Sc. in Computer Science"] },
-        { name: "Ms. Priya", position: "Reception & Social Media Promotion", image:"/public/assets/priya.jpg", color: "#54A0FF", eligibilities: ["M.Sc. in Computer Science"] }
+        { name: "Ms. Elakiya", position: "Reception & Promotion", image:"/assets/ilakiya.jpg", color: "#54A0FF", eligibilities: ["M.Sc. in Computer Science"] },
+        { name: "Ms. Priya", position: "Reception & Social Media Promotion", image:"/assets/priya.jpg", color: "#54A0FF", eligibilities: ["M.Sc. in Computer Science"] }
       ]
     }
   }
