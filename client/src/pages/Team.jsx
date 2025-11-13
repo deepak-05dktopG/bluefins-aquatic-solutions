@@ -17,15 +17,48 @@ const Team = () => {
   }, [])
 
   const [hoveredTeam, setHoveredTeam] = useState(null)
+  const [activeCategory, setActiveCategory] = useState("leadership")
 
-  const teamMembers = [
-    { name: "Mr. V. Vijeesh", position: "CEO & Chairman", experience: "FINA Masters", specialization: "Strategic Leadership", image: "�", color: "#FF6B6B", certification: "NIS, ASCA Level 3" },
-    { name: "Mr. Manikandan", position: "Director", experience: "15+ years", specialization: "Academy Management", image: "�‍💼", color: "#FFD93D", certification: "NIS, ASCA Level 3" },
-    { name: "Mr. Lalith Kumar", position: "Head Coach", experience: "15+ years", specialization: "Competitive Training", image: "👨‍🏫", color: "#4ECDC4", certification: "NIS, ASCA Certified" },
-    { name: "Mr. Suresh", position: "Coach", experience: "15+ years", specialization: "Technical Excellence", image: "�‍🏫", color: "#667eea", certification: "NIS, ASCA Certified" },
-    { name: "Mr. Udaya Kumar", position: "Senior Lifeguard", experience: "10+ years", specialization: "Water Safety", image: "🏊", color: "#FF9FF3", certification: "Level 2 Certified" },
-    { name: "Ms. Priya", position: "Reception & Promotion", experience: "7+ years", specialization: "Communications", image: "👩‍💼", color: "#54A0FF", certification: "M.Sc. Computer Science" }
-  ]
+  const teamCategories = {
+    leadership: {
+      title: "Leadership",
+      icon: "👔",
+      color: "#FF6B6B",
+      bgColor: "#FFE5E5",
+      members: [
+        { name: "Mr. V. Vijeesh", position: "CEO & Chairman", experience: "FINA Masters", specialization: "Strategic Leadership", image: "👨‍💼", color: "#FF6B6B", certification: "NIS, ASCA Level 3" },
+        { name: "Mr. Manikandan", position: "Director", experience: "15+ years", specialization: "Academy Management", image: "👨‍💼", color: "#FF6B6B", certification: "NIS, ASCA Level 3" }
+      ]
+    },
+    coaching: {
+      title: "Coaching Team",
+      icon: "🏊‍♂️",
+      color: "#667eea",
+      bgColor: "#E8E8FF",
+      members: [
+        { name: "Mr. Lalith Kumar", position: "Head Coach", experience: "15+ years", specialization: "Competitive Training", image: "👨‍🏫", color: "#667eea", certification: "NIS, ASCA Certified" },
+        { name: "Mr. Suresh", position: "Coach", experience: "15+ years", specialization: "Technical Excellence", image: "👨‍🏫", color: "#667eea", certification: "NIS, ASCA Certified" }
+      ]
+    },
+    safety: {
+      title: "Safety & Support",
+      icon: "🚨",
+      color: "#FF9FF3",
+      bgColor: "#FFE5F8",
+      members: [
+        { name: "Mr. Udaya Kumar", position: "Senior Lifeguard", experience: "10+ years", specialization: "Water Safety", image: "🏊", color: "#FF9FF3", certification: "Level 2 Certified" }
+      ]
+    },
+    administration: {
+      title: "Administration & Promotion",
+      icon: "📊",
+      color: "#54A0FF",
+      bgColor: "#E5F3FF",
+      members: [
+        { name: "Ms. Priya", position: "Reception & Promotion", experience: "7+ years", specialization: "Communications", image: "👩‍💼", color: "#54A0FF", certification: "M.Sc. Computer Science" }
+      ]
+    }
+  }
 
   return (
     <div style={{ fontFamily: "Poppins, system-ui, -apple-system, sans-serif", overflowX: "hidden", background: "#fff" }}>
@@ -63,12 +96,177 @@ const Team = () => {
 
       <section style={{ background: "linear-gradient(180deg, #f5f3ff 0%, #fff5f0 50%, #f0f9ff 100%)", position: "relative", padding: "100px 0" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
+          {/* Header */}
           <div style={{ textAlign: "center", marginBottom: "60px" }} data-aos="fade-up">
             <h2 style={{ fontSize: "2.8rem", marginBottom: "1rem", color: "#001f3f", fontWeight: "bold" }}>Our Experienced <span style={{ background: "linear-gradient(90deg, #FF6B6B, #667eea)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Professionals</span></h2>
             <p style={{ fontSize: "1.1rem", color: "#555", maxWidth: "700px", margin: "0 auto", fontWeight: "500" }}>Certified experts dedicated to your success</p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "30px" }}>
-            {teamMembers.map((m, i) => <div key={i} data-aos="zoom-in" data-aos-delay={i * 100} className="team-card" style={{ "--color": m.color, "--color-light": m.color + "dd" }} onMouseEnter={() => setHoveredTeam(i)} onMouseLeave={() => setHoveredTeam(null)}><div style={{ fontSize: "4rem", marginBottom: "1rem", textAlign: "center", animation: "pulse 2.5s ease-in-out infinite" }}>{m.image}</div><h4 style={{ color: m.color, fontWeight: "700", marginBottom: "0.3rem", textAlign: "center", fontSize: "1.3rem" }}>{m.name}</h4><p style={{ color: m.color, fontWeight: "600", textAlign: "center", marginBottom: "1rem", fontSize: "0.95rem" }}>{m.position}</p><div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", textAlign: "center" }}><div style={{ color: "#555", fontSize: "0.9rem", fontWeight: "500" }}> {m.experience}</div><div style={{ color: "#555", fontSize: "0.9rem", fontWeight: "500" }}> {m.specialization}</div><div style={{ color: "#555", fontSize: "0.9rem", fontWeight: "500" }}> {m.certification}</div></div></div>)}
+
+          {/* Category Filter Buttons */}
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "15px", marginBottom: "60px" }} data-aos="fade-up" data-aos-delay="100">
+            {Object.entries(teamCategories).map(([key, category]) => (
+              <button
+                key={key}
+                onClick={() => setActiveCategory(key)}
+                style={{
+                  padding: "12px 28px",
+                  borderRadius: "50px",
+                  border: "2px solid",
+                  background: activeCategory === key ? category.color : "#fff",
+                  color: activeCategory === key ? "#fff" : category.color,
+                  borderColor: category.color,
+                  fontWeight: "700",
+                  fontSize: "1rem",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  boxShadow: activeCategory === key ? `0 8px 25px ${category.color}40` : "0 4px 15px rgba(0,0,0,0.1)"
+                }}
+                onMouseEnter={(e) => {
+                  if (activeCategory !== key) {
+                    e.currentTarget.style.background = category.bgColor;
+                    e.currentTarget.style.transform = "translateY(-3px)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeCategory !== key) {
+                    e.currentTarget.style.background = "#fff";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }
+                }}
+              >
+                <span style={{ fontSize: "1.3rem" }}>{category.icon}</span>
+                {category.title}
+              </button>
+            ))}
+          </div>
+
+          {/* Team Members by Category */}
+          <div data-aos="fade-up" data-aos-delay="200">
+            <div style={{ background: teamCategories[activeCategory].bgColor, borderRadius: "30px", padding: "50px 40px", border: `3px solid ${teamCategories[activeCategory].color}40` }}>
+              <h3 style={{ textAlign: "center", fontSize: "2rem", color: teamCategories[activeCategory].color, fontWeight: "bold", marginBottom: "50px", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px" }}>
+                <span style={{ fontSize: "2.5rem" }}>{teamCategories[activeCategory].icon}</span>
+                {teamCategories[activeCategory].title}
+              </h3>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "30px" }}>
+                {teamCategories[activeCategory].members.map((m, i) => (
+                  <div
+                    key={i}
+                    data-aos="zoom-in"
+                    data-aos-delay={i * 100}
+                    className="team-card"
+                    style={{
+                      "--color": m.color,
+                      "--color-light": m.color + "dd",
+                      background: "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,255,255,0.92))",
+                      border: `3px solid ${m.color}30`,
+                      borderLeft: `6px solid ${m.color}`
+                    }}
+                    onMouseEnter={() => setHoveredTeam(i)}
+                    onMouseLeave={() => setHoveredTeam(null)}
+                  >
+                    {/* Avatar Background Circle */}
+                    <div style={{ position: "relative", marginBottom: "1.5rem", textAlign: "center" }}>
+                      <div style={{
+                        width: "120px",
+                        height: "120px",
+                        borderRadius: "50%",
+                        background: `linear-gradient(135deg, ${m.color}20, ${m.color}10)`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        margin: "0 auto",
+                        fontSize: "4rem",
+                        animation: "pulse 2.5s ease-in-out infinite",
+                        border: `3px solid ${m.color}40`
+                      }}>
+                        {m.image}
+                      </div>
+                    </div>
+
+                    {/* Name */}
+                    <h4 style={{
+                      color: m.color,
+                      fontWeight: "800",
+                      marginBottom: "0.5rem",
+                      textAlign: "center",
+                      fontSize: "1.4rem",
+                      letterSpacing: "-0.5px"
+                    }}>
+                      {m.name}
+                    </h4>
+
+                    {/* Position */}
+                    <p style={{
+                      color: m.color,
+                      fontWeight: "700",
+                      textAlign: "center",
+                      marginBottom: "1.5rem",
+                      fontSize: "1rem",
+                      textTransform: "uppercase",
+                      letterSpacing: "1px"
+                    }}>
+                      {m.position}
+                    </p>
+
+                    {/* Details */}
+                    <div style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "1rem",
+                      textAlign: "center",
+                      borderTop: `2px solid ${m.color}20`,
+                      paddingTop: "1.5rem"
+                    }}>
+                      <div style={{
+                        color: "#555",
+                        fontSize: "0.95rem",
+                        fontWeight: "600",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px"
+                      }}>
+                        <span style={{ fontSize: "1.2rem", color: m.color }}>⚡</span>
+                        {m.experience}
+                      </div>
+
+                      <div style={{
+                        color: "#555",
+                        fontSize: "0.95rem",
+                        fontWeight: "600",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px"
+                      }}>
+                        <span style={{ fontSize: "1.2rem", color: m.color }}>🎯</span>
+                        {m.specialization}
+                      </div>
+
+                      <div style={{
+                        color: m.color,
+                        fontSize: "0.9rem",
+                        fontWeight: "700",
+                        background: `${m.color}15`,
+                        padding: "10px 15px",
+                        borderRadius: "12px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px"
+                      }}>
+                        <span style={{ fontSize: "1.1rem" }}>🏆</span>
+                        {m.certification}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
