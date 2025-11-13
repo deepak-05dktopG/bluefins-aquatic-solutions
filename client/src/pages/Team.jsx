@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useState } from "react"
 import AOS from "aos"
 import "aos/dist/aos.css"
+import { Container, Row, Col } from "react-bootstrap"
 import { FaBolt, FaRibbon, FaHeadset, FaTrophy, FaFire, FaStar, FaAward } from "react-icons/fa"
 import { NavLink } from "react-router-dom"
 import Navbar from "../components/Navbar"
@@ -17,45 +18,75 @@ const Team = () => {
   }, [])
 
   const [hoveredTeam, setHoveredTeam] = useState(null)
-  const [activeCategory, setActiveCategory] = useState("leadership")
 
-  const teamCategories = {
+  const teamData = {
     leadership: {
       title: "Leadership",
-      icon: "👔",
       color: "#FF6B6B",
-      bgColor: "#FFE5E5",
       members: [
-        { name: "Mr. V. Vijeesh", position: "CEO & Chairman", experience: "FINA Masters", specialization: "Strategic Leadership", image: "👨‍💼", color: "#FF6B6B", certification: "NIS, ASCA Level 3" },
-        { name: "Mr. Manikandan", position: "Director", experience: "15+ years", specialization: "Academy Management", image: "👨‍💼", color: "#FF6B6B", certification: "NIS, ASCA Level 3" }
+        { 
+          name: "Mr. V. Vijeesh", 
+          position: "CEO & Chairman", 
+          image: "/public/assets/vijeesh.jpg", 
+          color: "#FF6B6B",
+          eligibilities: ["Represented India - FINA Masters World Championships(2015 & 2025)","NIS,ASCA Level 3 Certified"]
+        },
+        { 
+          name: "Mr. Manikandan", 
+          position: "Director", 
+          image: "/public/assets/manikandan.jpg", 
+          color: "#FF6B6B",
+          eligibilities: ["National-Level Swimmer","NIS,ASCA Level 3 Certified"]
+        },
+        { 
+          name: "Mr. Pramod", 
+          position: "Director", 
+          image: "/public/assets/pramod.jpg", 
+          color: "#FF6B6B",
+          eligibilities: ["National Gold Medalist","NIS,ASCA Certified"]
+        },
+        { 
+          name: "Mr. Sunil", 
+          position: "Director", 
+          image: "/public/assets/sunil.jpg", 
+          color: "#FF6B6B",
+          eligibilities: ["State_Level Swimmer","15 years coaching & Management Experience"]
+        }
       ]
     },
     coaching: {
       title: "Coaching Team",
-      icon: "🏊‍♂️",
       color: "#667eea",
-      bgColor: "#E8E8FF",
       members: [
-        { name: "Mr. Lalith Kumar", position: "Head Coach", experience: "15+ years", specialization: "Competitive Training", image: "👨‍🏫", color: "#667eea", certification: "NIS, ASCA Certified" },
-        { name: "Mr. Suresh", position: "Coach", experience: "15+ years", specialization: "Technical Excellence", image: "👨‍🏫", color: "#667eea", certification: "NIS, ASCA Certified" }
+        { name: "Ms. Vijitha", position: "Head Coach", image: "/public/assets/vijitha.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
+        { name: "Mr. Lalith Kumar", position: "Head Coach", image:"/public/assets/lalithkumar.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
+        { name: "Mr. Sathish", position: "Head Coach", image:"/public/assets/sathish.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
+        { name: "Mr. S. Ajayan", position: "Head Coach", image:"/public/assets/ajayan.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
+        { name: "Mr. Vishnu Das S", position: "Coach", image:"/public/assets/vishnudas.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
+        { name: "Mr. Ajeesh", position: "Coach", image:"/public/assets/ajeesh.jpg", color: "#667eea", eligibilities: ["National Swimmer","ASCA Certified"] },
+        { name: "Mr. Lokeshwaran", position: "Coach", image:"/public/assets/lokeshwaran.jpg", color: "#667eea", eligibilities: ["National Swimmer","ASCA Certified"]},
+        { name: "Mr. Kururaj", position: "Coach", image:"/public/assets/gururaj.jpg", color: "#667eea", eligibilities: ["National Swimmer","NIS,ASCA Certified"] },
+        { name: "Mr. Naveen Kumar", position: "Coach", image:"/public/assets/naveenkumar.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"] },
+        { name: "Ms. Reena Augustine", position: "Coach", image:"/public/assets/reenaagustine.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"]},
+        { name: "Mr. Nishant", position: "Assistant Coach", image:"/public/assets/nishant.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"] },
+        { name: "Mr. Sreerag", position: "Assistant Coach", image:"/public/assets/sreerag.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"] },
+        { name: "Mr. Aneesh", position: "Assistant Coach", image:"/public/assets/aneesh.jpg", color: "#667eea", eligibilities: ["State Swimmer","ASCA Certified"] }
       ]
     },
     safety: {
       title: "Safety & Support",
-      icon: "🚨",
       color: "#FF9FF3",
-      bgColor: "#FFE5F8",
       members: [
-        { name: "Mr. Udaya Kumar", position: "Senior Lifeguard", experience: "10+ years", specialization: "Water Safety", image: "🏊", color: "#FF9FF3", certification: "Level 2 Certified" }
+        { name: "Mr. Udaya Kumar", position: "Lifeguard", image:"/public/assets/udayakumar.jpg", color: "#FF9FF3", eligibilities: ["Lifeguard Course - Level 2 Certified"] },
+        { name: "Mr. Hariharan", position: "Lifeguard", image:"/public/assets/hariharan.jpg", color: "#FF9FF3", eligibilities: ["Lifeguard Course - Level 2 Certified"] }
       ]
     },
     administration: {
       title: "Administration & Promotion",
-      icon: "📊",
       color: "#54A0FF",
-      bgColor: "#E5F3FF",
       members: [
-        { name: "Ms. Priya", position: "Reception & Promotion", experience: "7+ years", specialization: "Communications", image: "👩‍💼", color: "#54A0FF", certification: "M.Sc. Computer Science" }
+        { name: "Ms. Elakiya", position: "Reception & Promotion", image:"/public/assets/ilakiya.jpg", color: "#54A0FF", eligibilities: ["M.Sc. in Computer Science"] },
+        { name: "Ms. Priya", position: "Reception & Social Media Promotion", image:"/public/assets/priya.jpg", color: "#54A0FF", eligibilities: ["M.Sc. in Computer Science"] }
       ]
     }
   }
@@ -69,6 +100,14 @@ const Team = () => {
         .team-card { border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85)); box-shadow: 0 10px 40px rgba(0,0,0,0.15); transition: all 0.45s ease; cursor: pointer; position: relative; border: 2px solid transparent; padding: 30px; }
         .team-card:hover { transform: translateY(-15px) scale(1.03); box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
         .team-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, var(--color), var(--color-light)); }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); opacity: 0.3; }
+          50% { transform: translateY(-20px); opacity: 0.8; }
+        }
+        @keyframes gradientShift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
       `}</style>
       <Navbar />
 
@@ -85,189 +124,232 @@ const Team = () => {
         <svg viewBox="0 0 1440 200" preserveAspectRatio="none" style={{ position: "absolute", bottom: -2, left: 0, width: "100%" }}><defs><linearGradient id="teamHeroWave" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style={{ stopColor: "rgba(102,126,234,0.2)", stopOpacity: 1 }} /><stop offset="100%" style={{ stopColor: "#f5f3ff", stopOpacity: 1 }} /></linearGradient></defs><path fill="url(#teamHeroWave)" d="M0,100 Q180,50 360,100 T720,100 T1080,100 T1440,100 L1440,200 L0,200 Z" /></svg>
       </section>
 
-      <section style={{ background: "linear-gradient(135deg, #FFE66D, #FF9FF3, #667eea, #54A0FF)", backgroundSize: "200% 200%", animation: "gradientShift 15s ease infinite", position: "relative", padding: "80px 0" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "30px" }}>
-            {[{ icon: "👥", number: "25+", label: "Expert Coaches", color: "#FF6B6B" }, { icon: "🏊", number: "65+", label: "National Swimmers", color: "#FFD93D" }, { icon: "🏆", number: "45+", label: "National Medals", color: "#4ECDC4" }, { icon: "🏛️", number: "50+", label: "Institutions", color: "#667eea" }].map((a, i) => <div key={i} data-aos="zoom-in" data-aos-delay={i * 100} style={{ background: "#fff", borderRadius: "20px", padding: "30px 20px", boxShadow: "0 10px 40px rgba(0,0,0,0.15)", transition: "all 0.45s ease", cursor: "pointer", border: `3px solid ${a.color}`, textAlign: "center" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-15px) scale(1.03)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(0,0,0,0.2)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 10px 40px rgba(0,0,0,0.15)"; }}><div style={{ fontSize: "3.5rem", marginBottom: "1rem", animation: "pulse 2.5s ease-in-out infinite" }}>{a.icon}</div><div style={{ fontSize: "2.8rem", fontWeight: "800", color: a.color, marginBottom: "0.5rem" }}>{a.number}</div><p style={{ color: a.color, fontWeight: "700", margin: "0", fontSize: "1rem" }}>{a.label}</p></div>)}
-          </div>
-        </div>
-        <svg viewBox="0 0 1440 120" preserveAspectRatio="none" style={{ position: "absolute", bottom: -2, left: 0, width: "100%" }}><path fill="#f5f3ff" d="M0,40 Q360,80 720,40 T1440,40 L1440,120 L0,120 Z" /></svg>
-      </section>
+      
 
-      <section style={{ background: "linear-gradient(180deg, #f5f3ff 0%, #fff5f0 50%, #f0f9ff 100%)", position: "relative", padding: "100px 0" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
+      <section style={{ background: "linear-gradient(180deg, #f5f3ff 0%, #fff5f0 50%, #f0f9ff 100%)", position: "relative", padding: "80px 0", overflow: "hidden" }}>
+        {/* Futuristic Background Elements */}
+        <div style={{
+          position: "absolute",
+          top: "-50%",
+          left: "-10%",
+          width: "500px",
+          height: "500px",
+          background: "radial-gradient(circle, rgba(255, 107, 107, 0.1) 0%, transparent 70%)",
+          borderRadius: "50%",
+          filter: "blur(40px)",
+          pointerEvents: "none"
+        }} />
+        <div style={{
+          position: "absolute",
+          top: "20%",
+          right: "-15%",
+          width: "600px",
+          height: "600px",
+          background: "radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%)",
+          borderRadius: "50%",
+          filter: "blur(40px)",
+          pointerEvents: "none"
+        }} />
+        <div style={{
+          position: "absolute",
+          bottom: "-40%",
+          left: "30%",
+          width: "700px",
+          height: "700px",
+          background: "radial-gradient(circle, rgba(255, 159, 243, 0.08) 0%, transparent 70%)",
+          borderRadius: "50%",
+          filter: "blur(50px)",
+          pointerEvents: "none"
+        }} />
+        
+        {/* Animated Grid Lines */}
+        <svg style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          opacity: 0.05,
+          pointerEvents: "none"
+        }} preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#667eea" strokeWidth="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+        </svg>
+
+        {/* Floating Accent Elements */}
+        <div style={{
+          position: "absolute",
+          top: "10%",
+          left: "5%",
+          width: "3px",
+          height: "3px",
+          background: "#FF6B6B",
+          borderRadius: "50%",
+          boxShadow: "0 0 10px #FF6B6B",
+          animation: "float 6s ease-in-out infinite",
+          pointerEvents: "none"
+        }} />
+        <div style={{
+          position: "absolute",
+          bottom: "15%",
+          right: "8%",
+          width: "2px",
+          height: "2px",
+          background: "#667eea",
+          borderRadius: "50%",
+          boxShadow: "0 0 8px #667eea",
+          animation: "float 8s ease-in-out infinite 1s",
+          pointerEvents: "none"
+        }} />
+        <div style={{
+          position: "absolute",
+          top: "50%",
+          right: "5%",
+          width: "2px",
+          height: "2px",
+          background: "#FF9FF3",
+          borderRadius: "50%",
+          boxShadow: "0 0 8px #FF9FF3",
+          animation: "float 7s ease-in-out infinite 2s",
+          pointerEvents: "none"
+        }} />
+
+        <div style={{ position: "relative", zIndex: 1 }}>
+        <Container>
           {/* Header */}
-          <div style={{ textAlign: "center", marginBottom: "60px" }} data-aos="fade-up">
-            <h2 style={{ fontSize: "2.8rem", marginBottom: "1rem", color: "#001f3f", fontWeight: "bold" }}>Our Experienced <span style={{ background: "linear-gradient(90deg, #FF6B6B, #667eea)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Professionals</span></h2>
-            <p style={{ fontSize: "1.1rem", color: "#555", maxWidth: "700px", margin: "0 auto", fontWeight: "500" }}>Certified experts dedicated to your success</p>
-          </div>
+          <Row className="mb-5" data-aos="fade-up">
+            <Col lg={12} className="text-center">
+              <h2 style={{ fontSize: "2.8rem", marginBottom: "1rem", color: "#001f3f", fontWeight: "bold" }}>Our <span style={{ background: "linear-gradient(90deg, #FF6B6B, #667eea)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Expert Team</span></h2>
+              <p style={{ fontSize: "1.1rem", color: "#555", maxWidth: "700px", margin: "0 auto", fontWeight: "500" }}>Certified professionals dedicated to your success</p>
+            </Col>
+          </Row>
 
-          {/* Category Filter Buttons */}
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "15px", marginBottom: "60px" }} data-aos="fade-up" data-aos-delay="100">
-            {Object.entries(teamCategories).map(([key, category]) => (
-              <button
-                key={key}
-                onClick={() => setActiveCategory(key)}
-                style={{
-                  padding: "12px 28px",
-                  borderRadius: "50px",
-                  border: "2px solid",
-                  background: activeCategory === key ? category.color : "#fff",
-                  color: activeCategory === key ? "#fff" : category.color,
-                  borderColor: category.color,
-                  fontWeight: "700",
-                  fontSize: "1rem",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  boxShadow: activeCategory === key ? `0 8px 25px ${category.color}40` : "0 4px 15px rgba(0,0,0,0.1)"
-                }}
-                onMouseEnter={(e) => {
-                  if (activeCategory !== key) {
-                    e.currentTarget.style.background = category.bgColor;
-                    e.currentTarget.style.transform = "translateY(-3px)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeCategory !== key) {
-                    e.currentTarget.style.background = "#fff";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }
-                }}
-              >
-                <span style={{ fontSize: "1.3rem" }}>{category.icon}</span>
-                {category.title}
-              </button>
-            ))}
-          </div>
-
-          {/* Team Members by Category */}
-          <div data-aos="fade-up" data-aos-delay="200">
-            <div style={{ background: teamCategories[activeCategory].bgColor, borderRadius: "30px", padding: "50px 40px", border: `3px solid ${teamCategories[activeCategory].color}40` }}>
-              <h3 style={{ textAlign: "center", fontSize: "2rem", color: teamCategories[activeCategory].color, fontWeight: "bold", marginBottom: "50px", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px" }}>
-                <span style={{ fontSize: "2.5rem" }}>{teamCategories[activeCategory].icon}</span>
-                {teamCategories[activeCategory].title}
-              </h3>
-
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "30px" }}>
-                {teamCategories[activeCategory].members.map((m, i) => (
-                  <div
-                    key={i}
-                    data-aos="zoom-in"
-                    data-aos-delay={i * 100}
-                    className="team-card"
-                    style={{
-                      "--color": m.color,
-                      "--color-light": m.color + "dd",
-                      background: "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,255,255,0.92))",
-                      border: `3px solid ${m.color}30`,
-                      borderLeft: `6px solid ${m.color}`
-                    }}
-                    onMouseEnter={() => setHoveredTeam(i)}
-                    onMouseLeave={() => setHoveredTeam(null)}
-                  >
-                    {/* Avatar Background Circle */}
-                    <div style={{ position: "relative", marginBottom: "1.5rem", textAlign: "center" }}>
-                      <div style={{
-                        width: "120px",
-                        height: "120px",
-                        borderRadius: "50%",
-                        background: `linear-gradient(135deg, ${m.color}20, ${m.color}10)`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        margin: "0 auto",
-                        fontSize: "4rem",
-                        animation: "pulse 2.5s ease-in-out infinite",
-                        border: `3px solid ${m.color}40`
-                      }}>
-                        {m.image}
-                      </div>
+          {/* Leadership Section */}
+          <div className="mb-5" data-aos="fade-up">
+            <h3 style={{ fontSize: "1.8rem", color: "#FF6B6B", fontWeight: "bold", marginBottom: "40px", paddingBottom: "15px", borderBottom: "3px solid #FF6B6B" }}>Leadership</h3>
+            
+            {/* CEO */}
+            <Row className="mb-5 justify-content-center">
+              <Col xs={12} sm={10} md={6} lg={4} className="d-flex justify-content-center">
+                <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(255,107,107,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #FF6B6B30" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-10px)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(255,107,107,0.3)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 10px 40px rgba(255,107,107,0.2)"; }}>
+                  <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
+                    <img src={teamData.leadership.members[0].image} alt={teamData.leadership.members[0].name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                  <div style={{ padding: "15px", textAlign: "center" }}>
+                    <h4 style={{ color: "#FF6B6B", fontWeight: "800", fontSize: "0.95rem", margin: "0 0 3px 0" }}>{teamData.leadership.members[0].name}</h4>
+                    <p style={{ color: "#FF6B6B", fontWeight: "600", fontSize: "0.75rem", margin: "0 0 10px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>{teamData.leadership.members[0].position}</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", justifyContent: "center" }}>
+                      {teamData.leadership.members[0].eligibilities.slice(0, 2).map((elig, idx) => (
+                        <span key={idx} style={{ background: "#FF6B6B20", color: "#FF6B6B", padding: "3px 6px", borderRadius: "10px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "wrap" }}>{elig}</span>
+                      ))}
                     </div>
+                  </div>
+                </div>
+              </Col>
+            </Row>
 
-                    {/* Name */}
-                    <h4 style={{
-                      color: m.color,
-                      fontWeight: "800",
-                      marginBottom: "0.5rem",
-                      textAlign: "center",
-                      fontSize: "1.4rem",
-                      letterSpacing: "-0.5px"
-                    }}>
-                      {m.name}
-                    </h4>
-
-                    {/* Position */}
-                    <p style={{
-                      color: m.color,
-                      fontWeight: "700",
-                      textAlign: "center",
-                      marginBottom: "1.5rem",
-                      fontSize: "1rem",
-                      textTransform: "uppercase",
-                      letterSpacing: "1px"
-                    }}>
-                      {m.position}
-                    </p>
-
-                    {/* Details */}
-                    <div style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "1rem",
-                      textAlign: "center",
-                      borderTop: `2px solid ${m.color}20`,
-                      paddingTop: "1.5rem"
-                    }}>
-                      <div style={{
-                        color: "#555",
-                        fontSize: "0.95rem",
-                        fontWeight: "600",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "8px"
-                      }}>
-                        <span style={{ fontSize: "1.2rem", color: m.color }}>⚡</span>
-                        {m.experience}
-                      </div>
-
-                      <div style={{
-                        color: "#555",
-                        fontSize: "0.95rem",
-                        fontWeight: "600",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "8px"
-                      }}>
-                        <span style={{ fontSize: "1.2rem", color: m.color }}>🎯</span>
-                        {m.specialization}
-                      </div>
-
-                      <div style={{
-                        color: m.color,
-                        fontSize: "0.9rem",
-                        fontWeight: "700",
-                        background: `${m.color}15`,
-                        padding: "10px 15px",
-                        borderRadius: "12px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "6px"
-                      }}>
-                        <span style={{ fontSize: "1.1rem" }}>🏆</span>
-                        {m.certification}
+            {/* Directors */}
+            <Row className="g-4" data-aos="fade-up">
+              {teamData.leadership.members.slice(1).map((member, i) => (
+                <Col xs={12} sm={6} md={4} key={i} className="d-flex justify-content-center" data-aos="zoom-in" data-aos-delay={i * 50}>
+                  <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(255,107,107,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #FF6B6B30" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-10px)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(255,107,107,0.3)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 10px 40px rgba(255,107,107,0.2)"; }}>
+                    <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
+                      <img src={member.image} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </div>
+                    <div style={{ padding: "15px", textAlign: "center" }}>
+                      <h4 style={{ color: "#FF6B6B", fontWeight: "800", fontSize: "0.95rem", margin: "0 0 3px 0" }}>{member.name}</h4>
+                      <p style={{ color: "#FF6B6B", fontWeight: "600", fontSize: "0.75rem", margin: "0 0 10px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>{member.position}</p>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", justifyContent: "center" }}>
+                        {member.eligibilities.slice(0, 2).map((elig, idx) => (
+                          <span key={idx} style={{ background: "#FF6B6B20", color: "#FF6B6B", padding: "3px 6px", borderRadius: "10px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "nowrap" }}>{elig}</span>
+                        ))}
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                </Col>
+              ))}
+            </Row>
           </div>
+
+          {/* Coaching Team Section */}
+          <div className="mb-5" data-aos="fade-up">
+            <h3 style={{ fontSize: "1.8rem", color: "#667eea", fontWeight: "bold", marginBottom: "40px", paddingBottom: "15px", borderBottom: "3px solid #667eea" }}>Coaching Team</h3>
+            <Row className="g-4">
+              {teamData.coaching.members.map((member, i) => (
+                <Col xs={12} sm={6} md={4} lg={3} key={i} className="d-flex justify-content-center" data-aos="zoom-in" data-aos-delay={i * 30}>
+                  <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(102,126,234,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #667eea30" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-10px)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(102,126,234,0.3)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 10px 40px rgba(102,126,234,0.2)"; }}>
+                    <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
+                      <img src={member.image} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </div>
+                    <div style={{ padding: "15px", textAlign: "center" }}>
+                      <h4 style={{ color: "#667eea", fontWeight: "800", fontSize: "0.9rem", margin: "0 0 3px 0" }}>{member.name}</h4>
+                      <p style={{ color: "#667eea", fontWeight: "600", fontSize: "0.7rem", margin: "0 0 8px 0", textTransform: "uppercase", letterSpacing: "0.3px" }}>{member.position}</p>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "3px", justifyContent: "center" }}>
+                        {member.eligibilities.slice(0, 2).map((elig, idx) => (
+                          <span key={idx} style={{ background: "#667eea20", color: "#667eea", padding: "2px 5px", borderRadius: "8px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "nowrap" }}>{elig}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+          </div>
+
+          {/* Safety & Support Section */}
+          <div className="mb-5" data-aos="fade-up">
+            <h3 style={{ fontSize: "1.8rem", color: "#FF9FF3", fontWeight: "bold", marginBottom: "40px", paddingBottom: "15px", borderBottom: "3px solid #FF9FF3" }}>Safety & Support</h3>
+            <Row className="g-4 justify-content-center">
+              {teamData.safety.members.map((member, i) => (
+                <Col xs={12} sm={6} md={4} lg={4} key={i} className="d-flex justify-content-center" data-aos="zoom-in" data-aos-delay={i * 50}>
+                  <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(255,159,243,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #FF9FF330" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-10px)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(255,159,243,0.3)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 10px 40px rgba(255,159,243,0.2)"; }}>
+                    <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
+                      <img src={member.image} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </div>
+                    <div style={{ padding: "15px", textAlign: "center" }}>
+                      <h4 style={{ color: "#FF9FF3", fontWeight: "800", fontSize: "0.95rem", margin: "0 0 3px 0" }}>{member.name}</h4>
+                      <p style={{ color: "#FF9FF3", fontWeight: "600", fontSize: "0.75rem", margin: "0 0 10px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>{member.position}</p>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", justifyContent: "center" }}>
+                        {member.eligibilities.slice(0, 2).map((elig, idx) => (
+                          <span key={idx} style={{ background: "#FF9FF320", color: "#FF9FF3", padding: "3px 6px", borderRadius: "10px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "nowrap" }}>{elig}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+          </div>
+
+          {/* Administration & Promotion Section */}
+          <div data-aos="fade-up">
+            <h3 style={{ fontSize: "1.8rem", color: "#54A0FF", fontWeight: "bold", marginBottom: "40px", paddingBottom: "15px", borderBottom: "3px solid #54A0FF" }}>Administration & Promotion</h3>
+            <Row className="g-4 justify-content-center">
+              {teamData.administration.members.map((member, i) => (
+                <Col xs={12} sm={6} md={4} lg={4} key={i} className="d-flex justify-content-center" data-aos="zoom-in" data-aos-delay={i * 50}>
+                  <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(84,160,255,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #54A0FF30" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-10px)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(84,160,255,0.3)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 10px 40px rgba(84,160,255,0.2)"; }}>
+                    <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
+                      <img src={member.image} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </div>
+                    <div style={{ padding: "15px", textAlign: "center" }}>
+                      <h4 style={{ color: "#54A0FF", fontWeight: "800", fontSize: "0.95rem", margin: "0 0 3px 0" }}>{member.name}</h4>
+                      <p style={{ color: "#54A0FF", fontWeight: "600", fontSize: "0.75rem", margin: "0 0 10px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>{member.position}</p>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", justifyContent: "center" }}>
+                        {member.eligibilities.slice(0, 2).map((elig, idx) => (
+                          <span key={idx} style={{ background: "#54A0FF20", color: "#54A0FF", padding: "3px 6px", borderRadius: "10px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "nowrap" }}>{elig}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+          </div>
+        </Container>
         </div>
       </section>
 

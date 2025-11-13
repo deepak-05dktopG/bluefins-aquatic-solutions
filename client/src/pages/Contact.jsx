@@ -207,7 +207,7 @@ const Contact = () => {
           </div>
         </div>
 
-        <div data-aos="fadeInUp" data-aos-delay="400" style={{ background: "rgba(255, 255, 255, 0.08)", backdropFilter: "blur(15px)", border: "1px solid rgba(255, 255, 255, 0.15)", borderRadius: "15px", padding: "25px", marginTop: "30px" }}>
+        <div data-aos="fadeInUp" data-aos-delay="400" style={{ background: "rgba(255, 255, 255, 0.08)", backdropFilter: "blur(15px)", border: "1px solid rgba(255, 255, 255, 0.15)", borderRadius: "15px", padding: "25px", marginTop: "px" }}>
           <div style={{ fontSize: "1.4rem", fontWeight: "700", color: "#fff", marginBottom: "20px", display: "flex", alignItems: "center", gap: "12px" }}><span style={{ color: "#FF6B6B" }}></span> Frequently Asked Questions</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
             <div><div style={{ fontWeight: "600", color: "#FFD93D", marginBottom: "8px" }}>When can I start classes?</div><p style={{ color: "#B0B0B0", fontSize: "0.9rem", margin: "0" }}>Classes start every Monday. Contact us now to register!</p></div>
@@ -215,7 +215,7 @@ const Contact = () => {
             <div><div style={{ fontWeight: "600", color: "#FFD93D", marginBottom: "8px" }}>Do you offer batch discounts?</div><p style={{ color: "#B0B0B0", fontSize: "0.9rem", margin: "0" }}>Yes! We offer special rates for group bookings and corporate batches.</p></div>
             <div><div style={{ fontWeight: "600", color: "#FFD93D", marginBottom: "8px" }}>What''s your cancellation policy?</div><p style={{ color: "#B0B0B0", fontSize: "0.9rem", margin: "0" }}>30-day notice for full refund. Contact support for details.</p></div>
             <div><div style={{ fontWeight: "600", color: "#FFD93D", marginBottom: "8px" }}>Do you offer online coaching?</div><p style={{ color: "#B0B0B0", fontSize: "0.9rem", margin: "0" }}>Yes, we offer virtual consultations and technique analysis sessions.</p></div>
-            <div><div style={{ fontWeight: "600", color: "#FFD93D", marginBottom: "8px" }}>How do I schedule a trial class?</div><p style={{ color: "#B0B0B0", fontSize: "0.9rem", margin: "0" }}>Fill the form above or call us. First class is free for new members!</p></div>
+            <div><div style={{ fontWeight: "600", color: "#FFD93D", marginBottom: "28px" }}>How do I schedule a trial class?</div><p style={{ color: "#B0B0B0", fontSize: "0.9rem", margin: "0" }}>Fill the form above or call us. First class is free for new members!</p></div>
           </div>
         </div>
 
