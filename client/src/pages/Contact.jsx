@@ -34,14 +34,27 @@ const Contact = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // window.open(`https://wa.me/919025454148?text=Hello!%0AName: ${formData.name}%0AEmail: ${formData.email}%0AMessage: ${formData.message}`);
-    emailjs
-      .send(
-        "service_vvlj738",       // from EmailJS
-        "template_7j1rxpo",      // from EmailJS
+
+    try {
+      // Save to database first
+      const response = await fetch('http://localhost:8000/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to save feedback');
+      }
+      // Then send email via EmailJS
+      await emailjs.send(
+        "service_vvlj738",
+        "template_7j1rxpo",
         {
           from_name: formData.name,
           from_email: formData.email,
@@ -49,29 +62,27 @@ const Contact = () => {
           message: formData.message,
           time: new Date().toLocaleString(),
         },
-        "EJPzfpLez6KIfi9vc"        // from EmailJS
-      )
-      .then(() => {
-        // Send auto-reply to the user
-        emailjs.send("service_vvlj738", "template_ep9fzke", {
-          from_name: formData.name,
-          phone: formData.phone,
-        }, "EJPzfpLez6KIfi9vc");
-      })
-      .then(() => {
-        setAlertMessage("Thank you! We received your message. We'll get back to you within 24 hours!");
-        setShowAlert(true);
-        setLoading(false);
-        setFormData({ name: "", email: "", phone: "", message: "" });
-        setTimeout(() => setShowAlert(false), 4000);
-      })
-      .catch(() => {
-        setAlertMessage("❌ Failed to send message. Try again later Or Contact via Phone/Email/WhatsApp.");
-        setShowAlert(true);
-        setLoading(false);
-        setFormData({ name: "", email: "", phone: "", message: "" });
-        setTimeout(() => setShowAlert(false), 4000);
-      });
+        "EJPzfpLez6KIfi9vc"
+      );
+
+      // Send auto-reply
+      await emailjs.send("service_vvlj738", "template_ep9fzke", {
+        from_name: formData.name,
+        phone: formData.phone,
+      }, "EJPzfpLez6KIfi9vc");
+
+      setAlertMessage("✅ Thank you! We received your message. We'll get back to you within 24 hours!");
+      setShowAlert(true);
+      setFormData({ name: "", email: "", phone: "", message: "" });
+      setTimeout(() => setShowAlert(false), 4000);
+
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      setAlertMessage("❌ Failed to send message. Try again later or contact via Phone/Email/WhatsApp.");
+      setShowAlert(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const contactMethods = [
@@ -161,7 +172,7 @@ const Contact = () => {
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px", position: "relative", zIndex: 2 }}>
         <div className="row" style={{ display: "flex", flexWrap: 'wrap', gap: "25px", marginBottom: "50px", marginTop: "30px", alignItems: 'center', justifyContent: 'center' }}>
           <div className="col-lg-7 col-12" data-aos="fadeInUp" data-aos-delay="0" style={{ background: "rgba(255, 255, 255, 0.08)", backdropFilter: "blur(15px)", border: "1px solid rgba(255, 255, 255, 0.15)", borderRadius: "20px", padding: "40px", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)", transition: "all 0.3s ease", gridColumn: "span 2", cursor: "pointer" }} onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(0, 0, 0, 0.4)"; }} onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0, 0, 0, 0.3)"; }}>
-            <h3 style={{ color: "#FFD93D", fontSize: "1.5rem", fontWeight: "700", marginBottom: "25px" }}>Send Us a Message</h3>
+            <h3 style={{ color: "#FFD93D", fontSize: "1.5rem", fontWeight: "700", marginBottom: "25px" }}>Send Us a FeedBack/Message</h3>
             <form onSubmit={handleSubmit}>
               <input type="text" name="name" placeholder="Your Name" value={formData.name} onChange={handleChange} required style={{ background: "rgba(255, 255, 255, 0.1)", border: "1.5px solid rgba(255, 255, 255, 0.2)", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontSize: "0.95rem", fontWeight: "500", transition: "all 0.3s ease", marginBottom: "18px", width: "100%", boxSizing: "border-box" }} />
               <input type="email" name="email" placeholder="Your Email" value={formData.email} onChange={handleChange} required style={{ background: "rgba(255, 255, 255, 0.1)", border: "1.5px solid rgba(255, 255, 255, 0.2)", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontSize: "0.95rem", fontWeight: "500", transition: "all 0.3s ease", marginBottom: "18px", width: "100%", boxSizing: "border-box" }} />
