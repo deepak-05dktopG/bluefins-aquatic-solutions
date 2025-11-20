@@ -65,7 +65,7 @@ const LessonPlans = () => {
       pdfUrl: "/assets/lessonPlan/level of learning.pdf",
     },
   ]);
-  const [selectedLevel, setSelectedLevel] = useState(null);
+  const [slectedLevel, setSelectedLevel] = useState(null);
 
   return (
     <div
