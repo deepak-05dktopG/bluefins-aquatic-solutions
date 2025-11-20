@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminNavbar from "../../components/adminPanel/AdminNavbar";
+import AdminNavbar from "../../components/adminPanel/AdminNavbar.jsx";
 import { FaTrash, FaStar, FaEnvelope, FaUser, FaFilter } from "react-icons/fa";
 
 const MembersFeedback = () => {

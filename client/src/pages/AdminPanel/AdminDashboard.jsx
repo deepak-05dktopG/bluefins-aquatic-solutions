@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import AdminNavbar from "../../components/adminPanel/AdminNavbar";
+import AdminNavbar from "../../components/adminPanel/AdminNavbar.jsx";
 import { FaBookmark, FaComments, FaClipboard, FaFileAlt, FaChartBar, FaUsers, FaArrowRight } from "react-icons/fa";
 
 const AdminDashboard = () => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminNavbar from "../../components/adminPanel/AdminNavbar";
+import AdminNavbar from "../../components/adminPanel/AdminNavbar.jsx";
 import { FaDownload, FaTrash, FaEye, FaTimes } from "react-icons/fa";
 
 const LessonPlans = () => {
