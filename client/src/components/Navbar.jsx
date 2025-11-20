@@ -93,7 +93,7 @@ const Navbar = () => {
             onDoubleClick={() => {
               setClickCount(clickCount + 1);
               if (clickCount + 1 === 3) {
-                navigate("/owner-panel");
+                navigate("/admin");
                 setClickCount(0);
               }
             }}
@@ -161,6 +161,33 @@ const Navbar = () => {
             {/* CTA Button */}
             <div className="d-flex justify-content-center justify-content-lg-end gap-2 mt-3 mt-lg-0">
               
+              <Link to="/admin" onClick={() => setExpanded(false)}>
+                <Button
+                  style={{
+                    borderRadius: "50px",
+                    padding: "0.45rem 1.3rem",
+                    background: "linear-gradient(90deg, #FF6B6B, #FFE66D)",
+                    backgroundSize: "200% 200%",
+                    border: "none",
+                    color: "#fff",
+                    fontWeight: 600,
+                    boxShadow: "0 0 12px rgba(255, 107, 107, 0.3)",
+                    transition: "all 0.4s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundPosition = "100% 0%";
+                    e.currentTarget.style.transform = "scale(1.05)";
+                    e.currentTarget.style.boxShadow = "0 0 20px rgba(255, 107, 107, 0.6)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundPosition = "0% 0%";
+                    e.currentTarget.style.transform = "scale(1)";
+                    e.currentTarget.style.boxShadow = "0 0 12px rgba(255, 107, 107, 0.3)";
+                  }}
+                >
+                  Login
+                </Button>
+              </Link>
               
               <Link to="/contact" onClick={() => setExpanded(false)}>
                 <Button

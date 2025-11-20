@@ -9,7 +9,12 @@ import Contact from './pages/Contact'
 import Admin from './pages/Admin'
 import Team from './pages/Team'
 import Shop from './pages/Shop'
-import OwnerPanel from './pages/OwnerPanel'
+import AdminLogin from './pages/adminPanel/AdminLogin'
+import AdminDashboard from './pages/adminPanel/AdminDashboard'
+import LessonPlans from './pages/adminPanel/LessonPlans'
+import MembersFeedback from './pages/adminPanel/MembersFeedback'
+import WeeklyWorksheets from './pages/adminPanel/WeeklyWorksheets'
+import Posts from './pages/adminPanel/Posts'
 import { useLocation } from 'react-router-dom'
 import React from 'react'
 import AOS from 'aos'
@@ -49,9 +54,16 @@ function App() {
           {/* <Route path="/admin" element={<Admin />} /> */}
           <Route path="/team" element={<Team />} />
           <Route path="/shop" element={<Shop />} />
-          <Route path="/owner-panel" element={<OwnerPanel />} />
+          
+          {/* Admin Panel Routes */}
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/lesson-plans" element={<LessonPlans />} />
+          <Route path="/admin/feedback" element={<MembersFeedback />} />
+          <Route path="/admin/worksheets" element={<WeeklyWorksheets />} />
+          <Route path="/admin/posts" element={<Posts />} />
         </Routes>
-      </main>
+      </main> 
       <Footer />
     </div>
   )
