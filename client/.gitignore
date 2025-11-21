@@ -8,6 +8,9 @@ build/
 # Environment variables
 .env
 .env.local
+.env.production
+.env.development
+.env.example
 
 # Logs
 logs
