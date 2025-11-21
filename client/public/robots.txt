@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://bluefins.netlify.app/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 10
+
+# Disallow admin routes
+User-agent: *
+Disallow: /admin/
+Disallow: /admin/*
