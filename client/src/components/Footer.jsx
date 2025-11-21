@@ -86,10 +86,10 @@ const Footer = () => {
             </p>
             <div className="d-flex gap-3">
               {[
-                { icon: <FaFacebookF />, link: "https://facebook.com" },
+                // { icon: <FaFacebookF />, link: "https://facebook.com" },
                 { icon: <FaInstagram />, link: "https://www.instagram.com/bluefinsaquaticsolutions?utm_source=qr&igsh=MWNtcTlxaGphYWJiZg==" },
                 { icon: <FaWhatsapp />, link: "https://wa.me/919942020838" },
-                { icon: <FaTwitter />, link: "https://twitter.com" },
+                // { icon: <FaTwitter />, link: "https://twitter.com" },
               ].map((social, index) => (
                 <a
                   key={index}
@@ -191,8 +191,8 @@ const Footer = () => {
                 },
                 {
                   icon: <FaEnvelope />,
-                  text: "bluefinsaquaticssolutions@gmail.com",
-                  link: "mailto:bluefinsaquaticssolutions@gmail.com",
+                  text: "bluefinsaquaticsolutions@gmail.com",
+                  link: "mailto:bluefinsaquaticsolutions@gmail.com",
                 },
               ].map((item, i) => (
                 <div key={i} className="d-flex gap-3 align-items-start">
