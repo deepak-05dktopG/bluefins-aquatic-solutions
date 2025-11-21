@@ -15,7 +15,7 @@ const AdminNavbar = () => {
   const navLinks = [
     { path: "/admin/dashboard", label: "Dashboard", icon: <FaRocket /> },
     { path: "/admin/lesson-plans", label: "Lesson Plans", icon: <FaBookmark /> },
-    { path: "/admin/feedback", label: "Feedback", icon: <FaComments /> },
+    { path: "/admin/feedback", label: "Feedback/Messages", icon: <FaComments /> },
     { path: "/admin/worksheets", label: "Worksheets", icon: <FaClipboard /> },
     { path: "/admin/posts", label: "Posts", icon: <FaFileAlt /> },
   ];
@@ -53,6 +53,15 @@ const AdminNavbar = () => {
             gap: "12px",
           }}
         >
+          <img 
+            src="/assets/Logo.png" 
+            alt="Bluefins Logo" 
+            style={{ 
+              height: "40px", 
+              width: "auto",
+              filter: "drop-shadow(0 0 8px rgba(0, 255, 212, 0.3))"
+            }} 
+          />
           <h1
             style={{
               margin: 0,
@@ -63,7 +72,7 @@ const AdminNavbar = () => {
               WebkitTextFillColor: "transparent",
             }}
           >
-            <FaRocket style={{ color: "#00FFD4" }} /> Bluefins Admin
+            Bluefins Admin
           </h1>
         </Link>
 

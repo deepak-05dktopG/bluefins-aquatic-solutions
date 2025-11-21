@@ -20,7 +20,7 @@ const AdminDashboard = () => {
       icon: <FaBookmark />,
       path: "/admin/lesson-plans",
       color: "#00FFD4",
-      count: "4 Levels",
+      count: "",
     },
     {
       title: "Members Feedback",
@@ -28,7 +28,7 @@ const AdminDashboard = () => {
       icon: <FaComments />,
       path: "/admin/feedback",
       color: "#FF6B9D",
-      count: "12 Reviews",
+      count: "",
     },
     {
       title: "Weekly Worksheets",
@@ -36,7 +36,7 @@ const AdminDashboard = () => {
       icon: <FaClipboard />,
       path: "/admin/worksheets",
       color: "#9664FF",
-      count: "8 Active",
+      count: "",
     },
     {
       title: "Posts & Updates",
@@ -44,7 +44,7 @@ const AdminDashboard = () => {
       icon: <FaFileAlt />,
       path: "/admin/posts",
       color: "#FFB6C1",
-      count: "15 Posts",
+      count: "",
     },
   ];
 
@@ -76,7 +76,7 @@ const AdminDashboard = () => {
               marginBottom: "10px",
             }}
           >
-            Welcome to Admin Dashboard
+           👋 Welcome to Admin Dashboard
           </h1>
           <p style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: "1.1rem" }}>
             Manage all aspects of Bluefins Aquatic Solutions

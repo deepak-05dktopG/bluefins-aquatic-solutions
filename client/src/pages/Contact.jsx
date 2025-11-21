@@ -5,6 +5,7 @@ import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaFacebook, FaInstagra
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import emailjs from "@emailjs/browser";
+import Swal from 'sweetalert2';
 
 
 
@@ -15,8 +16,6 @@ const Contact = () => {
     phone: "",
     message: ""
   });
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -38,9 +37,11 @@ const Contact = () => {
     e.preventDefault();
     setLoading(true);
 
+    let databaseSaved = false;
+
     try {
       // Save to database first
-      const response = await fetch('http://localhost:8000/api/feedback', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,35 +52,77 @@ const Contact = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Failed to save feedback');
       }
+      
+      databaseSaved = true;
+      
       // Then send email via EmailJS
-      await emailjs.send(
-        "service_vvlj738",
-        "template_7j1rxpo",
-        {
+      try {
+        await emailjs.send(
+          "service_rktrbwj",
+          "template_gos1gyj",
+          {
+            from_name: formData.name,
+            from_email: formData.email,
+            phone: formData.phone,
+            message: formData.message,
+            time: new Date().toLocaleString(),
+          },
+          "mbQp-0kZOmadPSjVn"
+        );
+        
+        // Send auto-reply
+        await emailjs.send("service_rktrbwj", "template_paafjhg", {
           from_name: formData.name,
-          from_email: formData.email,
           phone: formData.phone,
-          message: formData.message,
-          time: new Date().toLocaleString(),
-        },
-        "EJPzfpLez6KIfi9vc"
-      );
+        }, "mbQp-0kZOmadPSjVn");
+        // Both database and email successful
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Message Sent Successfully!',
+          text: "We received your message. We'll get back to you within 24 hours!",
+          showConfirmButton: false,
+          timer: 5000,
+          timerProgressBar: true,
+          background: 'linear-gradient(135deg, #4ECDC4, #54A0FF)',
+          color: '#fff',
+          iconColor: '#fff'
+        });
+      } catch (emailError) {
+        console.error('EmailJS error:', emailError);
+        // Database saved but email failed
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Message Saved!',
+          text: "We'll get back to you soon. (Email notification pending)",
+          showConfirmButton: false,
+          timer: 5000,
+          timerProgressBar: true,
+          background: 'linear-gradient(135deg, #FFD93D, #FF9FF3)',
+          color: '#fff',
+          iconColor: '#fff'
+        });
+      }
 
-      // Send auto-reply
-      await emailjs.send("service_vvlj738", "template_ep9fzke", {
-        from_name: formData.name,
-        phone: formData.phone,
-      }, "EJPzfpLez6KIfi9vc");
-
-      setAlertMessage("✅ Thank you! We received your message. We'll get back to you within 24 hours!");
-      setShowAlert(true);
       setFormData({ name: "", email: "", phone: "", message: "" });
-      setTimeout(() => setShowAlert(false), 4000);
-
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      setAlertMessage("❌ Failed to send message. Try again later or contact via Phone/Email/WhatsApp.");
-      setShowAlert(true);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'error',
+        title: 'Failed to Send Message',
+        text: 'Try again later or contact via Phone/Email/WhatsApp.',
+        showConfirmButton: false,
+        timer: 5000,
+        timerProgressBar: true,
+        background: 'linear-gradient(135deg, #FF6B6B, #FF9FF3)',
+        color: '#fff',
+        iconColor: '#fff'
+      });
     } finally {
       setLoading(false);
     }
@@ -87,7 +130,7 @@ const Contact = () => {
 
   const contactMethods = [
     { icon: <FaPhone size={28} />, link: 'tel:+919942020838', title: "Phone", value: "+91 99420-20838", color: "#FF6B6B" },
-    { icon: <FaEnvelope size={28} />, link: 'mailto:bluefinsaquaticssolutions@gmail.com', title: "Email", value: "bluefinsaquaticssolutions@gmail.com", color: "#FFD93D" },
+    { icon: <FaEnvelope size={28} />, link: 'mailto:bluefinsaquaticsolutions@gmail.com', title: "Email", value: "bluefinsaquaticsolutions@gmail.com", color: "#FFD93D" },
     { icon: <FaMapMarkerAlt size={28} />, link: 'https://wa.me/919942020838', title: "Headquarters", value: "Erode, Tamil Nadu, India", color: "#4ECDC4" },
     { icon: <FaWhatsapp size={28} />, link: 'https://wa.me/919942020838', title: "WhatsApp", value: "+91 94440 42424", color: "#667eea" }
   ];
@@ -159,15 +202,6 @@ const Contact = () => {
         <h1 style={{ fontSize: "4.5rem", fontWeight: "900", background: "linear-gradient(90deg, #FF6B6B, #FFD93D, #4ECDC4, #667eea)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", marginBottom: "15px", animation: "gradientShift 15s infinite ease" }}>Get In Touch</h1>
         <p style={{ fontSize: "1.3rem", color: "#E0E0E0", marginBottom: "10px", fontWeight: "500" }}>We're always here to help and answer any question you might have</p>
       </div>
-
-      {showAlert && (
-        <div data-aos="slideInDown" style={{ position: "relative", zIndex: 3, maxWidth: "1200px", margin: "0 auto", padding: "0 20px", marginBottom: "30px" }}>
-          <div style={{ background: "rgba(76, 205, 196, 0.2)", border: "2px solid #4ECDC4", borderRadius: "10px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "12px", backdropFilter: "blur(15px)" }}>
-            <FaCheckCircle size={20} style={{ color: "#4ECDC4" }} />
-            <span style={{ color: "#E0E0E0", fontSize: "0.95rem", fontWeight: "500" }}>{alertMessage}</span>
-          </div>
-        </div>
-      )}
 
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px", position: "relative", zIndex: 2 }}>
         <div className="row" style={{ display: "flex", flexWrap: 'wrap', gap: "25px", marginBottom: "50px", marginTop: "30px", alignItems: 'center', justifyContent: 'center' }}>

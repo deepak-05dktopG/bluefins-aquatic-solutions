@@ -56,13 +56,25 @@ const Footer = () => {
         <Row className="g-5">
           {/* Column 1 – Brand Info */}
           <Col md={4}>
-            <h4
-              onDoubleClick={() => {
-                navigate("/owner-panel");
+            <div 
+              onClick={() => {
+                navigate("/");
                 setClickCount(0);
               }}
-              
-              
+              style={{ cursor: "pointer", marginBottom: "15px" }}
+            >
+              <img 
+                src="/assets/Logo.png" 
+                alt="Bluefins Logo" 
+                style={{ 
+                  height: "70px", 
+                  width: "auto", 
+                  marginBottom: "10px",
+                  filter: "drop-shadow(0 0 10px rgba(255,255,255,0.3))"
+                }} 
+              />
+            </div>
+            <h4
               className="fw-bold mb-3"
               style={{ fontSize: "1.6rem", textShadow: "0 0 10px rgba(255,255,255,0.3)" }}
             >

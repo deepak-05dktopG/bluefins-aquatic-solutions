@@ -25,7 +25,7 @@ const feedbackSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Message is required'],
     trim: true,
-    minlength: [10, 'Message must be at least 10 characters'],
+    minlength: [1, 'Message must be at least 1 character'],
     maxlength: [1000, 'Message cannot exceed 1000 characters']
   },
   status: {

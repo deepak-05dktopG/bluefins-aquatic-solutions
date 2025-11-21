@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaRocket, FaLock } from "react-icons/fa";
+import Navbar from "../../components/Navbar";
 
 const AdminLogin = () => {
   const [accessKey, setAccessKey] = useState("");
@@ -45,6 +46,7 @@ const AdminLogin = () => {
         overflow: "hidden",
       }}
     >
+      <Navbar />
       {/* Animated Background Orbs */}
       <div
         style={{
@@ -59,6 +61,7 @@ const AdminLogin = () => {
           animation: "float 8s ease-in-out infinite",
         }}
       />
+
       <div
         style={{
           position: "absolute",

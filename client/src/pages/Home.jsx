@@ -1,9 +1,14 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { NavLink } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 const Home = () => {
+  const [posts, setPosts] = useState([]);
+
   useEffect(() => {
     AOS.init({
       duration: 500,
@@ -13,7 +18,20 @@ const Home = () => {
       disable: false
     });
     AOS.refresh();
+    fetchPosts();
   }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts`);
+      const data = await response.json();
+      if (data.success) {
+        setPosts(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    }
+  };
 
 
   return (
@@ -117,7 +135,7 @@ const Home = () => {
                 data-aos="fade-up"
                 data-aos-delay="300"
               >
-                Partner with Bluefins for comprehensive training programs, professional coaching, 
+                Partner with Bluefins for comprehensive training programs, professional coaching,
                 and complete pool management services for schools, sports academies, and resorts.
               </p>
               <div
@@ -178,7 +196,222 @@ const Home = () => {
           ></path>
         </svg>
       </section>
+      {/* ===================== ANNOUNCEMENTS & POSTS ===================== */}
+      {posts.length > 0 && (
+        <section style={{
+          padding: "50px 0",
+          background: "linear-gradient(135deg, #001f3f 0%, #0077B6 50%, #00B4D8 100%)",
+          position: "relative",
+          overflow: "hidden"
+        }}>
+          <style>{`
+            .slick-dots {
+              bottom: 25px !important;
+            }
+            .slick-dots li button:before {
+              color: #90E0EF !important;
+              font-size: 14px !important;
+              opacity: 0.5 !important;
+            }
+            .slick-dots li.slick-active button:before {
+              color: #fff !important;
+              font-size: 16px !important;
+              opacity: 1 !important;
+            }
+            .slick-prev, .slick-next {
+              display: none !important;
+            }
+          `}</style>
 
+          <div className="">
+            <div className="text-center" data-aos="fade-up">
+              <h3 className="fw-bold" style={{ color: "#fff", fontSize: "2rem", textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}>
+                Latest Announcements
+              </h3>
+              <p style={{ color: "#90E0EF", fontSize: "1.2rem", fontWeight: "500" }}>
+                Stay updated with our latest news and achievements
+              </p>
+            </div>
+
+            <Slider
+              dots={true}
+              arrows={false}
+              infinite={true}
+              speed={1000}
+              slidesToShow={1}
+              slidesToScroll={1}
+              autoplay={true}
+              autoplaySpeed={2000}
+              fade={false}
+              pauseOnHover={true}
+              cssEase="cubic-bezier(0.645, 0.045, 0.355, 1)"
+            >
+              {posts.map((post) => {
+                // Determine main content priority: Image > Content > Caption > Title
+                const hasImage = !!post.imageUrl;
+                const hasContent = !!post.content;
+                const hasCaption = !!post.caption;
+                const hasTitle = !!post.title;
+
+                // Main content is what we prioritize displaying
+                const mainContent = hasImage ? 'image' : hasContent ? 'content' : hasCaption ? 'caption' : 'title';
+
+                return (
+                  <div key={post._id} className="" style={{ padding: "0 0px" }}>
+                    <div
+                      style={{
+                        background: "linear-gradient(135deg, #001f3f 0%, #0077B6 50%, #00B4D8 100%)",
+                        borderRadius: "25px",
+                        overflow: "hidden",
+                        transition: "all 0.4s ease",
+                        margin: "0 auto",
+                        maxWidth: mainContent === 'image' ? "900px" : "800px",
+                      }}
+                    >
+                      {/* Image-focused layout */}
+                      {mainContent === 'image' && (
+                        <div>
+                          <div style={{ position: "relative", width: "100%", height: "500px" }}>
+                            <img
+                              src={post.imageUrl}
+                              alt={post.title || post.caption || 'Announcement'}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "contain",
+                                display: "block"
+                              }}
+                            />
+                            {/* Overlay gradient for text readability */}
+                            {(hasTitle || hasCaption) && (
+                              <div style={{
+                                position: "absolute",
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)",
+                                padding: "40px 30px 20px",
+                              }}>
+                                {hasTitle && (
+                                  <h3 style={{
+                                    color: "#fff",
+                                    fontWeight: "800",
+                                    fontSize: "2rem",
+                                    marginBottom: "8px",
+                                    textShadow: "2px 2px 4px rgba(0,0,0,0.5)"
+                                  }}>
+                                    {post.title}
+                                  </h3>
+                                )}
+                                {hasCaption && (
+                                  <p style={{
+                                    color: "#90E0EF",
+                                    fontWeight: "600",
+                                    fontSize: "1.1rem",
+                                    marginBottom: 0
+                                  }}>
+                                    {post.caption}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          {hasContent && (
+                            <div style={{ padding: "15px 30px" }}>
+                              <p style={{
+                                color: "#ffffffff",
+                                fontSize: "1rem",
+                                lineHeight: "1.8",
+                                margin: 0
+                              }}>
+                                <b>{post.content}</b>
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Content-focused layout (no image or image not main) */}
+                      {mainContent !== 'image' && (
+                        <div style={{ padding: "50px 40px", textAlign: "center" }}>
+                          {hasTitle && (
+                            <h2 style={{
+                              color: "#0077B6",
+                              fontWeight: "800",
+                              fontSize: mainContent === 'title' ? "3rem" : "2.2rem",
+                              marginBottom: "20px",
+                              lineHeight: "1.3"
+                            }}>
+                              {post.title}
+                            </h2>
+                          )}
+
+                          {hasCaption && (
+                            <p style={{
+                              color: "#00B4D8",
+                              fontWeight: "600",
+                              fontSize: mainContent === 'caption' ? "1.8rem" : "1.3rem",
+                              marginBottom: hasContent ? "25px" : "0",
+                              lineHeight: "1.6"
+                            }}>
+                              {post.caption}
+                            </p>
+                          )}
+
+                          {hasContent && (
+                            <div style={{
+                              color: "#333",
+                              fontSize: mainContent === 'content' ? "1.3rem" : "1.1rem",
+                              lineHeight: "1.9",
+                              textAlign: "left",
+                              background: "#f8f9fa",
+                              padding: "25px",
+                              borderRadius: "15px",
+                              marginTop: "20px"
+                            }}>
+                              {post.content}
+                            </div>
+                          )}
+
+                          {hasImage && (
+                            <div style={{ marginTop: "30px" }}>
+                              <img
+                                src={post.imageUrl}
+                                alt={post.title || post.caption || 'Announcement'}
+                                style={{
+                                  maxWidth: "100%",
+                                  maxHeight: "300px",
+                                  objectFit: "contain",
+                                  borderRadius: "15px",
+                                  boxShadow: "0 5px 15px rgba(0,0,0,0.2)"
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+
+                    </div>
+                  </div>
+                );
+              })}
+            </Slider>
+          </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1440 100"
+            preserveAspectRatio="none"
+            className="position-absolute top-0 start-0 w-100"
+            style={{ transform: "rotate(180deg)" }}
+          >
+            <path
+              fill="#F8FDFF"
+              d="M0,64L60,69.3C120,75,240,85,360,85.3C480,85,600,75,720,74.7C840,75,960,85,1080,90.7C1200,96,1320,96,1380,85.3L1440,75V100H0Z"
+            ></path>
+          </svg>
+        </section>
+      )}
 
       {/* ===================== ABOUT (Glass Panel) ===================== */}
       <section
@@ -242,6 +475,7 @@ const Home = () => {
           </div>
         </div>
       </section>
+
 
 
       {/* ===================== PROGRAMS ===================== */}
@@ -646,169 +880,7 @@ const Home = () => {
           style={{ fill: '#bae2fdff' }}
         ></path>
       </svg>
-      <section
-        id="testimonials"
-        className="py-5 text-center"
-        style={{
-          background: "linear-gradient(180deg, #F9FDFF 0%, #E8F9FF 100%)",
-        }}
-        data-aos="fade-up"
-        data-aos-duration="1000"
-        data-aos-offset="100"
-      >
-        <div className="container">
-          <h2
-            className="fw-bold mb-3"
-            style={{
-              color: "#0077B6",
-              textShadow: "0 0 8px rgba(0,180,216,0.2)",
-            }}
-            data-aos="fade-down"
-            data-aos-delay="100"
-          >
-            What Our Partners Say 💬
-          </h2>
-
-          <p
-            className="text-muted mb-5"
-            data-aos="fade-up"
-            data-aos-delay="200"
-          >
-            Trusted by leading schools, academies, and resorts across the region.
-          </p>
-
-          <div className="row g-4">
-            {[
-              {
-                name: "Director, Metro Sports Academy",
-                text: "Bluefins transformed our aquatic program with professional training and excellent management. Our students' performance improved significantly.",
-                emoji: "🏫",
-              },
-              {
-                name: "Manager, Luxury Resort",
-                text: "Outstanding pool management and guest training services. The team is professional, responsive, and maintains impeccable facility standards.",
-                emoji: "�️",
-              },
-              {
-                name: "Principal, Valley International School",
-                text: "Excellent coaching programs and detailed performance reports. Highly recommended for institutional partnerships.",
-                emoji: "🎓",
-              },
-            ].map((t, i) => (
-              <div
-                className="col-md-4"
-                key={i}
-                data-aos="zoom-in-up"
-                data-aos-delay={i * 200}
-                data-aos-duration="1000"
-              >
-                <div
-                  className="card h-100 border-0 shadow-sm p-4 rounded-4"
-                  style={{
-                    background:
-                      "linear-gradient(145deg, rgba(255,255,255,0.9), rgba(230,250,255,0.95))",
-                    boxShadow: "0 8px 30px rgba(0,180,216,0.15)",
-                    transition: "all 0.4s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-6px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 12px 40px rgba(0,180,216,0.25)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow =
-                      "0 8px 30px rgba(0,180,216,0.15)";
-                  }}
-                >
-                  {/* Avatar */}
-                  <div
-                    className="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-                    style={{
-                      width: "70px",
-                      height: "70px",
-                      background:
-                        "linear-gradient(135deg, #00B4D8, #48CAE4, #80ED99)",
-                      color: "white",
-                      fontSize: "2rem",
-                      boxShadow: "0 0 18px rgba(0,180,216,0.4)",
-                    }}
-                    data-aos="zoom-in"
-                    data-aos-delay={i * 250 + 100}
-                  >
-                    {t.emoji}
-                  </div>
-
-                  {/* Rating */}
-                  <div
-                    className="mb-2"
-                    style={{
-                      color: "#FFD166",
-                      fontSize: "1.1rem",
-                      letterSpacing: "2px",
-                    }}
-                    data-aos="fade-up"
-                    data-aos-delay={i * 250 + 150}
-                  >
-                    ★★★★★
-                  </div>
-
-                  {/* Text */}
-                  <p
-                    className="mb-3"
-                    style={{ color: "#475569", fontSize: "0.95rem" }}
-                    data-aos="fade-up"
-                    data-aos-delay={i * 250 + 200}
-                  >
-                    “{t.text}”
-                  </p>
-
-                  {/* Name */}
-                  <div
-                    className="fw-semibold"
-                    style={{ color: "#0077B6" }}
-                    data-aos="fade-up"
-                    data-aos-delay={i * 250 + 250}
-                  >
-                    {t.name}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* CTA */}
-          <div
-            className="mt-5"
-            data-aos="zoom-in-up"
-            data-aos-delay="700"
-            data-aos-duration="1000"
-          >
-            <NavLink
-              to="/contact"
-              className="btn fw-semibold rounded-pill px-4 py-2 text-white"
-              style={{
-                background: "linear-gradient(90deg, #00B4D8, #48CAE4, #80ED99)",
-                border: "none",
-                boxShadow: "0 0 20px rgba(0,180,216,0.25)",
-                transition: "all 0.4s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-3px)";
-                e.currentTarget.style.boxShadow =
-                  "0 0 30px rgba(72,202,228,0.5)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow =
-                  "0 0 20px rgba(0,180,216,0.25)";
-              }}
-            >
-              Share Your Experience
-            </NavLink>
-          </div>
-        </div>
-      </section>
+   
 
 
 
@@ -821,7 +893,7 @@ const Home = () => {
           background: "linear-gradient(135deg, #00B4D8, #48CAE4, #90E0EF)",
           color: "#ffffff",
         }}
-     
+
       >
         {/* Floating Glow Orbs */}
         <div
@@ -881,7 +953,7 @@ const Home = () => {
             data-aos="fade-up"
             data-aos-delay="400"
           >
-            Let's partner to deliver professional swimming training and pool management solutions 
+            Let's partner to deliver professional swimming training and pool management solutions
             that exceed expectations. Contact us for a consultation and proposal.
           </p>
 

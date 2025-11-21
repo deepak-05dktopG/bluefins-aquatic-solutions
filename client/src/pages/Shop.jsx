@@ -395,7 +395,7 @@ const Shop = () => {
               { icon: "🚚", title: "Fast Delivery", desc: "Quick shipping across Tamil Nadu & Kerala" },
               { icon: "💯", title: "Quality Assured", desc: "Premium brands and certified products" },
               { icon: "💰", title: "Best Prices", desc: "Competitive pricing for bulk orders" },
-              { icon: "🔄", title: "Easy Returns", desc: "30-day return policy on all items" },
+              { icon: "🔄", title: "Easy Returns", desc: "7-day return policy on all items" },
             ].map((item, i) => (
               <div className="col-md-6 col-lg-3" key={i} data-aos="zoom-in" data-aos-delay={i * 100}>
                 <div

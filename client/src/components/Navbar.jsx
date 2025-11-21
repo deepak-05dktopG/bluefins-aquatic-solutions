@@ -81,7 +81,7 @@ const Navbar = () => {
         expand="lg"
         fixed="top"
         style={navbarStyle}
-        className="py-3"
+        className="py-1"
       >
         <Container>
           {/* Brand */}
@@ -99,7 +99,16 @@ const Navbar = () => {
             }}
             style={{ cursor: "pointer" }}
           >
-            <FaWater className="me-2" size={26} style={{ color: "#fff" }} />
+            <img 
+              src="/assets/Logo.png" 
+              alt="Bluefins Logo" 
+              style={{ 
+                height: "45px", 
+                width: "auto", 
+                marginRight: "10px",
+                filter: isScrolled ? "none" : "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35))"
+              }} 
+            />
             <span
               style={{
                 color: "#fff",
