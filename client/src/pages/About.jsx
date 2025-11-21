@@ -688,7 +688,6 @@ const About = () => {
             <div className="col-lg-6" data-aos="fade-left" data-aos-delay="200">
               <div
                 style={{
-                  background: "linear-gradient(135deg, rgba(255,107,107,0.08), rgba(78,205,196,0.08))",
                   borderRadius: "24px",
                   padding: "50px 40px",
                   border: "3px solid transparent",
