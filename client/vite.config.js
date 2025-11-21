@@ -14,7 +14,7 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'bootstrap-vendor': ['react-bootstrap', 'bootstrap'],
-          'animation-vendor': ['aos', 'framer-motion', 'react-spring'],
+          'animation-vendor': ['aos', 'framer-motion', '@react-spring/web'],
         }
       }
     }
