@@ -273,9 +273,9 @@ const Footer = () => {
         >
           © {new Date().getFullYear()} Blue Fins Swimming Academy. All rights reserved.
           <span style={{ margin: "0 0.5rem" }}>|</span> Designed by
-          <span className="fw-semibold" style={{ color: "#FFF" }}>
-            Deepak Digital Craft
-          </span>
+          <a href="https://deepakdigitalcraft.tech/" className="fw-semibold">
+            🔗Deepak_Digital_Craft
+          </a>
         </p>
       </Container>
 

@@ -8,6 +8,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 const Home = () => {
   const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     AOS.init({
@@ -23,13 +24,16 @@ const Home = () => {
 
   const fetchPosts = async () => {
     try {
+      setLoading(true);
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts`);
       const data = await response.json();
       if (data.success) {
         setPosts(data.data);
+        setLoading(false);
       }
     } catch (error) {
       console.error('Error fetching posts:', error);
+      setLoading(false);
     }
   };
 
@@ -197,14 +201,13 @@ const Home = () => {
         </svg>
       </section>
       {/* ===================== ANNOUNCEMENTS & POSTS ===================== */}
-      {posts.length > 0 && (
-        <section style={{
-          padding: "50px 0",
-          background: "linear-gradient(135deg, #001f3f 0%, #0077B6 50%, #00B4D8 100%)",
-          position: "relative",
-          overflow: "hidden"
-        }}>
-          <style>{`
+      <section style={{
+        padding: "50px 0",
+        background: "linear-gradient(135deg, #001f3f 0%, #0077B6 50%, #00B4D8 100%)",
+        position: "relative",
+        overflow: "hidden"
+      }}>
+        <style>{`
             .slick-dots {
               bottom: 25px !important;
             }
@@ -222,17 +225,109 @@ const Home = () => {
               display: none !important;
             }
           `}</style>
-
-          <div className="">
-            <div className="text-center" data-aos="fade-up">
-              <h3 className="fw-bold" style={{ color: "#fff", fontSize: "2rem", textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}>
-                Latest Announcements
-              </h3>
-              <p style={{ color: "#90E0EF", fontSize: "1.2rem", fontWeight: "500" }}>
-                Stay updated with our latest news and achievements
-              </p>
+        {/* heading for announcement */}
+        <div className="">
+          <div className="text-center" data-aos="fade-up">
+            <h3 className="fw-bold" style={{ color: "#fff", fontSize: "2rem", textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}>
+              Latest Announcements
+            </h3>
+            <p style={{ color: "#90E0EF", fontSize: "1.2rem", fontWeight: "500" }}>
+              Stay updated with our latest news and achievements
+            </p>
+          </div>
+          {loading && ( 
+            <div className="text-center py-5" data-aos="fade-up">
+              <div style={{ position: "relative", display: "inline-block" }}>
+                {/* Outer rotating ring */}
+                <div
+                  style={{
+                    width: "80px",
+                    height: "80px",
+                    border: "4px solid rgba(255,255,255,0.2)",
+                    borderTop: "4px solid #90E0EF",
+                    borderRadius: "50%",
+                    animation: "spin 1s linear infinite",
+                    position: "relative",
+                    margin: "0 auto 20px"
+                  }}
+                >
+                  {/* Inner pulsing circle */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      width: "50px",
+                      height: "50px",
+                      background: "radial-gradient(circle, rgba(144,224,239,0.8), transparent)",
+                      borderRadius: "50%",
+                      animation: "pulse 1.5s ease-in-out infinite"
+                    }}
+                  />
+                </div>
+                <style>{`
+                  @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+                  @keyframes pulse {
+                    0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+                    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+                  }
+                  @keyframes glow {
+                    0%, 100% { text-shadow: 0 0 10px rgba(144,224,239,0.5); }
+                    50% { text-shadow: 0 0 20px rgba(144,224,239,1), 0 0 30px rgba(72,202,228,0.8); }
+                  }
+                `}</style>
+              </div>
+              <div 
+                style={{ 
+                  color: "#fff", 
+                  fontSize: "1.2rem", 
+                  fontWeight: "600",
+                  animation: "glow 2s ease-in-out infinite",
+                  letterSpacing: "2px"
+                }}
+              >
+                LOADING
+                <span style={{ animation: "pulse 1s infinite" }}>.</span>
+                <span style={{ animation: "pulse 1s infinite 0.2s" }}>.</span>
+                <span style={{ animation: "pulse 1s infinite 0.4s" }}>.</span>
+              </div>
             </div>
-
+          )}
+          {posts.length == 0 && !loading && (
+            <div className="text-center py-5" data-aos="fade-up">
+              <div
+                style={{
+                  display: "inline-block",
+                  padding: "20px 40px",
+                  background: "rgba(255,255,255,0.1)",
+                  border: "2px solid rgba(255,255,255,0.3)",
+                  borderRadius: "20px",
+                  backdropFilter: "blur(10px)",
+                  boxShadow: "0 8px 30px rgba(0,0,0,0.2)"
+                }}
+              >
+                <div style={{ fontSize: "3rem", marginBottom: "10px" }}>📢</div>
+                <div 
+                  style={{ 
+                    color: "#fff", 
+                    fontSize: "1.3rem", 
+                    fontWeight: "600",
+                    textShadow: "0 2px 10px rgba(0,0,0,0.3)"
+                  }}
+                >
+                  No announcements available
+                </div>
+                <div style={{ color: "#90E0EF", fontSize: "0.9rem", marginTop: "8px" }}>
+                  Check back soon for updates!
+                </div>
+              </div>
+            </div>
+          )}
+          {posts.length > 0 && (
             <Slider
               dots={true}
               arrows={false}
@@ -397,21 +492,22 @@ const Home = () => {
                 );
               })}
             </Slider>
-          </div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 1440 100"
-            preserveAspectRatio="none"
-            className="position-absolute top-0 start-0 w-100"
-            style={{ transform: "rotate(180deg)" }}
-          >
-            <path
-              fill="#F8FDFF"
-              d="M0,64L60,69.3C120,75,240,85,360,85.3C480,85,600,75,720,74.7C840,75,960,85,1080,90.7C1200,96,1320,96,1380,85.3L1440,75V100H0Z"
-            ></path>
-          </svg>
-        </section>
-      )}
+          )}
+
+        </div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1440 100"
+          preserveAspectRatio="none"
+          className="position-absolute top-0 start-0 w-100"
+          style={{ transform: "rotate(180deg)" }}
+        >
+          <path
+            fill="#F8FDFF"
+            d="M0,64L60,69.3C120,75,240,85,360,85.3C480,85,600,75,720,74.7C840,75,960,85,1080,90.7C1200,96,1320,96,1380,85.3L1440,75V100H0Z"
+          ></path>
+        </svg>
+      </section>
 
       {/* ===================== ABOUT (Glass Panel) ===================== */}
       <section
@@ -801,7 +897,7 @@ const Home = () => {
           <div className="row g-3 mt-2">
             {[
               "https://plus.unsplash.com/premium_photo-1719501573802-8f2ae92cd7ee?auto=format&fit=crop&q=80&w=1333",
-              "https://images.unsplash.com/photo-1701602346238-41222bfb4896?auto=format&fit=crop&q=80&w=880",
+              "/public/assets/poolimages/pool1.jpg",
               "https://images.unsplash.com/photo-1633430480411-9b0e11d8202e?auto=format&fit=crop&q=80&w=1332",
               "https://images.unsplash.com/photo-1657673461323-206b06c9d386?auto=format&fit=crop&q=80&w=1170",
               "https://images.unsplash.com/photo-1592010411469-30da799fafa3?auto=format&fit=crop&q=80&w=1170",
@@ -880,7 +976,7 @@ const Home = () => {
           style={{ fill: '#bae2fdff' }}
         ></path>
       </svg>
-   
+
 
 
 

@@ -17,61 +17,124 @@ const Shop = () => {
     AOS.refresh();
   }, []);
 
-  // Placeholder products data with category colors
+  // Swimming accessories products
   const products = [
     {
       id: 1,
-      name: "Swimming Kit - Basic",
-      category: "kits",
-      price: "₹2,500",
-      description: "Essential swimming kit for beginners",
-      image: "https://via.placeholder.com/300x200?text=Swimming+Kit",
-      color: "#FF6B6B",
+      name: "Professional Swimming Goggles",
+      category: "accessories",
+      price: "₹899",
+      description: "Anti-fog swimming goggles with UV protection",
+      image: "/assets/accesosaries/goggles1.jpg",
+      color: "#4ECDC4",
     },
     {
       id: 2,
-      name: "Swimming Kit - Professional",
-      category: "kits",
-      price: "₹5,999",
-      description: "Professional-grade swimming kit",
-      image: "https://via.placeholder.com/300x200?text=Professional+Kit",
-      color: "#FF6B6B",
+      name: "Mirrored Racing Goggles",
+      category: "accessories",
+      price: "₹1,199",
+      description: "Competitive racing goggles with mirrored lens",
+      image: "/assets/accesosaries/goggles2.jpg",
+      color: "#4ECDC4",
     },
     {
       id: 3,
-      name: "Goggles - Anti-Fog",
+      name: "Junior Swimming Goggles",
       category: "accessories",
-      price: "₹899",
-      description: "High-quality anti-fog swimming goggles",
-      image: "https://via.placeholder.com/300x200?text=Goggles",
+      price: "₹699",
+      description: "Comfortable goggles designed for kids",
+      image: "/assets/accesosaries/goggles3.jpg",
       color: "#4ECDC4",
     },
     {
       id: 4,
-      name: "Swimsuit - Kids",
-      category: "swimwear",
-      price: "₹1,299",
-      description: "Comfortable and durable kids swimsuit",
-      image: "https://via.placeholder.com/300x200?text=Kids+Swimsuit",
-      color: "#667eea",
+      name: "Premium Anti-Fog Goggles",
+      category: "accessories",
+      price: "₹1,499",
+      description: "Premium goggles with advanced anti-fog technology",
+      image: "/assets/accesosaries/goggles4.jpg",
+      color: "#4ECDC4",
     },
     {
       id: 5,
-      name: "Swim Cap - Training",
+      name: "Classic Swimming Goggles",
       category: "accessories",
-      price: "₹399",
-      description: "Professional training swim cap",
-      image: "https://via.placeholder.com/300x200?text=Swim+Cap",
+      price: "₹799",
+      description: "Classic design with comfortable silicone seal",
+      image: "/assets/accesosaries/goggles5.jpg",
       color: "#4ECDC4",
     },
     {
       id: 6,
-      name: "Fins - Performance",
+      name: "Pull Buoy - Standard",
       category: "accessories",
-      price: "₹1,599",
-      description: "Professional performance fins",
-      image: "https://via.placeholder.com/300x200?text=Fins",
-      color: "#4ECDC4",
+      price: "₹599",
+      description: "Essential training aid for upper body strength",
+      image: "/assets/accesosaries/pullbuoy1.jpg",
+      color: "#667eea",
+    },
+    {
+      id: 7,
+      name: "Pull Buoy - Professional",
+      category: "accessories",
+      price: "₹799",
+      description: "Professional-grade pull buoy for advanced training",
+      image: "/assets/accesosaries/pullbuoy2.jpg",
+      color: "#667eea",
+    },
+    {
+      id: 8,
+      name: "Pull Buoy - Ergonomic",
+      category: "accessories",
+      price: "₹899",
+      description: "Ergonomic design for maximum comfort during training",
+      image: "/assets/accesosaries/pullbuoy3.jpg",
+      color: "#667eea",
+    },
+    {
+      id: 9,
+      name: "Pull Buoy - Competition",
+      category: "accessories",
+      price: "₹1,099",
+      description: "Competition-grade pull buoy for serious swimmers",
+      image: "/assets/accesosaries/pullbuoy4.jpg",
+      color: "#667eea",
+    },
+    {
+      id: 10,
+      name: "Swimming Kickboard - Basic",
+      category: "accessories",
+      price: "₹499",
+      description: "Durable kickboard for leg strength training",
+      image: "/assets/accesosaries/swimmingboard1.jpg",
+      color: "#FF6B6B",
+    },
+    {
+      id: 11,
+      name: "Swimming Kickboard - Pro",
+      category: "accessories",
+      price: "₹699",
+      description: "Professional kickboard with ergonomic grip",
+      image: "/assets/accesosaries/swimmingboard2.jpg",
+      color: "#FF6B6B",
+    },
+    {
+      id: 12,
+      name: "Swimming Kickboard - Junior",
+      category: "accessories",
+      price: "₹449",
+      description: "Lightweight kickboard perfect for kids",
+      image: "/assets/accesosaries/swimmingboard3.jpg",
+      color: "#FF6B6B",
+    },
+    {
+      id: 13,
+      name: "Swimming Kickboard - Advanced",
+      category: "accessories",
+      price: "₹799",
+      description: "Advanced kickboard with hydrodynamic design",
+      image: "/assets/accesosaries/swimmingboard4.jpg",
+      color: "#FF6B6B",
     },
   ];
 
@@ -233,12 +296,12 @@ const Shop = () => {
               >
                 <div
                   style={{
-                    fontSize: "15rem",
+                    fontSize: "1rem",
                     opacity: 0.25,
                     animation: "floatUp 4s ease-in-out infinite",
                   }}
                 >
-                 <img src="https://images.unsplash.com/photo-1659303388062-d61383748059?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170" alt="" />
+                 <img src="/public/assets/accesosaries/swimmingboard4.jpg" alt="🏊" />
                 </div>
               </div>
             </div>
@@ -269,7 +332,7 @@ const Shop = () => {
               Browse Our <span style={{ background: "linear-gradient(90deg, #FF6B6B, #667eea)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Collections</span>
             </h3>
           </div>
-          <div className="d-flex justify-content-center flex-wrap" data-aos="fade-up" data-aos-delay="200">
+          {/* <div className="d-flex justify-content-center flex-wrap" data-aos="fade-up" data-aos-delay="200">
             <button
               className={`category-btn ${selectedCategory === "all" ? "active" : ""}`}
               onClick={() => setSelectedCategory("all")}
@@ -294,7 +357,7 @@ const Shop = () => {
             >
               Accessories
             </button>
-          </div>
+          </div> */}
         </div>
       </section>
 
