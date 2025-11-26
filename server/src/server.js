@@ -18,7 +18,8 @@ const allowedOrigins = [
   'http://localhost:3000',
   'https://blufinsaquatics.netlify.app',
   'https://bluefins.netlify.app',
-  'https://bluefins-aquatic-solutions.netlify.app'
+  'https://bluefins-aquatic-solutions.netlify.app',
+  "https://bluefinsaquaticsolutions.com"
 ]
 
 app.use(cors({
