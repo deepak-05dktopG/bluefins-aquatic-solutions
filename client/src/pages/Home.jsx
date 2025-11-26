@@ -8,6 +8,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 const Home = () => {
   const [posts, setPosts] = useState([]);
+  const [galleryImages, setGalleryImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,6 +21,7 @@ const Home = () => {
     });
     AOS.refresh();
     fetchPosts();
+    fetchGallery();
   }, []);
 
   const fetchPosts = async () => {
@@ -34,6 +36,18 @@ const Home = () => {
     } catch (error) {
       console.error('Error fetching posts:', error);
       setLoading(false);
+    }
+  };
+
+  const fetchGallery = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/gallery?isActive=true`);
+      const data = await response.json();
+      if (data.success) {
+        setGalleryImages(data.data); // Show all gallery images
+      }
+    } catch (error) {
+      console.error('Error fetching gallery:', error);
     }
   };
 
@@ -894,63 +908,88 @@ const Home = () => {
             Every splash tells a story.
           </p>
 
-          <div className="row g-3 mt-2">
-            {[
-              "https://plus.unsplash.com/premium_photo-1719501573802-8f2ae92cd7ee?auto=format&fit=crop&q=80&w=1333",
-              "/assets/poolimages/pool1.jpg",
-              "https://images.unsplash.com/photo-1633430480411-9b0e11d8202e?auto=format&fit=crop&q=80&w=1332",
-              "https://images.unsplash.com/photo-1657673461323-206b06c9d386?auto=format&fit=crop&q=80&w=1170",
-              "https://images.unsplash.com/photo-1592010411469-30da799fafa3?auto=format&fit=crop&q=80&w=1170",
-              "https://images.unsplash.com/photo-1730244548329-4ae2f4fcaa7c?auto=format&fit=crop&q=80&w=1332",
-            ].map((src, i) => (
-              <div
-                className="col-6 col-md-4"
-                key={i}
-                data-aos="zoom-in"
-                data-aos-delay={i * 150}
-                data-aos-duration="900"
-              >
+          {galleryImages.length === 0 ? (
+            <div className="row g-3 mt-2">
+              <div className="col-12">
                 <div
-                  className="soft"
                   style={{
-                    overflow: "hidden",
-                    borderRadius: 16,
-                    boxShadow: "0 8px 25px rgba(0, 180, 216, 0.1)",
-                    transition: "transform .35s ease",
+                    background: "rgba(255, 255, 255, 0.8)",
+                    borderRadius: "20px",
+                    padding: "60px 40px",
+                    textAlign: "center",
+                    boxShadow: "0 8px 30px rgba(0, 180, 216, 0.15)",
                   }}
+                  data-aos="fade-up"
+                  data-aos-delay="200"
                 >
-                  <img
-                    src={src}
-                    alt={`Gallery ${i + 1}`}
-                    className="img-fluid"
-                    style={{
-                      transform: "scale(1.02)",
-                      transition: "transform .35s ease",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.transform = "scale(1.08)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.transform = "scale(1.02)")
-                    }
-                  />
+                  <div style={{ fontSize: "4rem", marginBottom: "20px" }}>🖼️</div>
+                  <h3 style={{ color: "#0077B6", fontSize: "1.8rem", fontWeight: "700", marginBottom: "10px" }}>
+                    No Gallery Images Yet
+                  </h3>
+                  <p style={{ color: "#64748b", fontSize: "1.1rem", marginBottom: "0" }}>
+                    Gallery images will appear here once they are uploaded from the admin panel
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <>
+              <div className="row g-3 mt-2">
+                {galleryImages.map((image, i) => (
+                  <div
+                    className="col-6 col-md-4"
+                    key={image._id}
+                    data-aos="zoom-in"
+                    data-aos-delay={i * 150}
+                    data-aos-duration="900"
+                  >
+                    <div
+                      className="soft"
+                      style={{
+                        overflow: "hidden",
+                        borderRadius: 16,
+                        boxShadow: "0 8px 25px rgba(0, 180, 216, 0.1)",
+                        transition: "transform .35s ease",
+                      }}
+                    >
+                      <img
+                        src={image.imageUrl}
+                        alt={image.title || `Gallery ${i + 1}`}
+                        title={image.description || image.title}
+                        className="img-fluid"
+                        style={{
+                          transform: "scale(1.02)",
+                          transition: "transform .35s ease",
+                          width: "100%",
+                          height: "250px",
+                          objectFit: "cover",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.transform = "scale(1.08)")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.transform = "scale(1.02)")
+                        }
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-          <NavLink
-            to="/about"
-            className="btn btn-primary rounded-pill mt-4 px-4 py-2 soft glow-hover"
-            style={{
-              background: "#0077B6",
-              borderColor: "#0077B6",
-            }}
-            data-aos="zoom-in-up"
-            data-aos-delay="500"
-          >
-            View More
-          </NavLink>
+              <NavLink
+                to="/about"
+                className="btn btn-primary rounded-pill mt-4 px-4 py-2 soft glow-hover"
+                style={{
+                  background: "#0077B6",
+                  borderColor: "#0077B6",
+                }}
+                data-aos="zoom-in-up"
+                data-aos-delay="500"
+              >
+                View More
+              </NavLink>
+            </>
+          )}
         </div>
       </section>
 

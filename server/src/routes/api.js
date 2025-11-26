@@ -24,6 +24,14 @@ import {
   incrementClick,
   getWorksheetStats
 } from '../controllers/worksheetController.js';
+import {
+  createGalleryImage,
+  getAllGalleryImages,
+  getGalleryImageById,
+  updateGalleryImage,
+  deleteGalleryImage,
+  getGalleryStats
+} from '../controllers/galleryController.js';
 
 const router = express.Router();
 
@@ -56,5 +64,15 @@ router.post('/worksheets', createWorksheet);
 router.patch('/worksheets/:id', updateWorksheet);
 router.delete('/worksheets/:id', deleteWorksheet);
 router.patch('/worksheets/:id/click', incrementClick);
+
+// Gallery routes
+// Public routes
+router.get('/gallery', getAllGalleryImages);
+router.get('/gallery/:id', getGalleryImageById);
+// Admin routes
+router.post('/gallery', createGalleryImage);
+router.get('/gallery/stats', getGalleryStats);
+router.patch('/gallery/:id', updateGalleryImage);
+router.delete('/gallery/:id', deleteGalleryImage);
 
 export default router;
