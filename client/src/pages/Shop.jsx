@@ -159,12 +159,26 @@ const Shop = () => {
     autoplay: true,
     autoplaySpeed: 3000,
     pauseOnHover: true,
+    arrows: true,
+    centerMode: false,
+    variableWidth: false,
     responsive: [
+      {
+        breakpoint: 1200,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+          arrows: true,
+          dots: true,
+        }
+      },
       {
         breakpoint: 1024,
         settings: {
           slidesToShow: 2,
           slidesToScroll: 1,
+          arrows: true,
+          dots: true,
         }
       },
       {
@@ -172,6 +186,21 @@ const Shop = () => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
+          arrows: false,
+          dots: true,
+          centerMode: false,
+          variableWidth: false,
+        }
+      },
+      {
+        breakpoint: 576,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          arrows: false,
+          dots: true,
+          centerMode: false,
+          variableWidth: false,
         }
       }
     ]
@@ -272,6 +301,97 @@ const Shop = () => {
           background: rgba(255,255,255,0.6);
           border-radius: 20px;
           backdrop-filter: blur(10px);
+        }
+        
+        /* Slick Slider Mobile Fixes */
+        .slick-slider {
+          margin: 0 -10px;
+        }
+        
+        .slick-slide {
+          padding: 0 10px;
+        }
+        
+        .slick-list {
+          overflow: hidden;
+        }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+          .category-section {
+            margin-bottom: 60px;
+          }
+          .category-header {
+            padding: 20px 15px;
+            margin-bottom: 30px;
+          }
+          .category-header h2 {
+            font-size: 1.8rem !important;
+          }
+          .category-header p {
+            font-size: 0.95rem !important;
+          }
+          .product-card {
+            margin: 5px auto !important;
+            max-width: 100% !important;
+            width: 100% !important;
+          }
+          .product-card:hover {
+            transform: translateY(-5px) scale(1.01);
+          }
+          .slick-dots {
+            bottom: -35px !important;
+          }
+          
+          /* Force single slide on mobile */
+          .slick-slider {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+          }
+          .slick-list {
+            overflow: hidden !important;
+            width: 100% !important;
+          }
+          .slick-track {
+            display: flex !important;
+            width: 100% !important;
+          }
+          .slick-slide {
+            padding: 0 8px !important;
+            float: none !important;
+            height: auto !important;
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+          }
+          .slick-slide > div {
+            width: 100% !important;
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .slick-slide > div > div {
+            width: 100% !important;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .category-header {
+            padding: 15px 10px;
+          }
+          .category-header h2 {
+            font-size: 1.5rem !important;
+          }
+          .category-header div[style*="fontSize: 3rem"] {
+            font-size: 2.5rem !important;
+          }
+          .product-card {
+            margin: 0 auto !important;
+          }
+          .product-image {
+            height: 250px !important;
+          }
         }
       `}</style>
       <Navbar />
@@ -406,7 +526,7 @@ const Shop = () => {
               {/* Products Carousel */}
               <Slider {...carouselSettings}>
                 {category.images.map((imagePath, i) => (
-                  <div key={i} style={{ padding: "0 15px" }}>
+                  <div key={i}>
                     <div 
                       className="product-card h-100"
                       style={{
