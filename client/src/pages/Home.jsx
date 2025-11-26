@@ -943,26 +943,21 @@ const Home = () => {
                     data-aos-delay={i * 150}
                     data-aos-duration="900"
                   >
-                    <div
+                    <span
                       className="soft"
-                      style={{
-                        overflow: "hidden",
-                        borderRadius: 16,
-                        boxShadow: "0 8px 25px rgba(0, 180, 216, 0.1)",
-                        transition: "transform .35s ease",
-                      }}
+                      
                     >
                       <img
                         src={image.imageUrl}
                         alt={image.title || `Gallery ${i + 1}`}
                         title={image.description || image.title}
-                        className="img-fluid"
+                        className="img-fluid "
                         style={{
                           transform: "scale(1.02)",
                           transition: "transform .35s ease",
                           width: "100%",
                           height: "250px",
-                          objectFit: "cover",
+                          objectFit: "contain",
                         }}
                         onMouseEnter={(e) =>
                           (e.currentTarget.style.transform = "scale(1.08)")
@@ -971,7 +966,7 @@ const Home = () => {
                           (e.currentTarget.style.transform = "scale(1.02)")
                         }
                       />
-                    </div>
+                    </span>
                   </div>
                 ))}
               </div>

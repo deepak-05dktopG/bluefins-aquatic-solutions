@@ -2,9 +2,12 @@ import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import Navbar from "../components/Navbar";
+
 const Shop = () => {
-  const [selectedCategory, setSelectedCategory] = useState("all");
 
   useEffect(() => {
     AOS.init({
@@ -17,130 +20,162 @@ const Shop = () => {
     AOS.refresh();
   }, []);
 
-  // Swimming accessories products
-  const products = [
-    {
-      id: 1,
-      name: "Professional Swimming Goggles",
-      category: "accessories",
-      price: "₹899",
-      description: "Anti-fog swimming goggles with UV protection",
-      image: "/assets/accesosaries/goggles1.jpg",
+  // Organized products by type - dynamically loaded from folder structure
+  const productCategories = {
+    uvShieldAdult: {
+      title: "UV Shield Goggles - Adult",
+      description: "Advanced UV protection swimming goggles for adults",
       color: "#4ECDC4",
+      icon: "🥽",
+      images: [
+        "/assets/accesosaries/uv shield for adult/goggles1.jpg",
+        "/assets/accesosaries/uv shield for adult/goggles2.jpg",
+        "/assets/accesosaries/uv shield for adult/goggles3.jpg",
+      ]
     },
-    {
-      id: 2,
-      name: "Mirrored Racing Goggles",
-      category: "accessories",
-      price: "₹1,199",
-      description: "Competitive racing goggles with mirrored lens",
-      image: "/assets/accesosaries/goggles2.jpg",
-      color: "#4ECDC4",
-    },
-    {
-      id: 3,
-      name: "Junior Swimming Goggles",
-      category: "accessories",
-      price: "₹699",
-      description: "Comfortable goggles designed for kids",
-      image: "/assets/accesosaries/goggles3.jpg",
-      color: "#4ECDC4",
-    },
-    {
-      id: 4,
-      name: "Premium Anti-Fog Goggles",
-      category: "accessories",
-      price: "₹1,499",
-      description: "Premium goggles with advanced anti-fog technology",
-      image: "/assets/accesosaries/goggles4.jpg",
-      color: "#4ECDC4",
-    },
-    {
-      id: 5,
-      name: "Classic Swimming Goggles",
-      category: "accessories",
-      price: "₹799",
-      description: "Classic design with comfortable silicone seal",
-      image: "/assets/accesosaries/goggles5.jpg",
-      color: "#4ECDC4",
-    },
-    {
-      id: 6,
-      name: "Pull Buoy - Standard",
-      category: "accessories",
-      price: "₹599",
-      description: "Essential training aid for upper body strength",
-      image: "/assets/accesosaries/pullbuoy1.jpg",
-      color: "#667eea",
-    },
-    {
-      id: 7,
-      name: "Pull Buoy - Professional",
-      category: "accessories",
-      price: "₹799",
-      description: "Professional-grade pull buoy for advanced training",
-      image: "/assets/accesosaries/pullbuoy2.jpg",
-      color: "#667eea",
-    },
-    {
-      id: 8,
-      name: "Pull Buoy - Ergonomic",
-      category: "accessories",
-      price: "₹899",
-      description: "Ergonomic design for maximum comfort during training",
-      image: "/assets/accesosaries/pullbuoy3.jpg",
-      color: "#667eea",
-    },
-    {
-      id: 9,
-      name: "Pull Buoy - Competition",
-      category: "accessories",
-      price: "₹1,099",
-      description: "Competition-grade pull buoy for serious swimmers",
-      image: "/assets/accesosaries/pullbuoy4.jpg",
-      color: "#667eea",
-    },
-    {
-      id: 10,
-      name: "Swimming Kickboard - Basic",
-      category: "accessories",
-      price: "₹499",
-      description: "Durable kickboard for leg strength training",
-      image: "/assets/accesosaries/swimmingboard1.jpg",
+    uvShieldKids: {
+      title: "UV Shield Goggles - Kids",
+      description: "UV protection swimming goggles specially designed for children",
       color: "#FF6B6B",
+      icon: "🧒",
+      images: [
+        "/assets/accesosaries/uv shield for kids/goggles1.jpg",
+        "/assets/accesosaries/uv shield for kids/goggles2.jpg",
+        "/assets/accesosaries/uv shield for kids/goggles3.jpg",
+        "/assets/accesosaries/uv shield for kids/goggles4.jpg",
+        "/assets/accesosaries/uv shield for kids/goggles5.jpg",
+        "/assets/accesosaries/uv shield for kids/WhatsApp Image 2025-11-26 at 14.51.27_1265c5f2.jpg",
+        "/assets/accesosaries/uv shield for kids/WhatsApp Image 2025-11-26 at 14.51.27_6da8a74f.jpg",
+        "/assets/accesosaries/uv shield for kids/WhatsApp Image 2025-11-26 at 14.51.27_7b26a4b4.jpg",
+      ]
     },
-    {
-      id: 11,
-      name: "Swimming Kickboard - Pro",
-      category: "accessories",
-      price: "₹699",
-      description: "Professional kickboard with ergonomic grip",
-      image: "/assets/accesosaries/swimmingboard2.jpg",
+    airProtectionCap: {
+      title: "Air Protection Swimming Caps",
+      description: "Breathable air protection caps for comfortable swimming",
+      color: "#667eea",
+      icon: "🧢",
+      images: [
+        "/assets/accesosaries/air protection cap/WhatsApp Image 2025-11-26 at 14.53.19_ec5c9a83.jpg",
+        "/assets/accesosaries/air protection cap/WhatsApp Image 2025-11-26 at 14.53.20_555befde.jpg",
+        "/assets/accesosaries/air protection cap/WhatsApp Image 2025-11-26 at 14.53.20_8d9c0fd0.jpg",
+      ]
+    },
+    armPad: {
+      title: "Arm Floats & Pads",
+      description: "Safety arm floats and pads for beginners and kids",
+      color: "#FFD93D",
+      icon: "🏊‍♂️",
+      images: [
+        "/assets/accesosaries/arm pad/WhatsApp Image 2025-11-26 at 14.52.22_0166343b.jpg",
+        "/assets/accesosaries/arm pad/WhatsApp Image 2025-11-26 at 14.52.23_61845fce.jpg",
+        "/assets/accesosaries/arm pad/WhatsApp Image 2025-11-26 at 14.52.23_761d01f8.jpg",
+      ]
+    },
+    bubbleCap: {
+      title: "Bubble Caps - Kids & Adults",
+      description: "Comfortable bubble caps suitable for all ages",
+      color: "#FF9FF3",
+      icon: "🎈",
+      images: [
+        "/assets/accesosaries/bubble cap for kids and adults/WhatsApp Image 2025-11-26 at 14.54.23_7fc43a39.jpg",
+        "/assets/accesosaries/bubble cap for kids and adults/WhatsApp Image 2025-11-26 at 14.54.24_26163cc7.jpg",
+        "/assets/accesosaries/bubble cap for kids and adults/WhatsApp Image 2025-11-26 at 14.54.24_2ac9dfbe.jpg",
+        "/assets/accesosaries/bubble cap for kids and adults/WhatsApp Image 2025-11-26 at 14.54.24_8cb21e7d.jpg",
+      ]
+    },
+    capsKids: {
+      title: "Swimming Caps - Kids",
+      description: "Colorful and comfortable swimming caps for children",
+      color: "#4ECDC4",
+      icon: "👶",
+      images: [
+        "/assets/accesosaries/caps for kids/WhatsApp Image 2025-11-26 at 14.51.51_51dc6a94.jpg",
+        "/assets/accesosaries/caps for kids/WhatsApp Image 2025-11-26 at 14.51.52_0b30df10.jpg",
+        "/assets/accesosaries/caps for kids/WhatsApp Image 2025-11-26 at 14.51.52_1682b1c3.jpg",
+        "/assets/accesosaries/caps for kids/WhatsApp Image 2025-11-26 at 14.51.52_e6443b3b.jpg",
+      ]
+    },
+    capsKidsAdult: {
+      title: "Swimming Caps - Kids & Adults",
+      description: "Versatile swimming caps for all age groups",
+      color: "#667eea",
+      icon: "👨‍👩‍👧‍👦",
+      images: [
+        "/assets/accesosaries/caps for kids and adult/WhatsApp Image 2025-11-26 at 14.53.50_4287b254.jpg",
+        "/assets/accesosaries/caps for kids and adult/WhatsApp Image 2025-11-26 at 14.53.50_9c6f32b2.jpg",
+        "/assets/accesosaries/caps for kids and adult/WhatsApp Image 2025-11-26 at 14.53.51_3b75f113.jpg",
+        "/assets/accesosaries/caps for kids and adult/WhatsApp Image 2025-11-26 at 14.53.51_6abdf24c.jpg",
+        "/assets/accesosaries/caps for kids and adult/WhatsApp Image 2025-11-26 at 14.53.51_9d7f0947.jpg",
+        "/assets/accesosaries/caps for kids and adult/WhatsApp Image 2025-11-26 at 14.53.51_e9feafaf.jpg",
+        "/assets/accesosaries/caps for kids and adult/WhatsApp Image 2025-11-26 at 14.53.52_939a373d.jpg",
+      ]
+    },
+    fins: {
+      title: "Swimming Fins - Kids & Adults",
+      description: "High-quality swimming fins for training and fun",
       color: "#FF6B6B",
+      icon: "🦈",
+      images: [
+        "/assets/accesosaries/fins for kids and adults/WhatsApp Image 2025-11-26 at 14.52.47_2840e466.jpg",
+        "/assets/accesosaries/fins for kids and adults/WhatsApp Image 2025-11-26 at 14.52.47_aeeccdbb.jpg",
+        "/assets/accesosaries/fins for kids and adults/WhatsApp Image 2025-11-26 at 14.52.48_26341c6f.jpg",
+        "/assets/accesosaries/fins for kids and adults/WhatsApp Image 2025-11-26 at 14.52.48_6e174a8c.jpg",
+        "/assets/accesosaries/fins for kids and adults/WhatsApp Image 2025-11-26 at 14.52.48_9e74271f.jpg",
+      ]
     },
-    {
-      id: 12,
-      name: "Swimming Kickboard - Junior",
-      category: "accessories",
-      price: "₹449",
-      description: "Lightweight kickboard perfect for kids",
-      image: "/assets/accesosaries/swimmingboard3.jpg",
-      color: "#FF6B6B",
+    pullBuoys: {
+      title: "Pull Buoys",
+      description: "Essential training aids for upper body strength development",
+      color: "#764ba2",
+      icon: "🏊",
+      images: [
+        "/assets/accesosaries/pullbuoys/pullbuoy1.jpg",
+        "/assets/accesosaries/pullbuoys/pullbuoy2.jpg",
+        "/assets/accesosaries/pullbuoys/pullbuoy3.jpg",
+        "/assets/accesosaries/pullbuoys/pullbuoy4.jpg",
+      ]
     },
-    {
-      id: 13,
-      name: "Swimming Kickboard - Advanced",
-      category: "accessories",
-      price: "₹799",
-      description: "Advanced kickboard with hydrodynamic design",
-      image: "/assets/accesosaries/swimmingboard4.jpg",
-      color: "#FF6B6B",
-    },
-  ];
+    kickboards: {
+      title: "Swimming Kickboards",
+      description: "Durable kickboards for effective leg strength training",
+      color: "#f5576c",
+      icon: "🏄",
+      images: [
+        "/assets/accesosaries/swimmingboard/swimmingboard1.jpg",
+        "/assets/accesosaries/swimmingboard/swimmingboard2.jpg",
+        "/assets/accesosaries/swimmingboard/swimmingboard3.jpg",
+        "/assets/accesosaries/swimmingboard/swimmingboard4.jpg",
+      ]
+    }
+  };
 
-  const filteredProducts = selectedCategory === "all" 
-    ? products 
-    : products.filter(p => p.category === selectedCategory);
+  // Carousel settings
+  const carouselSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    pauseOnHover: true,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+        }
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        }
+      }
+    ]
+  };
 
   return (
     <div style={{ fontFamily: "Poppins, system-ui, -apple-system, sans-serif", overflowX: "hidden" }}>
@@ -215,6 +250,28 @@ const Shop = () => {
           color: white;
           border-color: transparent;
           transform: scale(1.05);
+        }
+        .slick-prev:before, .slick-next:before {
+          color: #667eea !important;
+          font-size: 30px !important;
+        }
+        .slick-dots li button:before {
+          color: #667eea !important;
+          font-size: 12px !important;
+        }
+        .slick-dots li.slick-active button:before {
+          color: #FF6B6B !important;
+        }
+        .category-section {
+          margin-bottom: 80px;
+        }
+        .category-header {
+          text-align: center;
+          margin-bottom: 40px;
+          padding: 30px 20px;
+          background: rgba(255,255,255,0.6);
+          border-radius: 20px;
+          backdrop-filter: blur(10px);
         }
       `}</style>
       <Navbar />
@@ -301,7 +358,7 @@ const Shop = () => {
                     animation: "floatUp 4s ease-in-out infinite",
                   }}
                 >
-                 <img src="/assets/accesosaries/swimmingboard4.jpg" alt="🏊" />
+                 <img src="/assets/accesosaries/bubble cap for kids and adults/WhatsApp Image 2025-11-26 at 14.54.23_7fc43a39.jpg" alt="🏊" />
                 </div>
               </div>
             </div>
@@ -324,115 +381,75 @@ const Shop = () => {
         </svg>
       </section>
 
-      {/* ===================== CATEGORY FILTERS ===================== */}
-      <section className="py-5" style={{ background: "#f5f3ff" }}>
-        <div className="container">
-          <div className="text-center mb-5" data-aos="fade-up">
-            <h3 style={{ color: "#001f3f", marginBottom: "1.5rem", fontSize: "2rem", fontWeight: "700" }}>
-              Browse Our <span style={{ background: "linear-gradient(90deg, #FF6B6B, #667eea)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Collections</span>
-            </h3>
-          </div>
-          {/* <div className="d-flex justify-content-center flex-wrap" data-aos="fade-up" data-aos-delay="200">
-            <button
-              className={`category-btn ${selectedCategory === "all" ? "active" : ""}`}
-              onClick={() => setSelectedCategory("all")}
-            >
-              All Products
-            </button>
-            <button
-              className={`category-btn ${selectedCategory === "kits" ? "active" : ""}`}
-              onClick={() => setSelectedCategory("kits")}
-            >
-              Swimming Kits
-            </button>
-            <button
-              className={`category-btn ${selectedCategory === "swimwear" ? "active" : ""}`}
-              onClick={() => setSelectedCategory("swimwear")}
-            >
-              Swimwear
-            </button>
-            <button
-              className={`category-btn ${selectedCategory === "accessories" ? "active" : ""}`}
-              onClick={() => setSelectedCategory("accessories")}
-            >
-              Accessories
-            </button>
-          </div> */}
-        </div>
-      </section>
-
-      {/* ===================== PRODUCTS GRID ===================== */}
+      {/* ===================== PRODUCTS CAROUSELS BY CATEGORY ===================== */}
       <section className="py-5" style={{ background: "linear-gradient(180deg, #f5f3ff 0%, #fff5f0 50%, #f0f9ff 100%)" }}>
         <div className="container">
-          <div className="row g-4">
-            {filteredProducts.map((product, i) => (
-              <div
-                className="col-md-6 col-lg-4"
-                key={product.id}
-                data-aos="zoom-in"
-                data-aos-delay={i * 150}
-              >
-                <div 
-                  className="product-card h-100"
-                  style={{
-                    "--color": product.color,
-                    "--color-light": product.color + "dd",
-                  }}
-                >
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="product-image"
-                  />
-                  <div className="product-info">
-                    <h5 style={{ color: product.color, fontWeight: "700", marginBottom: "0.5rem", fontSize: "1.1rem" }}>
-                      {product.name}
-                    </h5>
-                    <p style={{ color: "#666", fontSize: "0.9rem", marginBottom: "1rem", lineHeight: 1.6 }}>
-                      {product.description}
-                    </p>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      {/* <span style={{ color: product.color, fontSize: "1.3rem", fontWeight: "800" }}>
-                        {product.price}
-                      </span> */}
-                      {/* <button
+          {Object.entries(productCategories).map(([key, category], categoryIndex) => (
+            <div key={key} className="category-section" data-aos="fade-up" data-aos-delay={categoryIndex * 200}>
+              {/* Category Header */}
+              <div className="category-header">
+                <div style={{ fontSize: "3rem", marginBottom: "15px" }}>{category.icon}</div>
+                <h2 style={{ 
+                  color: category.color, 
+                  fontSize: "2.5rem", 
+                  fontWeight: "800", 
+                  marginBottom: "10px",
+                  textShadow: `2px 2px 4px ${category.color}40`
+                }}>
+                  {category.title}
+                </h2>
+                <p style={{ color: "#666", fontSize: "1.1rem", fontWeight: "500", margin: 0 }}>
+                  {category.description}
+                </p>
+              </div>
+
+              {/* Products Carousel */}
+              <Slider {...carouselSettings}>
+                {category.images.map((imagePath, i) => (
+                  <div key={i} style={{ padding: "0 15px" }}>
+                    <div 
+                      className="product-card h-100"
+                      style={{
+                        "--color": category.color,
+                        "--color-light": category.color + "dd",
+                        margin: "10px",
+                      }}
+                    >
+                      <img
+                        src={imagePath}
+                        alt={`${category.title} - ${i + 1}`}
+                        className="product-image"
                         style={{
-                          background: `linear-gradient(135deg, ${product.color}, ${product.color}dd)`,
-                          color: "white",
-                          border: "none",
-                          padding: "8px 16px",
-                          borderRadius: "12px",
-                          fontSize: "0.85rem",
-                          fontWeight: "700",
-                          cursor: "pointer",
-                          transition: "all 0.3s ease",
-                          boxShadow: `0 4px 15px ${product.color}40`,
+                          width: "100%",
+                          height: "300px",
+                          objectFit: "contain",
+                          background: "#f8f9fa",
                         }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.boxShadow = `0 8px 25px ${product.color}60`;
-                          e.currentTarget.style.transform = "scale(1.08) translateY(-2px)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.boxShadow = `0 4px 15px ${product.color}40`;
-                          e.currentTarget.style.transform = "scale(1) translateY(0)";
-                        }}
-                      >
-                        Buy
-                      </button> */}
+                      />
+                      <div className="product-info" style={{ textAlign: "center", padding: "20px" }}>
+                        <h5 style={{ 
+                          color: category.color, 
+                          fontWeight: "700", 
+                          marginBottom: "0.5rem", 
+                          fontSize: "1.1rem",
+                        }}>
+                          {category.title}
+                        </h5>
+                        <p style={{ 
+                          color: "#666", 
+                          fontSize: "0.85rem", 
+                          margin: 0,
+                          lineHeight: 1.4
+                        }}>
+                          View {i + 1} of {category.images.length}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {filteredProducts.length === 0 && (
-            <div className="text-center py-5">
-              <p style={{ color: "#666", fontSize: "1.1rem" }}>
-                No products found in this category.
-              </p>
+                ))}
+              </Slider>
             </div>
-          )}
+          ))}
         </div>
       </section>
 

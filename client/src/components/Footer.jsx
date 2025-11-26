@@ -258,7 +258,6 @@ const Footer = () => {
         <hr
           style={{
             borderTop: "1px solid rgba(255,255,255,0.15)",
-            margin: "3rem 0 1.5rem",
           }}
         />
 
@@ -273,7 +272,7 @@ const Footer = () => {
         >
           © {new Date().getFullYear()} Blue Fins Swimming Academy. All rights reserved.
           <span style={{ margin: "0 0.5rem" }}>|</span> Designed by
-          <a href="https://deepakdigitalcraft.tech/" className="fw-semibold">
+          <a href="https://deepakdigitalcraft.tech/" className="text-dark fw-semibold">
             🔗Deepak_Digital_Craft
           </a>
         </p>
