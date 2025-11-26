@@ -564,7 +564,7 @@ const Home = () => {
               <img
                 className="img-fluid rounded-4 soft glow-hover"
                 alt="Coaching session"
-                src="https://images.unsplash.com/photo-1726800892503-6c440d2a0010?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1167"
+                src="/assets/poolimages/pool1.jpg"
                 style={{ objectFit: "cover", width: "100%" }}
               />
             </div>
@@ -897,7 +897,7 @@ const Home = () => {
           <div className="row g-3 mt-2">
             {[
               "https://plus.unsplash.com/premium_photo-1719501573802-8f2ae92cd7ee?auto=format&fit=crop&q=80&w=1333",
-              "/public/assets/poolimages/pool1.jpg",
+              "/assets/poolimages/pool1.jpg",
               "https://images.unsplash.com/photo-1633430480411-9b0e11d8202e?auto=format&fit=crop&q=80&w=1332",
               "https://images.unsplash.com/photo-1657673461323-206b06c9d386?auto=format&fit=crop&q=80&w=1170",
               "https://images.unsplash.com/photo-1592010411469-30da799fafa3?auto=format&fit=crop&q=80&w=1170",

@@ -301,7 +301,7 @@ const Shop = () => {
                     animation: "floatUp 4s ease-in-out infinite",
                   }}
                 >
-                 <img src="/public/assets/accesosaries/swimmingboard4.jpg" alt="🏊" />
+                 <img src="/assets/accesosaries/swimmingboard4.jpg" alt="🏊" />
                 </div>
               </div>
             </div>
