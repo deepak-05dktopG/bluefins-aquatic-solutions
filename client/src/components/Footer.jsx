@@ -270,10 +270,10 @@ const Footer = () => {
             letterSpacing: "0.3px",
           }}
         >
-          © {new Date().getFullYear()} Blue Fins Swimming Academy. All rights reserved.
-          <span style={{ margin: "0 0.5rem" }}>|</span> Designed by
-          <a href="https://deepakdigitalcraft.tech/" className="text-dark fw-semibold">
-            🔗Deepak_Digital_Craft
+          © {new Date().getFullYear()} Blue Fins Swimming Academy <br />
+           Designed by
+          <a href="https://deepakdigitalcraft.tech/" className="text-dark">
+            >>deepakdigitalcraft.tech
           </a>
         </p>
       </Container>
