@@ -210,18 +210,97 @@ const LessonPlans = () => {
                 </button>
               </div>
 
-              <iframe
-                src={selectedYearlyPlan.pdfUrl}
-                width="100%"
-                height="600px"
-                style={{ borderRadius: "8px", border: "1px solid rgba(0, 255, 212, 0.2)" }}
-              />
+              <div className="pdf-viewer-container">
+                <iframe
+                  src={selectedYearlyPlan.pdfUrl}
+                  width="100%"
+                  height="600px"
+                  style={{ borderRadius: "8px", border: "1px solid rgba(0, 255, 212, 0.2)" }}
+                  className="pdf-viewer-iframe"
+                  title="PDF Viewer"
+                />
+                <div className="tablet-pdf-message">
+                  <p style={{ color: "#00FFD4", marginBottom: "15px", fontSize: "1rem" }}>
+                    📱 For better viewing experience on tablets, please open the PDF in a new tab
+                  </p>
+                  <a
+                    href={selectedYearlyPlan.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "12px 24px",
+                      background: "rgba(0, 255, 212, 0.2)",
+                      color: "#00FFD4",
+                      border: "1px solid rgba(0, 255, 212, 0.4)",
+                      borderRadius: "8px",
+                      textDecoration: "none",
+                      fontWeight: 600,
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    <FaEye /> Open PDF in New Tab
+                  </a>
+                </div>
+              </div>
             </div>
           )}
         </div>
 
         
       </div>
+
+      {/* Responsive Styles */}
+      <style>{`
+        .pdf-viewer-container {
+          width: 100%;
+          position: relative;
+        }
+
+        .pdf-viewer-iframe {
+          display: block;
+          width: 100%;
+          border: 1px solid rgba(0, 255, 212, 0.2);
+          border-radius: 8px;
+        }
+
+        .tablet-pdf-message {
+          display: none;
+        }
+
+        /* Tablet & Mobile: Hide iframe and show "Open in New Tab" button */
+        @media (max-width: 1024px) {
+          .pdf-viewer-iframe {
+            display: none !important;
+          }
+
+          .tablet-pdf-message {
+            display: block !important;
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 212, 0.2);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .tablet-pdf-message {
+            padding: 30px 15px;
+          }
+
+          .tablet-pdf-message p {
+            font-size: 0.9rem !important;
+          }
+
+          .tablet-pdf-message a {
+            font-size: 0.85rem !important;
+            padding: 10px 20px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

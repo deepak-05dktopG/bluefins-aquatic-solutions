@@ -245,6 +245,29 @@ const AdminNavbar = () => {
 
       {/* Responsive Styles */}
       <style>{`
+        /* Tablet Responsive Styles (768px - 1024px) */
+        @media (max-width: 1024px) and (min-width: 769px) {
+          .desktop-nav {
+            gap: 5px !important;
+          }
+          .desktop-nav a,
+          .desktop-nav button {
+            padding: 8px 12px !important;
+            font-size: 0.8rem !important;
+            gap: 6px !important;
+          }
+          nav > div {
+            padding: 15px 20px !important;
+          }
+          nav h1 {
+            font-size: 1.2rem !important;
+          }
+          nav img {
+            height: 35px !important;
+          }
+        }
+
+        /* Mobile Responsive Styles */
         @media (max-width: 768px) {
           .desktop-nav {
             display: none !important;
