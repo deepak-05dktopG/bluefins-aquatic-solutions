@@ -245,18 +245,33 @@ const AdminNavbar = () => {
 
       {/* Responsive Styles */}
       <style>{`
-        /* Tablet Responsive Styles (768px - 1024px) */
-        @media (max-width: 1024px) and (min-width: 769px) {
+        /* Large Tablet Responsive Styles (1025px - 1200px) */
+        @media (max-width: 1200px) and (min-width: 1025px) {
           .desktop-nav {
-            gap: 5px !important;
+            gap: 8px !important;
           }
           .desktop-nav a,
           .desktop-nav button {
-            padding: 8px 12px !important;
-            font-size: 0.8rem !important;
-            gap: 6px !important;
+            padding: 9px 14px !important;
+            font-size: 0.85rem !important;
           }
-          nav > div {
+          nav h1 {
+            font-size: 1.3rem !important;
+          }
+        }
+
+        /* Tablet Responsive Styles - Switch to mobile menu */
+        @media (max-width: 1024px) {
+          .desktop-nav {
+            display: none !important;
+          }
+          .mobile-menu-toggle {
+            display: block !important;
+          }
+          .mobile-nav {
+            display: flex !important;
+          }
+          nav > div:first-child {
             padding: 15px 20px !important;
           }
           nav h1 {
@@ -269,14 +284,14 @@ const AdminNavbar = () => {
 
         /* Mobile Responsive Styles */
         @media (max-width: 768px) {
-          .desktop-nav {
-            display: none !important;
+          nav > div:first-child {
+            padding: 12px 15px !important;
           }
-          .mobile-menu-toggle {
-            display: block !important;
+          nav h1 {
+            font-size: 1.1rem !important;
           }
-          .mobile-nav {
-            display: flex !important;
+          nav img {
+            height: 32px !important;
           }
         }
       `}</style>
