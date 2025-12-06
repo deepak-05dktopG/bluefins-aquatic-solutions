@@ -221,7 +221,7 @@ const LessonPlans = () => {
                 />
                 <div className="tablet-pdf-message">
                   <p style={{ color: "#00FFD4", marginBottom: "15px", fontSize: "1rem" }}>
-                    📱 For better viewing experience on tablets, please open the PDF in a new tab
+                    📱 For better viewing experience, please open the PDF in a new tab
                   </p>
                   <a
                     href={selectedYearlyPlan.pdfUrl}
@@ -260,30 +260,16 @@ const LessonPlans = () => {
         }
 
         .pdf-viewer-iframe {
-          display: block;
-          width: 100%;
-          border: 1px solid rgba(0, 255, 212, 0.2);
-          border-radius: 8px;
+          display: none !important;
         }
 
         .tablet-pdf-message {
-          display: none;
-        }
-
-        /* Tablet & Mobile: Hide iframe and show "Open in New Tab" button */
-        @media (max-width: 1024px) {
-          .pdf-viewer-iframe {
-            display: none !important;
-          }
-
-          .tablet-pdf-message {
-            display: block !important;
-            text-align: center;
-            padding: 40px 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            border: 1px solid rgba(0, 255, 212, 0.2);
-          }
+          display: block !important;
+          text-align: center;
+          padding: 40px 20px;
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: 8px;
+          border: 1px solid rgba(0, 255, 212, 0.2);
         }
 
         @media (max-width: 768px) {
