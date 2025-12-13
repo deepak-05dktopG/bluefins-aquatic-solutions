@@ -272,8 +272,8 @@ const Footer = () => {
         >
           © {new Date().getFullYear()} Blue Fins Swimming Academy <br />
            Designed by
-          <a href="https://deepakdigitalcraft.tech/" className="text-dark">
-            >>deepakdigitalcraft.tech
+          <a href="https://deepakdigitalcraft.works/" className="text-dark">
+            >>deepakdigitalcraft.works<<
           </a>
         </p>
       </Container>
