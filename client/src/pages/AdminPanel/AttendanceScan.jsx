@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FaCamera, FaKeyboard, FaStopCircle } from 'react-icons/fa'
+import { FaCamera, FaKeyboard, FaStopCircle, FaSyncAlt } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
 
@@ -32,18 +32,44 @@ export default function AttendanceScan() {
 	const zxingControlsRef = React.useRef(null)
 	const lastSeenRef = React.useRef({ value: '', at: 0 })
 	const detectingRef = React.useRef(false)
+	const lastRequestedDeviceIdRef = React.useRef(null)
 
-	const getEnhancedCameraConstraints = React.useCallback(() => {
-		return {
-			video: {
-				facingMode: { ideal: 'environment' },
-				width: { ideal: 1920 },
-				height: { ideal: 1080 },
-				frameRate: { ideal: 30, max: 60 },
-			},
-			audio: false,
-		}
+	const [videoInputs, setVideoInputs] = React.useState([])
+	const [activeDeviceId, setActiveDeviceId] = React.useState('')
+	const [enumeratedOnce, setEnumeratedOnce] = React.useState(false)
+
+	const listVideoInputs = React.useCallback(async () => {
+		if (!navigator.mediaDevices?.enumerateDevices) return []
+		const all = await navigator.mediaDevices.enumerateDevices()
+		return (all || []).filter((d) => d && d.kind === 'videoinput')
 	}, [])
+
+	const getEnhancedCameraConstraints = React.useCallback(
+		({ deviceId } = {}) => {
+			const requestedDeviceId = deviceId || activeDeviceId || lastRequestedDeviceIdRef.current
+			if (requestedDeviceId) {
+				return {
+					video: {
+						deviceId: { exact: requestedDeviceId },
+						width: { ideal: 1920 },
+						height: { ideal: 1080 },
+						frameRate: { ideal: 30, max: 60 },
+					},
+					audio: false,
+				}
+			}
+			return {
+				video: {
+					facingMode: { ideal: 'environment' },
+					width: { ideal: 1920 },
+					height: { ideal: 1080 },
+					frameRate: { ideal: 30, max: 60 },
+				},
+				audio: false,
+			}
+		},
+		[activeDeviceId]
+	)
 
 	const applyBestEffortVideoTrackConstraints = React.useCallback(async (stream) => {
 		try {
@@ -198,7 +224,7 @@ export default function AttendanceScan() {
 		[apiBase, showPopup]
 	)
 
-	const startCamera = React.useCallback(async () => {
+	const startCamera = React.useCallback(async ({ deviceId } = {}) => {
 		setCameraError('')
 		setStarting(true)
 		try {
@@ -211,9 +237,10 @@ export default function AttendanceScan() {
 			const video = videoRef.current
 			if (!video) throw new Error('Video element not ready')
 
-			const enhancedConstraints = getEnhancedCameraConstraints()
+			const enhancedConstraints = getEnhancedCameraConstraints({ deviceId })
 			const fallbackConstraints = [
 				enhancedConstraints,
+				// If a specific deviceId fails (e.g. permission mismatch), fall back to environment.
 				{ video: { facingMode: { ideal: 'environment' } }, audio: false },
 				{ video: { facingMode: 'environment' }, audio: false },
 				{ video: true, audio: false },
@@ -250,6 +277,26 @@ export default function AttendanceScan() {
 				video.srcObject = stream
 				await video.play()
 				await applyBestEffortVideoTrackConstraints(stream)
+
+				try {
+					const track = stream?.getVideoTracks?.()?.[0]
+					const settings = track?.getSettings?.() || {}
+					if (settings?.deviceId) {
+						setActiveDeviceId(String(settings.deviceId))
+						lastRequestedDeviceIdRef.current = String(settings.deviceId)
+					}
+				} catch {
+					// ignore
+				}
+				if (!enumeratedOnce) {
+					try {
+						const inputs = await listVideoInputs()
+						setVideoInputs(inputs)
+						setEnumeratedOnce(true)
+					} catch {
+						// ignore
+					}
+				}
 
 				const detector = new window.BarcodeDetector({ formats: ['qr_code'] })
 				setScanning(true)
@@ -313,6 +360,26 @@ export default function AttendanceScan() {
 			await video.play()
 			await applyBestEffortVideoTrackConstraints(stream)
 
+			try {
+				const track = stream?.getVideoTracks?.()?.[0]
+				const settings = track?.getSettings?.() || {}
+				if (settings?.deviceId) {
+					setActiveDeviceId(String(settings.deviceId))
+					lastRequestedDeviceIdRef.current = String(settings.deviceId)
+				}
+			} catch {
+				// ignore
+			}
+			if (!enumeratedOnce) {
+				try {
+					const inputs = await listVideoInputs()
+					setVideoInputs(inputs)
+					setEnumeratedOnce(true)
+				} catch {
+					// ignore
+				}
+			}
+
 			const { BrowserQRCodeReader } = await import('@zxing/browser')
 			const reader = new BrowserQRCodeReader()
 			setScanning(true)
@@ -348,7 +415,20 @@ export default function AttendanceScan() {
 		} finally {
 			setStarting(false)
 		}
-	}, [stopCamera, submitPayload, showPopup])
+	}, [stopCamera, submitPayload, showPopup, getEnhancedCameraConstraints, applyBestEffortVideoTrackConstraints, listVideoInputs, enumeratedOnce])
+
+	const canSwitchCamera = scanning && !starting && videoInputs.length > 1
+
+	const switchCamera = React.useCallback(async () => {
+		if (!canSwitchCamera) return
+		const currentId = String(activeDeviceId || lastRequestedDeviceIdRef.current || '')
+		const idx = videoInputs.findIndex((d) => String(d.deviceId) === currentId)
+		const next = videoInputs[(idx >= 0 ? idx + 1 : 0) % videoInputs.length]
+		if (!next?.deviceId) return
+		lastRequestedDeviceIdRef.current = String(next.deviceId)
+		setActiveDeviceId(String(next.deviceId))
+		await startCamera({ deviceId: String(next.deviceId) })
+	}, [activeDeviceId, canSwitchCamera, startCamera, videoInputs])
 
 	const cardStyle = {
 		background: 'rgba(15, 25, 50, 0.75)',
@@ -403,6 +483,27 @@ export default function AttendanceScan() {
 										<FaCamera /> {starting ? 'Starting…' : 'Start Camera'}
 									</button>
 								) : (
+									<>
+										<button
+											onClick={switchCamera}
+											disabled={!canSwitchCamera}
+											title={canSwitchCamera ? 'Switch camera' : 'No alternate camera found'}
+											style={{
+												display: 'flex',
+												alignItems: 'center',
+												gap: '8px',
+												padding: '10px 14px',
+												background: 'rgba(255, 255, 255, 0.10)',
+												color: 'rgba(255,255,255,0.92)',
+												border: '1px solid rgba(255,255,255,0.20)',
+												borderRadius: '10px',
+												cursor: canSwitchCamera ? 'pointer' : 'not-allowed',
+												fontWeight: 600,
+												opacity: canSwitchCamera ? 1 : 0.55,
+											}}
+										>
+											<FaSyncAlt /> Switch
+										</button>
 									<button
 										onClick={stopCamera}
 										style={{
@@ -420,6 +521,7 @@ export default function AttendanceScan() {
 									>
 										<FaStopCircle /> Stop
 									</button>
+									</>
 								)}
 							</div>
 						</div>
