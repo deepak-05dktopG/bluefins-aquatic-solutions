@@ -2,34 +2,41 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaRocket, FaLock } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
+import api from "../../api/api";
+import { isAdminAuthenticated, setAdminToken } from "../../utils/adminAuth";
 
 const AdminLogin = () => {
-  const [accessKey, setAccessKey] = useState("");
-  const [accessAttempted, setAccessAttempted] = useState(false);
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [verifyLoading, setVerifyLoading] = useState(false);
   const navigate = useNavigate();
 
   // Check for existing authorization on component mount
   useEffect(() => {
-    const savedAuth = localStorage.getItem("isAdmin");
-    if (savedAuth === "true") {
+    if (isAdminAuthenticated()) {
       navigate("/admin/dashboard");
     }
   }, [navigate]);
 
   // Handle access key submission
-  const handleAccessSubmit = (e) => {
+  const handleAccessSubmit = async (e) => {
     e.preventDefault();
-    setAccessAttempted(true);
     setVerifyLoading(true);
+    setError("");
 
-    setTimeout(() => {
-      if (accessKey === "bluefins2025") {
-        localStorage.setItem("isAdmin", "true");
-        navigate("/admin/dashboard");
-      }
+    try {
+      const res = await api.post("/admin/login", { identifier, password });
+      const token = res?.data?.data?.token;
+      if (!token) throw new Error("Login failed");
+      setAdminToken(token);
+      navigate("/admin/dashboard");
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || "Login failed";
+      setError(msg);
+    } finally {
       setVerifyLoading(false);
-    }, 600);
+    }
   };
 
   return (
@@ -51,8 +58,8 @@ const AdminLogin = () => {
       <div
         style={{
           position: "absolute",
-          width: "400px",
-          height: "400px",
+          width: "clamp(240px, 60vw, 400px)",
+          height: "clamp(240px, 60vw, 400px)",
           background: "radial-gradient(circle, rgba(0, 255, 200, 0.15) 0%, transparent 70%)",
           borderRadius: "50%",
           top: "-10%",
@@ -65,8 +72,8 @@ const AdminLogin = () => {
       <div
         style={{
           position: "absolute",
-          width: "500px",
-          height: "500px",
+          width: "clamp(280px, 70vw, 500px)",
+          height: "clamp(280px, 70vw, 500px)",
           background: "radial-gradient(circle, rgba(0, 153, 255, 0.15) 0%, transparent 70%)",
           borderRadius: "50%",
           bottom: "-15%",
@@ -98,7 +105,7 @@ const AdminLogin = () => {
           background: "rgba(15, 25, 50, 0.8)",
           border: "1px solid rgba(0, 255, 200, 0.3)",
           borderRadius: "24px",
-          padding: "50px 40px",
+          padding: "clamp(28px, 6vw, 50px) clamp(18px, 4.5vw, 40px)",
           maxWidth: "450px",
           width: "100%",
           backdropFilter: "blur(20px)",
@@ -162,11 +169,42 @@ const AdminLogin = () => {
         {/* Form */}
         <form onSubmit={handleAccessSubmit}>
           <input
-            type="password"
-            placeholder="Enter access code"
-            value={accessKey}
-            onChange={(e) => setAccessKey(e.target.value)}
+            type="text"
+            placeholder="Admin ID or email"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             disabled={verifyLoading}
+            autoComplete="username"
+            style={{
+              width: "100%",
+              padding: "16px",
+              borderRadius: "12px",
+              border: "2px solid rgba(0, 255, 200, 0.3)",
+              background: "rgba(255, 255, 255, 0.05)",
+              color: "#fff",
+              boxSizing: "border-box",
+              marginBottom: "14px",
+              fontFamily: "Poppins, system-ui",
+              fontSize: "1rem",
+              transition: "all 0.3s ease",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.border = "2px solid #00FFD4";
+              e.currentTarget.style.boxShadow = "0 0 20px rgba(0, 255, 212, 0.2)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.border = "2px solid rgba(0, 255, 200, 0.3)";
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          />
+
+          <input
+            type="password"
+            placeholder="Admin password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={verifyLoading}
+            autoComplete="current-password"
             style={{
               width: "100%",
               padding: "16px",
@@ -191,7 +229,7 @@ const AdminLogin = () => {
           />
 
           {/* Error Message */}
-          {accessAttempted && !verifyLoading && accessKey !== "bluefins2025" && accessKey !== "" && (
+          {error && !verifyLoading ? (
             <div
               style={{
                 background: "rgba(255, 50, 50, 0.15)",
@@ -203,32 +241,34 @@ const AdminLogin = () => {
                 border: "1px solid rgba(255, 50, 50, 0.3)",
               }}
             >
-              ⚠️ Invalid access code
+              ⚠️ {error}
             </div>
-          )}
+          ) : null}
 
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={verifyLoading || !accessKey.trim()}
+            disabled={verifyLoading || !identifier.trim() || !password.trim()}
             style={{
               width: "100%",
               padding: "16px",
               background:
-                verifyLoading || !accessKey.trim()
+                verifyLoading || !identifier.trim() || !password.trim()
                   ? "rgba(0, 255, 212, 0.3)"
                   : "linear-gradient(135deg, #00FFD4 0%, #0099FF 100%)",
-              color: verifyLoading || !accessKey.trim() ? "rgba(0, 0, 0, 0.5)" : "#000",
+              color:
+                verifyLoading || !identifier.trim() || !password.trim() ? "rgba(0, 0, 0, 0.5)" : "#000",
               border: "none",
               borderRadius: "12px",
               fontWeight: 700,
               fontSize: "1rem",
-              cursor: verifyLoading || !accessKey.trim() ? "not-allowed" : "pointer",
+              cursor:
+                verifyLoading || !identifier.trim() || !password.trim() ? "not-allowed" : "pointer",
               transition: "all 0.3s ease",
               fontFamily: "Poppins, system-ui",
             }}
             onMouseEnter={(e) => {
-              if (!verifyLoading && accessKey.trim()) {
+              if (!verifyLoading && identifier.trim() && password.trim()) {
                 e.currentTarget.style.transform = "translateY(-2px)";
                 e.currentTarget.style.boxShadow = "0 8px 20px rgba(0, 255, 212, 0.4)";
               }

@@ -1,19 +1,51 @@
 import React, { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import AdminNavbar from "../../components/adminPanel/AdminNavbar.jsx";
-import { FaBookmark, FaComments, FaClipboard, FaFileAlt, FaChartBar, FaUsers, FaArrowRight } from "react-icons/fa";
+import { FaBookmark, FaComments, FaClipboard, FaFileAlt, FaChartBar, FaUsers, FaArrowRight, FaQrcode } from "react-icons/fa";
+import { isAdminAuthenticated } from "../../utils/adminAuth";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isAdmin = localStorage.getItem("isAdmin");
-    if (isAdmin !== "true") {
+    if (!isAdminAuthenticated()) {
       navigate("/admin");
     }
   }, [navigate]);
 
   const dashboardCards = [
+    {
+      title: "Offline Membership",
+      description: "Register cash payments and print ID cards",
+      icon: <FaUsers />,
+      path: "/admin/offline-membership",
+      color: "#0099FF",
+      count: "",
+    },
+    {
+      title: "Members",
+      description: "View members, expiry, and QR codes",
+      icon: <FaUsers />,
+      path: "/admin/members",
+      color: "#00FFD4",
+      count: "",
+    },
+    {
+      title: "Attendance Scan",
+      description: "Scan member QR to record check-in",
+      icon: <FaQrcode />,
+      path: "/admin/attendance/scan",
+      color: "#00FFD4",
+      count: "",
+    },
+    {
+      title: "Attendance Records",
+      description: "Filter, download, and manage history",
+      icon: <FaQrcode />,
+      path: "/admin/attendance",
+      color: "#0099FF",
+      count: "",
+    },
     {
       title: "Lesson Plans",
       description: "Manage yearly plans and learning levels",

@@ -111,12 +111,12 @@ const Team = () => {
       `}</style>
       <Navbar />
 
-      <section style={{ position: "relative", color: "white", padding: "100px 0 40px", background: "linear-gradient(135deg, #FF6B6B, #FFE66D, #4ECDC4, #667eea)", backgroundSize: "200% 200%", animation: "gradientShift 12s ease infinite", minHeight: "auto", display: "flex", alignItems: "center" }}>
+      <section style={{ position: "relative", color: "white", padding: "clamp(84px, 12vw, 100px) 0 clamp(24px, 5vw, 40px)", background: "linear-gradient(135deg, #FF6B6B, #FFE66D, #4ECDC4, #667eea)", backgroundSize: "200% 200%", animation: "gradientShift 12s ease infinite", minHeight: "auto", display: "flex", alignItems: "center" }}>
         <div style={{ position: "absolute", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(255,107,107,0.15) 0%, transparent 70%)", borderRadius: "50%", top: "20%", right: "-10%" }} />
         <div style={{ position: "absolute", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(78,205,196,0.15) 0%, transparent 70%)", borderRadius: "50%", bottom: "10%", left: "-5%" }} />
         <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px", position: "relative", zIndex: 2, width: "100%" }}>
           <div style={{ textAlign: "center" }} data-aos="fade-up" data-aos-delay="100">
-            <h1 style={{ fontSize: "4rem", fontWeight: "900", lineHeight: 1.05, marginBottom: "1rem", color: "#fff", textShadow: "0 4px 15px rgba(0,0,0,0.2)" }}>Meet Our Expert <span style={{ color: "#FFE66D" }}>Team</span></h1>
+            <h1 style={{ fontSize: "clamp(2.2rem, 6vw, 4rem)", fontWeight: "900", lineHeight: 1.05, marginBottom: "1rem", color: "#fff", textShadow: "0 4px 15px rgba(0,0,0,0.2)" }}>Meet Our Expert <span style={{ color: "#FFE66D" }}>Team</span></h1>
             <p style={{ fontSize: "1.2rem", opacity: 0.95, marginBottom: "2rem", lineHeight: 1.9, maxWidth: "700px", margin: "0 auto" }}>Our team of 25+ certified coaches brings decades of combined experience in competitive swimming, coaching, and institutional management.</p>
             <NavLink to="/contact" style={{ textDecoration: "none" }}><button style={{ background: "#fff", color: "#FF6B6B", border: "none", padding: "14px 32px", borderRadius: "50px", fontWeight: "700", fontSize: "0.95rem", cursor: "pointer", transition: "all 0.3s ease", boxShadow: "0 8px 25px rgba(255,255,255,0.4)" }} onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-4px) scale(1.05)"} onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0) scale(1)"}>Connect With Us</button></NavLink>
           </div>

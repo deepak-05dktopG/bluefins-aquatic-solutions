@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import AdminNavbar from "../../components/adminPanel/AdminNavbar.jsx";
 import { FaTrash, FaStar, FaEnvelope, FaUser, FaFilter, FaPhone, FaClock } from "react-icons/fa";
 import Swal from 'sweetalert2';
+import { adminFetch, isAdminAuthenticated } from "../../utils/adminAuth";
 
 const MembersFeedback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isAdmin = localStorage.getItem("isAdmin");
-    if (isAdmin !== "true") {
+    if (!isAdminAuthenticated()) {
       navigate("/admin");
     }
   }, [navigate]);
@@ -27,7 +27,7 @@ const MembersFeedback = () => {
   const fetchFeedbacks = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/feedback`);
+      const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/feedback`);
       const data = await response.json();
       
       if (data.success) {
@@ -59,7 +59,7 @@ const MembersFeedback = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/feedback/${id}`, {
+          const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/feedback/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();
@@ -115,7 +115,7 @@ const MembersFeedback = () => {
 
   const markAsRead = async (id) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/feedback/${id}`, {
+        const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/feedback/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

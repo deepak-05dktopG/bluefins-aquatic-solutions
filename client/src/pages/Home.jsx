@@ -98,7 +98,7 @@ const Home = () => {
         style={{
           position: "relative",
           color: "white",
-          padding: "120px 0 40px",
+          padding: "clamp(84px, 12vw, 120px) 0 clamp(24px, 5vw, 40px)",
           background: "linear-gradient(135deg, #001f3f, #0077B6, #00B4D8)",
           backgroundSize: "200% 200%",
           animation: "gradientShift 12s ease infinite",
@@ -141,11 +141,11 @@ const Home = () => {
               </div>
               <h1
                 className="fw-bold mt-3"
-                style={{ fontSize: "3rem", lineHeight: 1.1 }}
+                style={{ fontSize: "clamp(2rem, 5vw, 3rem)", lineHeight: 1.1 }}
                 data-aos="fade-up"
                 data-aos-delay="200"
               >
-                Swimming Programs & <span style={{ color: "#90E0EF" }}>Pool Management</span> Solutions
+                Public Entry & <span style={{ color: "#90E0EF" }}>Membership Offers</span>
               </h1>
               <p
                 className="mt-3"
@@ -153,25 +153,25 @@ const Home = () => {
                 data-aos="fade-up"
                 data-aos-delay="300"
               >
-                Partner with Bluefins for comprehensive training programs, professional coaching,
-                and complete pool management services for schools, sports academies, and resorts.
+                Walk in for public swimming entry, or choose from our membership and coaching plans
+                designed for individuals, families, and learners.
               </p>
               <div
-                className="mt-4 d-flex gap-3"
+                className="mt-4 d-flex flex-wrap gap-3"
                 data-aos="zoom-in-up"
                 data-aos-delay="400"
               >
                 <NavLink
-                  to="/programs"
+                  to="/membership"
                   className="btn btn-light fw-semibold px-4 py-2 rounded-pill soft glow-hover"
                 >
-                  Explore Our Services
+                  Book Public Entry (₹150)
                 </NavLink>
                 <NavLink
-                  to="/contact"
+                  to="/membership"
                   className="btn btn-outline-light fw-semibold px-4 py-2 rounded-pill soft"
                 >
-                  Get a Quote
+                  View Membership & Coaching Offers
                 </NavLink>
               </div>
             </div>
@@ -380,7 +380,7 @@ const Home = () => {
                       {/* Image-focused layout */}
                       {mainContent === 'image' && (
                         <div>
-                          <div style={{ position: "relative", width: "100%", height: "500px" }}>
+                          <div style={{ position: "relative", width: "100%", height: "clamp(260px, 70vw, 500px)" }}>
                             <img
                               src={post.imageUrl}
                               alt={post.title || post.caption || 'Announcement'}
@@ -405,7 +405,7 @@ const Home = () => {
                                   <h3 style={{
                                     color: "#fff",
                                     fontWeight: "800",
-                                    fontSize: "2rem",
+                                    fontSize: "clamp(1.25rem, 3.5vw, 2rem)",
                                     marginBottom: "8px",
                                     textShadow: "2px 2px 4px rgba(0,0,0,0.5)"
                                   }}>
@@ -830,13 +830,13 @@ const Home = () => {
                   <div
                     className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
                     style={{
-                      width: "70px",
-                      height: "70px",
+                      width: "clamp(56px, 12vw, 70px)",
+                      height: "clamp(56px, 12vw, 70px)",
                       background:
                         "linear-gradient(135deg, #00B4D8, #48CAE4, #90E0EF)",
                       boxShadow: "0 0 18px rgba(0,180,216,0.4)",
                       color: "white",
-                      fontSize: "30px",
+                      fontSize: "clamp(22px, 4.5vw, 30px)",
                     }}
                     data-aos="zoom-in"
                     data-aos-delay={idx * 200 + 200}
@@ -915,14 +915,14 @@ const Home = () => {
                   style={{
                     background: "rgba(255, 255, 255, 0.8)",
                     borderRadius: "20px",
-                    padding: "60px 40px",
+                    padding: "clamp(28px, 7vw, 60px) clamp(18px, 5vw, 40px)",
                     textAlign: "center",
                     boxShadow: "0 8px 30px rgba(0, 180, 216, 0.15)",
                   }}
                   data-aos="fade-up"
                   data-aos-delay="200"
                 >
-                  <div style={{ fontSize: "4rem", marginBottom: "20px" }}>🖼️</div>
+                  <div style={{ fontSize: "clamp(2.6rem, 8vw, 4rem)", marginBottom: "20px" }}>🖼️</div>
                   <h3 style={{ color: "#0077B6", fontSize: "1.8rem", fontWeight: "700", marginBottom: "10px" }}>
                     No Gallery Images Yet
                   </h3>

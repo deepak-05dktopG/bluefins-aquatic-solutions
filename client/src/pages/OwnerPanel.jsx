@@ -224,7 +224,7 @@ const OwnerPanel = () => {
             background: "rgba(15, 25, 50, 0.8)",
             border: "1px solid rgba(0, 255, 200, 0.3)",
             borderRadius: "24px",
-            padding: "60px 50px",
+            padding: "clamp(28px, 6vw, 60px) clamp(18px, 4.5vw, 50px)",
             maxWidth: "500px",
             width: "100%",
             animation: "floatCard 3s ease-in-out infinite",
@@ -234,7 +234,7 @@ const OwnerPanel = () => {
           <div style={{ textAlign: "center", marginBottom: "30px" }}>
             <div
               style={{
-                fontSize: "3rem",
+                fontSize: "clamp(2.2rem, 6vw, 3rem)",
                 marginBottom: "1rem",
                 display: "inline-block",
                 background: "linear-gradient(135deg, #00FFD4 0%, #0099FF 100%)",

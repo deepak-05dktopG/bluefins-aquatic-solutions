@@ -1,4 +1,6 @@
 import express from 'express';
+import { adminLogin, adminMe } from '../controllers/adminAuthController.js';
+import requireAdminAuth from '../middleware/requireAdminAuth.js';
 import {
   createFeedback,
   getAllFeedback,
@@ -33,36 +35,55 @@ import {
   getGalleryStats
 } from '../controllers/galleryController.js';
 
+import {
+  listPlans,
+  seedOfficialPlans,
+  registerPaidMembership,
+  registerOfflineMembership,
+  createRazorpayOrder,
+  verifyRazorpayPayment,
+  razorpayWebhook,
+  listMembers,
+  bulkDeleteMembersByIds,
+  deleteMember,
+} from '../controllers/membershipController.js';
+
+import { scanAttendance, listAttendance, exportAttendanceCsv, deleteAttendance, bulkDeleteAttendance, purgeAttendanceBefore } from '../controllers/attendanceController.js';
+
 const router = express.Router();
+
+// Admin auth
+router.post('/admin/login', adminLogin);
+router.get('/admin/me', requireAdminAuth, adminMe);
 
 // Feedback routes
 // Public routes
 router.post('/feedback', createFeedback);
 // Admin routes (you can add auth middleware later)
-router.get('/feedback', getAllFeedback);
-router.get('/feedback/stats', getFeedbackStats);
-router.get('/feedback/:id', getFeedbackById);
-router.patch('/feedback/:id', updateFeedbackStatus);
-router.delete('/feedback/:id', deleteFeedback);
+router.get('/feedback', requireAdminAuth, getAllFeedback);
+router.get('/feedback/stats', requireAdminAuth, getFeedbackStats);
+router.get('/feedback/:id', requireAdminAuth, getFeedbackById);
+router.patch('/feedback/:id', requireAdminAuth, updateFeedbackStatus);
+router.delete('/feedback/:id', requireAdminAuth, deleteFeedback);
 
 // Post routes
 // Public routes
 router.get('/posts', getAllPosts);
 router.get('/posts/:id', getPostById);
 // Admin routes (you can add auth middleware later)
-router.post('/posts', createPost);
-router.get('/posts/stats', getPostStats);
-router.patch('/posts/:id', updatePost);
-router.delete('/posts/:id', deletePost);
+router.post('/posts', requireAdminAuth, createPost);
+router.get('/posts/stats', requireAdminAuth, getPostStats);
+router.patch('/posts/:id', requireAdminAuth, updatePost);
+router.delete('/posts/:id', requireAdminAuth, deletePost);
 
 // Worksheet routes
 // Team/Admin routes (accessible to team members)
 router.get('/worksheets', getAllWorksheets);
-router.get('/worksheets/stats', getWorksheetStats);
+router.get('/worksheets/stats', requireAdminAuth, getWorksheetStats);
 router.get('/worksheets/:id', getWorksheetById);
-router.post('/worksheets', createWorksheet);
-router.patch('/worksheets/:id', updateWorksheet);
-router.delete('/worksheets/:id', deleteWorksheet);
+router.post('/worksheets', requireAdminAuth, createWorksheet);
+router.patch('/worksheets/:id', requireAdminAuth, updateWorksheet);
+router.delete('/worksheets/:id', requireAdminAuth, deleteWorksheet);
 router.patch('/worksheets/:id/click', incrementClick);
 
 // Gallery routes
@@ -70,9 +91,34 @@ router.patch('/worksheets/:id/click', incrementClick);
 router.get('/gallery', getAllGalleryImages);
 router.get('/gallery/:id', getGalleryImageById);
 // Admin routes
-router.post('/gallery', createGalleryImage);
-router.get('/gallery/stats', getGalleryStats);
-router.patch('/gallery/:id', updateGalleryImage);
-router.delete('/gallery/:id', deleteGalleryImage);
+router.post('/gallery', requireAdminAuth, createGalleryImage);
+router.get('/gallery/stats', requireAdminAuth, getGalleryStats);
+router.patch('/gallery/:id', requireAdminAuth, updateGalleryImage);
+router.delete('/gallery/:id', requireAdminAuth, deleteGalleryImage);
+
+// Membership registration (Payment integration later)
+router.get('/membership/plans', listPlans);
+router.post('/membership/plans/seed', requireAdminAuth, seedOfficialPlans);
+router.post('/membership/register', registerPaidMembership);
+
+// Admin-only: offline (cash) registration
+router.post('/admin/membership/offline-register', requireAdminAuth, registerOfflineMembership);
+
+router.get('/membership/members', requireAdminAuth, listMembers);
+router.post('/membership/members/bulk-delete', requireAdminAuth, bulkDeleteMembersByIds);
+router.delete('/membership/members/:id', requireAdminAuth, deleteMember);
+
+// Payments (Razorpay)
+router.post('/payments/razorpay/order', createRazorpayOrder);
+router.post('/payments/razorpay/verify', verifyRazorpayPayment);
+router.post('/payments/razorpay/webhook', razorpayWebhook);
+
+// Attendance
+router.post('/attendance/scan', requireAdminAuth, scanAttendance);
+router.get('/attendance', requireAdminAuth, listAttendance);
+router.get('/attendance/export', requireAdminAuth, exportAttendanceCsv);
+router.delete('/attendance/purge', requireAdminAuth, purgeAttendanceBefore);
+router.delete('/attendance/:id', requireAdminAuth, deleteAttendance);
+router.post('/attendance/bulk-delete', requireAdminAuth, bulkDeleteAttendance);
 
 export default router;

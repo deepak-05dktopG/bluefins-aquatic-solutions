@@ -83,7 +83,7 @@ const Service = () => {
         style={{
           position: "relative",
           color: "white",
-          padding: "120px 0 40px",
+          padding: "clamp(84px, 12vw, 120px) 0 clamp(24px, 5vw, 40px)",
           background: "linear-gradient(135deg, #0F3460, #16213E, #533483, #16213E)",
           backgroundSize: "200% 200%",
           animation: "gradientShift 15s ease infinite",
@@ -102,7 +102,7 @@ const Service = () => {
                 <h1
                   className="fw-bold"
                   style={{
-                    fontSize: "3.5rem",
+                    fontSize: "clamp(2.2rem, 6vw, 3.5rem)",
                     lineHeight: 1.1,
                     marginBottom: "1.5rem",
                     marginTop: "0.8rem",
@@ -216,7 +216,7 @@ const Service = () => {
             <span style={{ color: "#FF6B6B", fontWeight: "700", fontSize: "0.95rem", textTransform: "uppercase", letterSpacing: "2px" }}>
               ✨ Core Services
             </span>
-            <h2 className="fw-bold" style={{ fontSize: "3.2rem", marginBottom: "1rem", marginTop: "0.5rem", color: "#0F3460" }}>
+            <h2 className="fw-bold" style={{ fontSize: "clamp(2rem, 5.5vw, 3.2rem)", marginBottom: "1rem", marginTop: "0.5rem", color: "#0F3460" }}>
               What We <span style={{ background: "linear-gradient(90deg, #FF6B6B, #4ECDC4)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Deliver</span>
             </h2>
           </div>
@@ -265,7 +265,7 @@ const Service = () => {
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
-                    <span style={{ fontSize: "3.5rem", fontWeight: "900", color: svc.c1, opacity: 0.15 }}>
+                    <span style={{ fontSize: "clamp(2.4rem, 6vw, 3.5rem)", fontWeight: "900", color: svc.c1, opacity: 0.15 }}>
                       {svc.num}
                     </span>
                     <div style={{ fontSize: "2.5rem" }}>{svc.icon}</div>

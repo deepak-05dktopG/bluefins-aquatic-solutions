@@ -62,7 +62,7 @@ const About = () => {
         style={{
           position: "relative",
           color: "white",
-          padding: "100px 0 40px",
+          padding: "clamp(84px, 12vw, 100px) 0 clamp(24px, 5vw, 40px)",
           background: "linear-gradient(135deg, #001f3f, #0077B6, #00B4D8, #48CAE4)",
           backgroundSize: "200% 200%",
           animation: "gradientShift 12s ease infinite",
@@ -77,7 +77,7 @@ const About = () => {
               <h1
                 className="fw-bold"
                 style={{
-                  fontSize: "4rem",
+                  fontSize: "clamp(2.2rem, 6vw, 4rem)",
                   lineHeight: 1.05,
                   marginBottom: "1.5rem",
                   color: "#fff",
@@ -279,7 +279,7 @@ const About = () => {
                     e.currentTarget.style.boxShadow = "0 10px 40px rgba(0,0,0,0.15)";
                   }}
                 >
-                  <div style={{ fontSize: "3.5rem", marginBottom: "1rem", animation: "pulse 3s ease-in-out infinite" }}>
+                  <div style={{ fontSize: "clamp(2.25rem, 6vw, 3.5rem)", marginBottom: "1rem", animation: "pulse 3s ease-in-out infinite" }}>
                     {stat.icon}
                   </div>
                   <div
@@ -322,7 +322,7 @@ const About = () => {
       >
         <div className="container py-5">
           <div className="text-center mb-5" data-aos="fade-up">
-            <h2 className="fw-bold" style={{ fontSize: "2.8rem", marginBottom: "1rem", color: "#001f3f" }}>
+            <h2 className="fw-bold" style={{ fontSize: "clamp(1.8rem, 4.5vw, 2.8rem)", marginBottom: "1rem", color: "#001f3f" }}>
               Our Core <span style={{ background: "linear-gradient(90deg, #FF6B6B, #667eea)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Values</span>
             </h2>
             <p style={{ fontSize: "1rem", color: "#555", maxWidth: "700px", margin: "0 auto", fontWeight: "500" }}>
@@ -348,7 +348,7 @@ const About = () => {
                 >
                   <div
                     style={{
-                      fontSize: "3rem",
+                      fontSize: "clamp(2rem, 5vw, 3rem)",
                       marginBottom: "1rem",
                       color: value.color,
                       animation: "pulse 2.5s ease-in-out infinite",
@@ -381,7 +381,7 @@ const About = () => {
       >
         <div className="container py-5">
           <div className="text-center mb-5" data-aos="fade-up">
-            <h2 className="fw-bold" style={{ fontSize: "2.8rem", marginBottom: "1rem", color: "#001f3f" }}>
+            <h2 className="fw-bold" style={{ fontSize: "clamp(1.8rem, 4.5vw, 2.8rem)", marginBottom: "1rem", color: "#001f3f" }}>
               Our <span style={{ background: "linear-gradient(90deg, #4ECDC4, #FFD93D)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Expertise</span>
             </h2>
             <p style={{ fontSize: "1rem", color: "#555", maxWidth: "700px", margin: "0 auto", fontWeight: "500" }}>

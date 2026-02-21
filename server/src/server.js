@@ -1,11 +1,8 @@
+import './config/env.js'
 import express from 'express'
-import dotenv from 'dotenv'
 import cors from 'cors'
 import connectDB from './config/db.js'
 import apiRoutes from './routes/api.js'
-
-// Load env vars
-dotenv.config()
 
 // Connect to database
 connectDB()
@@ -38,7 +35,14 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
-app.use(express.json())
+// Capture raw body (needed for Razorpay webhook signature verification)
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf
+    },
+  })
+)
 
 // Health check endpoint
 app.get('/', (req, res) => {

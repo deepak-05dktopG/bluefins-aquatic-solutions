@@ -14,13 +14,19 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'bootstrap-vendor': ['react-bootstrap', 'bootstrap'],
-          'animation-vendor': ['aos', 'framer-motion', '@react-spring/web'],
+          'animation-vendor': ['aos'],
         }
       }
     }
   },
   server: {
     port: 5173,
-    host: true
+    host: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
   }
 });

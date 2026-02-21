@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import AdminNavbar from "../../components/adminPanel/AdminNavbar.jsx";
 import { FaTrash, FaPlusCircle, FaLink, FaExternalLinkAlt, FaGoogle, FaGoogleDrive, FaEye } from "react-icons/fa";
 import Swal from 'sweetalert2';
+import { adminFetch, isAdminAuthenticated } from "../../utils/adminAuth";
 
 const WeeklyWorksheets = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isAdmin = localStorage.getItem("isAdmin");
-    if (isAdmin !== "true") {
+    if (!isAdminAuthenticated()) {
       navigate("/admin");
     }
   }, [navigate]);
@@ -78,7 +78,7 @@ const WeeklyWorksheets = () => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/worksheets`, {
+      const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/worksheets`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -153,7 +153,7 @@ const WeeklyWorksheets = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/worksheets/${id}`, {
+        const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/worksheets/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();

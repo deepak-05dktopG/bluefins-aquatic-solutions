@@ -21,6 +21,7 @@ const Navbar = () => {
     { path: "/", label: "Home" },
     { path: "/about", label: "About" },
     { path: "/programs", label: "Services" },
+    { path: "/membership", label: "Membership" },
     { path: "/team", label: "Team" },
     { path: "/shop", label: "Shop" },
     { path: "/contact", label: "Contact" },
@@ -81,7 +82,7 @@ const Navbar = () => {
         expand="lg"
         fixed="top"
         style={navbarStyle}
-        className="py-1"
+        className={`py-1 main-navbar ${expanded ? 'main-navbar--expanded' : ''} ${isScrolled ? 'main-navbar--scrolled' : ''}`}
       >
         <Container>
           {/* Brand */}
@@ -113,7 +114,7 @@ const Navbar = () => {
               style={{
                 color: "#fff",
                 fontWeight: 700,
-                fontSize: "1.3rem",
+                fontSize: "clamp(1.15rem, 3.2vw, 1.3rem)",
                 letterSpacing: "0.5px",
               }}
             >
@@ -124,6 +125,7 @@ const Navbar = () => {
           {/* Mobile Toggle */}
           <BsNavbar.Toggle
             aria-controls="main-nav"
+            className="main-navbar__toggle"
             style={{
               border: "none",
               background: "rgba(255,255,255,0.2)",
@@ -144,13 +146,14 @@ const Navbar = () => {
 
           {/* Nav Links */}
           <BsNavbar.Collapse id="main-nav" className="mt-3 mt-lg-0">
-            <Nav className="mx-auto text-center text-lg-start">
+            <Nav className="mx-auto text-center text-lg-start main-navbar__links">
               {links.map((item) => (
                 <Nav.Link
                   key={item.path}
                   as={Link}
                   to={item.path}
                   onClick={() => setExpanded(false)}
+                  className="main-navbar__link"
                   style={linkStyle(item.path)}
                   onMouseEnter={(e) => {
                     if (location.pathname !== item.path)
@@ -168,7 +171,7 @@ const Navbar = () => {
             </Nav>
 
             {/* CTA Button */}
-            <div className="d-flex justify-content-center justify-content-lg-end gap-2 mt-3 mt-lg-0">
+            <div className="d-flex justify-content-center justify-content-lg-end gap-2 mt-3 mt-lg-0 main-navbar__cta">
               
               <Link to="/admin" onClick={() => setExpanded(false)}>
                 <Button

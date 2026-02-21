@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminNavbar from "../../components/adminPanel/AdminNavbar.jsx";
 import { FaDownload, FaTrash, FaEye, FaTimes } from "react-icons/fa";
+import { isAdminAuthenticated } from "../../utils/adminAuth";
 
 const LessonPlans = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isAdmin = localStorage.getItem("isAdmin");
-    if (isAdmin !== "true") {
+    if (!isAdminAuthenticated()) {
       navigate("/admin");
     }
   }, [navigate]);

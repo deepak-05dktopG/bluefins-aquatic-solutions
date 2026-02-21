@@ -15,6 +15,7 @@
   --accent-light: #E0F7FA;
   
   /* UI Colors */
+
   --dark-color: #03045E;
   --light-color: #F0F9FF;
   
@@ -34,6 +35,90 @@ body {
   
   font-family: 'Poppins', sans-serif;
   color: #333;
+}
+
+/* Prevent accidental horizontal scrolling on small devices */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img, video, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Typography normalization
+   - Keep headings bold
+   - Make other bold text (buttons/labels/nav text) normal weight
+   - Reduce oversized text on small screens (many pages use inline rem sizes)
+*/
+
+/* Keep headings strong */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+}
+
+/* Normalize Bootstrap font-weight helpers for non-heading elements */
+.fw-bold:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6),
+.fw-semibold:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
+  font-weight: 500 !important;
+}
+
+/* Normalize inline font-weight styles on non-heading text.
+   React inline styles compile to `style="font-weight: 700;"`, so we can safely target those.
+   Excludes headings and buttons.
+*/
+:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight: 6"],
+:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight:6"],
+:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight: 7"],
+:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight:7"],
+:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight: 8"],
+:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight:8"],
+:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight: 9"],
+:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight:9"] {
+  font-weight: 400 !important;
+}
+
+/* Normalize button text weight globally (overrides inline style fontWeight) */
+button,
+.btn {
+  font-weight: 500 !important;
+  letter-spacing: normal;
+  font-size: 0.95rem !important;
+}
+
+/* Normalize common text blocks to regular weight (non-headings) */
+p,
+li,
+label,
+small {
+  font-weight: 400 !important;
+}
+
+/* Links & inline text (avoid affecting navbar + badges + buttons) */
+a:not(.nav-link):not(.navbar-brand):not(.btn),
+span:not(.badge) {
+  font-weight: 400 !important;
+}
+
+/* Mobile: reduce large paragraph/button text (overrides inline fontSize) */
+@media (max-width: 576px) {
+  p,
+  li,
+  span,
+  a,
+  label,
+  small,
+  .text-muted {
+    font-size: 0.95rem !important;
+    font-weight: 400;
+  }
+
+  button,
+  .btn {
+    font-size: 0.92rem !important;
+  }
 }
 
 /* Hide scrollbars but allow scrolling */
@@ -65,6 +150,14 @@ html {
   position: relative;
   background-attachment: fixed;
   transition: all 0.3s ease;
+}
+
+/* Mobile browsers often render fixed backgrounds poorly */
+@media (max-width: 991.98px) {
+  .hero-bg,
+  .cta-section {
+    background-attachment: scroll;
+  }
 }
 
 .hero-bg::before {
@@ -198,6 +291,47 @@ html {
   animation: glowPulse 2s ease-in-out infinite;
 }
 
+/* Admin panel responsive helpers */
+.admin-page-container {
+  padding: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .admin-page-container {
+    padding: 18px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-page-container {
+    padding: 14px !important;
+  }
+}
+
+.admin-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.admin-filter-span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+  .admin-filter-span-2 {
+    grid-column: 1 / -1;
+  }
+}
+
+.admin-filter-summary {
+  grid-column: 1 / -1;
+  justify-self: end;
+}
+
 /* Utility Classes */
 .bg-wave {
   background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
@@ -256,6 +390,36 @@ html {
   }
   50% {
     transform: translateY(-20px) rotate(5deg);
+  }
+}
+
+/* Attendance Scanner layout (80/20 on desktop, stacked on mobile) */
+.attendance-scan-layout {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.attendance-scan-camera {
+  flex: 4 1 0;
+  min-width: 320px;
+}
+
+.attendance-scan-side {
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .attendance-scan-layout {
+    flex-direction: column;
+  }
+
+  .attendance-scan-camera,
+  .attendance-scan-side {
+    min-width: 0;
   }
 }
 
@@ -386,4 +550,310 @@ html {
 /* Keep minimal navbar/footer CSS — most visual styles are inline */
 .navbar.transition-all {
   transition: background 0.25s ease, box-shadow 0.25s ease, padding 0.25s ease;
+}
+
+/* Main navbar: make the collapsed menu comfortable on phones */
+@media (max-width: 991.98px) {
+  .main-navbar .navbar-collapse {
+    padding: 10px 10px 12px;
+  }
+
+  .main-navbar .navbar-collapse.show {
+    background: rgba(2, 62, 138, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    backdrop-filter: blur(12px);
+  }
+
+  .main-navbar .navbar-nav {
+    gap: 2px;
+  }
+
+  .main-navbar .navbar-nav .nav-link.main-navbar__link {
+    margin: 2px 0 !important;
+    padding: 10px 12px !important;
+    font-size: 0.9rem !important;
+    width: 100%;
+    display: block;
+    border-radius: 12px;
+  }
+
+  .main-navbar__cta {
+    width: 100%;
+  }
+
+  .main-navbar__cta a,
+  .main-navbar__cta button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-navbar .navbar-brand img {
+    height: 40px !important;
+  }
+}
+
+/* Admin navbar responsiveness */
+@media (max-width: 768px) {
+  .admin-navbar__inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-navbar__brand {
+    justify-content: center;
+  }
+
+  .admin-navbar__links {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-navbar__brand {
+    justify-content: flex-start;
+  }
+
+  .admin-navbar__links {
+    justify-content: flex-start;
+  }
+}
+
+/* =============================
+   Membership — dashboard styles
+   ============================= */
+
+.membership-container {
+  padding-top: 104px;
+  padding-bottom: 44px;
+}
+
+.membership-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 991.98px) {
+  .membership-container {
+    padding-top: 92px;
+    padding-bottom: 32px;
+  }
+
+  .membership-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.membership-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.membership-title {
+  color: #fff;
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.membership-subtitle {
+  color: rgba(255, 255, 255, 0.82);
+  margin-top: 4px;
+  font-size: 13px;
+  max-width: 70ch;
+}
+
+.membership-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.membership-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(72, 202, 228, 0.95), rgba(0, 180, 216, 0.95));
+  transition: width 240ms ease;
+}
+
+.membership-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 14px;
+}
+
+@media (min-width: 768px) {
+  .membership-card {
+    padding: 16px;
+  }
+}
+
+.membership-aside-inner {
+  position: sticky;
+  top: 96px;
+  display: grid;
+  gap: 12px;
+}
+
+@media (max-width: 991.98px) {
+  .membership-aside-inner {
+    position: static;
+  }
+}
+
+.membership-step-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.membership-step-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.14);
+  color: rgba(255, 255, 255, 0.86);
+  padding: 8px 12px;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.membership-step-tab:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.membership-step-tab--active {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.membership-step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.membership-step-tab--active .membership-step-num {
+  background: rgba(72, 202, 228, 0.55);
+}
+
+.membership-step-label {
+  letter-spacing: 0.2px;
+}
+
+.membership-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 575.98px) {
+  .membership-plan-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.membership-plan-card {
+  width: 100%;
+  text-align: left;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.12);
+  padding: 12px;
+  color: #fff;
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+.membership-plan-card:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.membership-plan-card--active {
+  border-color: rgba(72, 202, 228, 0.85);
+  background: rgba(72, 202, 228, 0.12);
+}
+
+.membership-plan-card:focus-visible {
+  outline: 2px solid rgba(72, 202, 228, 0.7);
+  outline-offset: 2px;
+}
+
+.membership-plan-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.membership-plan-name {
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.membership-plan-sub {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.membership-plan-price {
+  font-weight: 900;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.membership-plan-tag {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.membership-subcard {
+  background: rgba(0, 0, 0, 0.14);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 12px;
+}
+
+.membership-subcard-title {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+}
+
+/* Keep Bootstrap inputs readable on dark background */
+.membership-page .form-control,
+.membership-page .form-select {
+  background-color: rgba(255, 255, 255, 0.94);
 }

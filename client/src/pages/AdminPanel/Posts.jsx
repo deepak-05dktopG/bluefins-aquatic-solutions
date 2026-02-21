@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import AdminNavbar from "../../components/adminPanel/AdminNavbar.jsx";
 import { FaTrash, FaPlusCircle, FaImage, FaTimes, FaUpload, FaImages } from "react-icons/fa";
 import Swal from 'sweetalert2';
+import { adminFetch, isAdminAuthenticated } from "../../utils/adminAuth";
 
 const Posts = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isAdmin = localStorage.getItem("isAdmin");
-    if (isAdmin !== "true") {
+    if (!isAdminAuthenticated()) {
       navigate("/admin");
     }
   }, [navigate]);
@@ -152,7 +152,7 @@ const Posts = () => {
         cloudinaryPublicId: imageData?.publicId || undefined
       };
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts`, {
+  	  const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -229,7 +229,7 @@ const Posts = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts/${id}`, {
+        const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/posts/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();
@@ -356,7 +356,7 @@ const Posts = () => {
         cloudinaryPublicId: cloudinaryData.public_id
       };
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/gallery`, {
+  	  const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/gallery`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -421,7 +421,7 @@ const Posts = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/gallery/${id}`, {
+        const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/gallery/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();

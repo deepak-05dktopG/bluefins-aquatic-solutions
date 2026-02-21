@@ -383,7 +383,7 @@ const Shop = () => {
           .category-header h2 {
             font-size: 1.5rem !important;
           }
-          .category-header div[style*="fontSize: 3rem"] {
+          .category-header .category-icon {
             font-size: 2.5rem !important;
           }
           .product-card {
@@ -401,7 +401,7 @@ const Shop = () => {
         style={{
           position: "relative",
           color: "white",
-          padding: "80px 0 40px",
+          padding: "clamp(84px, 10vw, 100px) 0 clamp(24px, 5vw, 40px)",
           background: "linear-gradient(135deg, #FFD93D, #FF9FF3, #4ECDC4, #667eea)",
           backgroundSize: "200% 200%",
           animation: "gradientShift 12s ease infinite",
@@ -416,7 +416,7 @@ const Shop = () => {
               <h1
                 className="fw-bold"
                 style={{
-                  fontSize: "4rem",
+                  fontSize: "clamp(2.2rem, 6vw, 4rem)",
                   lineHeight: 1.05,
                   marginBottom: "1.5rem",
                   color: "#fff",
@@ -459,7 +459,7 @@ const Shop = () => {
               <div
                 style={{
                   position: "relative",
-                  height: "450px",
+                  height: "clamp(260px, 65vw, 450px)",
                   background: "linear-gradient(135deg, rgba(255,255,255,0.15), rgba(102,126,234,0.15))",
                   borderRadius: "24px",
                   border: "3px solid rgba(255,255,255,0.25)",
@@ -478,7 +478,11 @@ const Shop = () => {
                     animation: "floatUp 4s ease-in-out infinite",
                   }}
                 >
-                 <img src="/assets/accesosaries/bubble cap for kids and adults/WhatsApp Image 2025-11-26 at 14.54.23_7fc43a39.jpg" alt="🏊" />
+                 <img
+                   src="/assets/accesosaries/bubble cap for kids and adults/WhatsApp Image 2025-11-26 at 14.54.23_7fc43a39.jpg"
+                   alt="Bubble cap"
+                   style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+                 />
                 </div>
               </div>
             </div>
@@ -508,7 +512,7 @@ const Shop = () => {
             <div key={key} className="category-section" data-aos="fade-up" data-aos-delay={categoryIndex * 200}>
               {/* Category Header */}
               <div className="category-header">
-                <div style={{ fontSize: "3rem", marginBottom: "15px" }}>{category.icon}</div>
+                <div className="category-icon" style={{ fontSize: "3rem", marginBottom: "15px" }}>{category.icon}</div>
                 <h2 style={{ 
                   color: category.color, 
                   fontSize: "2.5rem", 
