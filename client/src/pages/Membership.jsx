@@ -1056,7 +1056,7 @@ const Membership = () => {
                       </div>
 
                       <div className="mt-3" style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>
-                        API: <code style={{ color: '#fff' }}>{apiBase}</code>
+                        {/* API: <code style={{ color: '#fff' }}>{apiBase}</code> */}
                       </div>
                     </div>
                   ) : null}
