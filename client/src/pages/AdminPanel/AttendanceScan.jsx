@@ -118,7 +118,6 @@ export default function AttendanceScan() {
 	const [manualPayload, setManualPayload] = React.useState('')
 	const [lastScan, setLastScan] = React.useState(null)
 	const [cameraError, setCameraError] = React.useState('')
-	const [shouldFlipPreview, setShouldFlipPreview] = React.useState(false)
 
 	const showPopup = React.useCallback(async ({ icon, title, text, ms = 2200 }) => {
 		await Swal.fire({
@@ -163,7 +162,6 @@ export default function AttendanceScan() {
 		}
 		streamRef.current = null
 		setScanning(false)
-		setShouldFlipPreview(false)
 	}, [])
 
 	React.useEffect(() => {
@@ -242,7 +240,6 @@ export default function AttendanceScan() {
 	const startCamera = React.useCallback(async ({ deviceId } = {}) => {
 		setCameraError('')
 		setStarting(true)
-		setShouldFlipPreview(false)
 		try {
 			if (!window.isSecureContext && window.location.hostname !== 'localhost') {
 				throw new Error('Camera requires HTTPS (or localhost). Open the site using https:// or use a secure tunnel (ngrok/Cloudflare).')
@@ -301,20 +298,6 @@ export default function AttendanceScan() {
 						setActiveDeviceId(String(settings.deviceId))
 						lastRequestedDeviceIdRef.current = String(settings.deviceId)
 					}
-
-					// Some mobile browsers show front camera preview mirrored.
-					// Flip it back (preview-only) for user-facing cameras.
-					const facing = String(settings?.facingMode || '')
-					let isUserFacing = facing === 'user'
-					if (!isUserFacing) {
-						const effectiveId = String(settings?.deviceId || deviceId || activeDeviceId || '')
-						const match = videoInputs.find((d) => String(d?.deviceId || '') === effectiveId)
-						const label = String(match?.label || '')
-						if (/(front|user)/i.test(label) && !/(back|rear|environment)/i.test(label)) isUserFacing = true
-					}
-
-					const flip = Boolean(isUserFacing) && Boolean(isLikelyMobile || isLikelyIOSSafari)
-					setShouldFlipPreview(flip)
 				} catch {
 					// ignore
 				}
@@ -397,17 +380,6 @@ export default function AttendanceScan() {
 					setActiveDeviceId(String(settings.deviceId))
 					lastRequestedDeviceIdRef.current = String(settings.deviceId)
 				}
-
-				const facing = String(settings?.facingMode || '')
-				let isUserFacing = facing === 'user'
-				if (!isUserFacing) {
-					const effectiveId = String(settings?.deviceId || deviceId || activeDeviceId || '')
-					const match = videoInputs.find((d) => String(d?.deviceId || '') === effectiveId)
-					const label = String(match?.label || '')
-					if (/(front|user)/i.test(label) && !/(back|rear|environment)/i.test(label)) isUserFacing = true
-				}
-				const flip = Boolean(isUserFacing) && Boolean(isLikelyMobile || isLikelyIOSSafari)
-				setShouldFlipPreview(flip)
 			} catch {
 				// ignore
 			}
@@ -456,7 +428,7 @@ export default function AttendanceScan() {
 		} finally {
 			setStarting(false)
 		}
-	}, [stopCamera, submitPayload, showPopup, getEnhancedCameraConstraints, applyBestEffortVideoTrackConstraints, listVideoInputs, enumeratedOnce, activeDeviceId, videoInputs, isLikelyMobile, isLikelyIOSSafari])
+	}, [stopCamera, submitPayload, showPopup, getEnhancedCameraConstraints, applyBestEffortVideoTrackConstraints, listVideoInputs, enumeratedOnce])
 
 	const canSwitchCamera = scanning && !starting && videoInputs.length > 1
 
@@ -519,6 +491,7 @@ export default function AttendanceScan() {
 											borderRadius: '10px',
 											cursor: starting ? 'not-allowed' : 'pointer',
 											fontWeight: 600,
+											opacity: starting ? 0.75 : 1,
 										}}
 									>
 										<FaCamera /> {starting ? 'Starting…' : 'Start Camera'}
@@ -545,23 +518,23 @@ export default function AttendanceScan() {
 										>
 											<FaSyncAlt /> Switch
 										</button>
-									<button
-										onClick={stopCamera}
-										style={{
-											display: 'flex',
-											alignItems: 'center',
-											gap: '8px',
-											padding: '10px 16px',
-											background: 'rgba(255, 50, 100, 0.2)',
-											color: '#FF6B9D',
-											border: '1px solid rgba(255, 50, 100, 0.4)',
-											borderRadius: '10px',
-											cursor: 'pointer',
-											fontWeight: 600,
-										}}
-									>
-										<FaStopCircle /> Stop
-									</button>
+										<button
+											onClick={stopCamera}
+											style={{
+												display: 'flex',
+												alignItems: 'center',
+												gap: '8px',
+												padding: '10px 16px',
+												background: 'rgba(255, 50, 100, 0.2)',
+												color: '#FF6B9D',
+												border: '1px solid rgba(255, 50, 100, 0.4)',
+												borderRadius: '10px',
+												cursor: 'pointer',
+												fontWeight: 600,
+											}}
+										>
+											<FaStopCircle /> Stop
+										</button>
 									</>
 								)}
 							</div>
@@ -584,8 +557,6 @@ export default function AttendanceScan() {
 										height: 'clamp(260px, 52vh, 420px)',
 										objectFit: 'cover',
 										opacity: scanning ? 1 : 0.35,
-										transform: shouldFlipPreview ? 'scaleX(-1)' : 'none',
-										transformOrigin: 'center',
 									}}
 								/>
 								<div
