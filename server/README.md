@@ -108,6 +108,22 @@ cd server
 npm run seed-admin
 ```
 
+## Membership Plans (Seeding)
+
+Seed the official membership + coaching plans (as per the poster):
+
+```bash
+cd server
+npm run seed-poster-plans
+```
+
+Developer-only: seed a ₹1 test plan for payment flow testing:
+
+```bash
+cd server
+npm run seed-test-plan
+```
+
 ## Deployment
 
 ### Deploy to Render/Railway/Vercel

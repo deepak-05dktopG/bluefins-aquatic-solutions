@@ -69,16 +69,11 @@ h1, h2, h3, h4, h5, h6 {
    React inline styles compile to `style="font-weight: 700;"`, so we can safely target those.
    Excludes headings and buttons.
 */
-:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight: 6"],
-:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight:6"],
-:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight: 7"],
-:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight:7"],
-:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight: 8"],
-:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight:8"],
-:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight: 9"],
-:where(*):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(button):not(.btn)[style*="font-weight:9"] {
-  font-weight: 400 !important;
-}
+/* NOTE:
+  Previously this stylesheet forced *all* non-heading elements with inline `font-weight: 6xx–9xx`
+  back to 400. That accidentally broke important UI text like the navbar brand and the highlighted
+  words inside hero headings (often wrapped in <span>). Keep inline weights as-authored.
+*/
 
 /* Normalize button text weight globally (overrides inline style fontWeight) */
 button,
@@ -97,8 +92,7 @@ small {
 }
 
 /* Links & inline text (avoid affecting navbar + badges + buttons) */
-a:not(.nav-link):not(.navbar-brand):not(.btn),
-span:not(.badge) {
+a:not(.nav-link):not(.navbar-brand):not(.btn) {
   font-weight: 400 !important;
 }
 
@@ -106,7 +100,6 @@ span:not(.badge) {
 @media (max-width: 576px) {
   p,
   li,
-  span,
   a,
   label,
   small,
@@ -823,6 +816,75 @@ html {
   font-weight: 900;
   font-size: 13px;
   white-space: nowrap;
+}
+
+/* Payment step — professional surface + CTA */
+.membership-pay-card {
+  border-color: rgba(144, 224, 239, 0.22);
+  background:
+    linear-gradient(135deg, rgba(0, 180, 216, 0.14), rgba(72, 202, 228, 0.06)),
+    rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.18);
+}
+
+.membership-pay-surface {
+  border-radius: 14px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.membership-pay-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.membership-pay-back {
+  border-radius: 999px !important;
+  padding: 10px 16px !important;
+}
+
+.membership-pay-btn {
+  border-radius: 999px !important;
+  padding: 10px 18px !important;
+  border: 0 !important;
+  background: var(--gradient-secondary) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 10px 22px rgba(0, 180, 216, 0.22);
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+
+.membership-pay-btn:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.05);
+  box-shadow: 0 14px 28px rgba(0, 180, 216, 0.3);
+}
+
+.membership-pay-btn:active {
+  transform: translateY(0px);
+  box-shadow: 0 8px 18px rgba(0, 180, 216, 0.22);
+}
+
+.membership-pay-btn:disabled,
+.membership-pay-btn.disabled {
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+  filter: none;
+}
+
+@media (max-width: 575.98px) {
+  .membership-pay-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .membership-pay-actions .btn {
+    width: 100%;
+  }
 }
 
 .membership-plan-tag {

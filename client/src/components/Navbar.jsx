@@ -111,11 +111,17 @@ const Navbar = () => {
               }} 
             />
             <span
+              className="main-navbar__brand-title"
               style={{
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: "clamp(1.15rem, 3.2vw, 1.3rem)",
-                letterSpacing: "0.5px",
+                margin: 0,
+                fontSize: "clamp(1.05rem, 3.2vw, 1.5rem)",
+                fontWeight: 800,
+                letterSpacing: "0.6px",
+                background: "linear-gradient(135deg, #00FFD4 0%, #0099FF 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                textShadow: isScrolled ? "none" : "0 2px 10px rgba(0, 0, 0, 0.25)",
               }}
             >
               Bluefins

@@ -25,6 +25,19 @@ export default function AttendanceScan() {
 	const navigate = useNavigate()
 	const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
 
+	const isLikelyMobile = React.useMemo(() => {
+		if (typeof navigator === 'undefined') return false
+		return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '')
+	}, [])
+
+	const isLikelyIOSSafari = React.useMemo(() => {
+		if (typeof navigator === 'undefined') return false
+		const ua = navigator.userAgent || ''
+		const isIOS = /iPhone|iPad|iPod/i.test(ua)
+		const isSafari = /Safari/i.test(ua) && !/Chrome|CriOS|EdgiOS|FxiOS/i.test(ua)
+		return isIOS && isSafari
+	}, [])
+
 	const videoRef = React.useRef(null)
 	const canvasRef = React.useRef(null)
 	const streamRef = React.useRef(null)
@@ -105,6 +118,7 @@ export default function AttendanceScan() {
 	const [manualPayload, setManualPayload] = React.useState('')
 	const [lastScan, setLastScan] = React.useState(null)
 	const [cameraError, setCameraError] = React.useState('')
+	const [shouldFlipPreview, setShouldFlipPreview] = React.useState(false)
 
 	const showPopup = React.useCallback(async ({ icon, title, text, ms = 2200 }) => {
 		await Swal.fire({
@@ -149,6 +163,7 @@ export default function AttendanceScan() {
 		}
 		streamRef.current = null
 		setScanning(false)
+		setShouldFlipPreview(false)
 	}, [])
 
 	React.useEffect(() => {
@@ -227,6 +242,7 @@ export default function AttendanceScan() {
 	const startCamera = React.useCallback(async ({ deviceId } = {}) => {
 		setCameraError('')
 		setStarting(true)
+		setShouldFlipPreview(false)
 		try {
 			if (!window.isSecureContext && window.location.hostname !== 'localhost') {
 				throw new Error('Camera requires HTTPS (or localhost). Open the site using https:// or use a secure tunnel (ngrok/Cloudflare).')
@@ -285,6 +301,20 @@ export default function AttendanceScan() {
 						setActiveDeviceId(String(settings.deviceId))
 						lastRequestedDeviceIdRef.current = String(settings.deviceId)
 					}
+
+					// Some mobile browsers show front camera preview mirrored.
+					// Flip it back (preview-only) for user-facing cameras.
+					const facing = String(settings?.facingMode || '')
+					let isUserFacing = facing === 'user'
+					if (!isUserFacing) {
+						const effectiveId = String(settings?.deviceId || deviceId || activeDeviceId || '')
+						const match = videoInputs.find((d) => String(d?.deviceId || '') === effectiveId)
+						const label = String(match?.label || '')
+						if (/(front|user)/i.test(label) && !/(back|rear|environment)/i.test(label)) isUserFacing = true
+					}
+
+					const flip = Boolean(isUserFacing) && Boolean(isLikelyMobile || isLikelyIOSSafari)
+					setShouldFlipPreview(flip)
 				} catch {
 					// ignore
 				}
@@ -367,6 +397,17 @@ export default function AttendanceScan() {
 					setActiveDeviceId(String(settings.deviceId))
 					lastRequestedDeviceIdRef.current = String(settings.deviceId)
 				}
+
+				const facing = String(settings?.facingMode || '')
+				let isUserFacing = facing === 'user'
+				if (!isUserFacing) {
+					const effectiveId = String(settings?.deviceId || deviceId || activeDeviceId || '')
+					const match = videoInputs.find((d) => String(d?.deviceId || '') === effectiveId)
+					const label = String(match?.label || '')
+					if (/(front|user)/i.test(label) && !/(back|rear|environment)/i.test(label)) isUserFacing = true
+				}
+				const flip = Boolean(isUserFacing) && Boolean(isLikelyMobile || isLikelyIOSSafari)
+				setShouldFlipPreview(flip)
 			} catch {
 				// ignore
 			}
@@ -415,7 +456,7 @@ export default function AttendanceScan() {
 		} finally {
 			setStarting(false)
 		}
-	}, [stopCamera, submitPayload, showPopup, getEnhancedCameraConstraints, applyBestEffortVideoTrackConstraints, listVideoInputs, enumeratedOnce])
+	}, [stopCamera, submitPayload, showPopup, getEnhancedCameraConstraints, applyBestEffortVideoTrackConstraints, listVideoInputs, enumeratedOnce, activeDeviceId, videoInputs, isLikelyMobile, isLikelyIOSSafari])
 
 	const canSwitchCamera = scanning && !starting && videoInputs.length > 1
 
@@ -534,7 +575,19 @@ export default function AttendanceScan() {
 
 						<div style={{ marginTop: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(10, 14, 39, 0.75)', padding: '14px' }}>
 							<div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', background: 'rgba(0,0,0,0.35)' }}>
-								<video ref={videoRef} playsInline muted style={{ width: '100%', height: 'clamp(260px, 52vh, 420px)', objectFit: 'cover', opacity: scanning ? 1 : 0.35 }} />
+								<video
+									ref={videoRef}
+									playsInline
+									muted
+									style={{
+										width: '100%',
+										height: 'clamp(260px, 52vh, 420px)',
+										objectFit: 'cover',
+										opacity: scanning ? 1 : 0.35,
+										transform: shouldFlipPreview ? 'scaleX(-1)' : 'none',
+										transformOrigin: 'center',
+									}}
+								/>
 								<div
 									style={{
 										position: 'absolute',

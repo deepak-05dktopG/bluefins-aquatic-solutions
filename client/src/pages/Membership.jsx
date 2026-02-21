@@ -1,5 +1,6 @@
 import { adminFetch, isAdminAuthenticated } from '../utils/adminAuth'
 import React, { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { downloadMemberIdCard } from '../utils/idCard'
 
@@ -655,9 +656,9 @@ const Membership = () => {
                     Refresh
                   </button>
                   {isAdmin ? (
-                    <button className="btn btn-warning btn-sm" onClick={seedPlans} disabled={busy}>
-                      Seed Plans
-                    </button>
+                      <button className="btn btn-warning btn-sm" onClick={seedPlans} disabled={busy}>
+                        Seed Plans
+                      </button>
                   ) : null}
                 </div>
               </div>
@@ -839,15 +840,33 @@ const Membership = () => {
                         </div>
                       ) : null}
 
-                      <div className="d-flex justify-content-end gap-2 mt-4">
-                        <button
-                          className="btn btn-outline-light btn-sm"
-                          onClick={goNext}
-                          disabled={busy || loadingPlans || plans.length === 0}
-                        >
-                          Next
-                        </button>
+                      <div className="membership-subcard mt-3">
+                        <div className="membership-subcard-title">Ready to book?</div>
+                        <div style={{ color: 'rgba(255,255,255,0.82)', fontSize: 12, lineHeight: 1.6 }}>
+                          <div>
+                            <b>Public Entry:</b> choose date, time, and number of people, then continue to pay.
+                          </div>
+                          <div className="mt-1">
+                            <b>Membership/Coaching:</b> choose the plan type (Monthly/Yearly/Family), select category/add-ons if available,
+                            then continue to enter member details.
+                          </div>
+                        </div>
+
+                        <div className="d-flex flex-wrap gap-2 mt-3">
+                          <Link to="/contact" className="btn btn-outline-light btn-sm">
+                            Need help? Contact us
+                          </Link>
+                          <button
+                            type="button"
+                            className="btn btn-light btn-sm"
+                            onClick={goNext}
+                            disabled={busy || loadingPlans || plans.length === 0}
+                          >
+                            Continue
+                          </button>
+                        </div>
                       </div>
+
                     </div>
                   ) : null}
 
@@ -1040,19 +1059,25 @@ const Membership = () => {
                   ) : null}
 
                   {step === STEP.CONFIRM ? (
-                    <div className="membership-card membership-section">
+                    <div className="membership-card membership-section membership-pay-card">
                       <h6 style={{ color: '#fff', margin: 0, fontWeight: 800 }}>Pay securely</h6>
                       <div style={{ color: 'rgba(255,255,255,0.82)', fontSize: 13, marginTop: 6 }}>
                         You will be redirected to Razorpay to complete the payment.
                       </div>
 
-                      <div className="d-flex justify-content-between gap-2 mt-4">
-                        <button className="btn btn-outline-light btn-sm" onClick={goBack} disabled={busy}>
-                          Back
-                        </button>
-                        <button className="btn btn-success btn-sm" onClick={submitRegistration} disabled={busy || !selectedPlan}>
-                          Pay {computedAmount == null ? '' : `₹${computedAmount}`}
-                        </button>
+                      <div className="membership-pay-surface mt-3">
+                        <div className="membership-pay-actions">
+                          <button className="btn btn-outline-light btn-sm membership-pay-back" onClick={goBack} disabled={busy}>
+                            Back
+                          </button>
+                          <button
+                            className="btn btn-sm membership-pay-btn"
+                            onClick={submitRegistration}
+                            disabled={busy || !selectedPlan}
+                          >
+                            Pay {computedAmount == null ? '' : `₹${computedAmount}`}
+                          </button>
+                        </div>
                       </div>
 
                       <div className="mt-3" style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>

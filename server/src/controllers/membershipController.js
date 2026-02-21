@@ -648,7 +648,7 @@ export const seedOfficialPlans = asyncHandler(async (req, res) => {
 		},
 		{
 			planName: '6 Monthly Membership',
-			type: 'yearly',
+			type: 'monthly',
 			categoryRequired: false,
 			durationInDays: 180,
 			basePrice: 7499,

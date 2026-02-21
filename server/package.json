@@ -10,7 +10,8 @@
     "production": "NODE_ENV=production node src/server.js",
     "create-admin": "node src/scripts/createAdmin.js",
     "seed-admin": "node src/scripts/seedAdmin.js",
-    "seed-test-plan": "node src/scripts/seedTestPlan.js"
+    "seed-test-plan": "node src/scripts/seedTestPlan.js",
+    "seed-poster-plans": "node src/scripts/seedPosterPlans.js"
   },
   "engines": {
     "node": ">=18.0.0",

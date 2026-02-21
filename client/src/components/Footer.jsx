@@ -88,7 +88,7 @@ const Footer = () => {
               {[
                 // { icon: <FaFacebookF />, link: "https://facebook.com" },
                 { icon: <FaInstagram />, link: "https://www.instagram.com/bluefinsaquaticsolutions?utm_source=qr&igsh=MWNtcTlxaGphYWJiZg==" },
-                { icon: <FaWhatsapp />, link: "https://wa.me/919942020838" },
+                { icon: <FaWhatsapp />, link: "https://wa.me/918838407511" },
                 // { icon: <FaTwitter />, link: "https://twitter.com" },
               ].map((social, index) => (
                 <a
