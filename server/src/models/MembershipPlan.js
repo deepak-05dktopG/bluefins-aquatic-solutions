@@ -24,6 +24,7 @@ const membershipPlanSchema = new mongoose.Schema(
 		durationInMinutes: { type: Number, min: 1 },
 
 		basePrice: { type: Number, required: true, min: 0 },
+		originalPrice: { type: Number, min: 0 },
 		categoryPrices: { type: [categoryPriceSchema], default: [] },
 
 		maxMembers: { type: Number, min: 1 },

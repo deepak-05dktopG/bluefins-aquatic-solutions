@@ -697,18 +697,18 @@ const Home = () => {
                 img: "https://plus.unsplash.com/premium_photo-1664303953438-a07c44d0a8fe?auto=format&fit=crop&q=80&w=1170",
               },
               {
-                title: "Monthly Program",
-                price: "₹4000",
+                title: "Monthly Membership",
+                price: "₹3000",
                 img: "https://plus.unsplash.com/premium_photo-1719501574608-0cf632f7c0f3?auto=format&fit=crop&q=80&w=1170",
               },
               {
-                title: "Beginners & Intermediate",
+                title: "15 Days Coaching",
                 price: "₹3000",
                 img: "https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=1200&auto=format&fit=crop",
               },
               {
-                title: "Family Yearly Pack",
-                price: "₹15000",
+                title: "Family Membership (Max 4)",
+                price: "₹18000",
                 img: "https://plus.unsplash.com/premium_photo-1663040082818-b25debfd997f?auto=format&fit=crop&q=80&w=1170",
               },
             ].map((p, i) => (

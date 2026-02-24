@@ -50,6 +50,8 @@ import {
 
 import { scanAttendance, listAttendance, exportAttendanceCsv, deleteAttendance, bulkDeleteAttendance, purgeAttendanceBefore } from '../controllers/attendanceController.js';
 
+import { sendBulkWhatsApp } from '../controllers/marketingController.js';
+
 const router = express.Router();
 
 // Admin auth
@@ -120,5 +122,8 @@ router.get('/attendance/export', requireAdminAuth, exportAttendanceCsv);
 router.delete('/attendance/purge', requireAdminAuth, purgeAttendanceBefore);
 router.delete('/attendance/:id', requireAdminAuth, deleteAttendance);
 router.post('/attendance/bulk-delete', requireAdminAuth, bulkDeleteAttendance);
+
+// Marketing / bulk WhatsApp
+router.post('/admin/marketing/whatsapp/bulk-send', requireAdminAuth, sendBulkWhatsApp);
 
 export default router;

@@ -4,6 +4,7 @@ import AdminNavbar from "../../components/adminPanel/AdminNavbar.jsx";
 import { FaTrash, FaStar, FaEnvelope, FaUser, FaFilter, FaPhone, FaClock } from "react-icons/fa";
 import Swal from 'sweetalert2';
 import { adminFetch, isAdminAuthenticated } from "../../utils/adminAuth";
+import { formatDateTime } from "../../utils/dateTime";
 
 const MembersFeedback = () => {
   const navigate = useNavigate();
@@ -301,7 +302,7 @@ const MembersFeedback = () => {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#b0b0b0", fontSize: "0.85rem" }}>
                   <FaClock />
-                  {new Date(fb.createdAt).toLocaleString()}
+						{formatDateTime(fb.createdAt)}
                 </div>
                 <div style={{ display: "flex", gap: "10px" }}>
                   {fb.status === "unread" && (

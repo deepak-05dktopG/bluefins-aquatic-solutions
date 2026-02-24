@@ -11,7 +11,7 @@ const PLAN_TYPE_LABEL = {
 	monthly: 'Monthly Training',
 	yearly: 'Individual (1 Year)',
 	family: 'Family (1 Year)',
-	public: 'Public Entry (Per Session)',
+	public: 'Public Batch (Per Session)',
 }
 
 const CATEGORY_LABEL = {
@@ -228,8 +228,8 @@ const OfflineMembership = () => {
 			const contactName = normalizeText(member.name)
 			const contactPhone = normalizePhone10(member.phone)
 			if (!contactName) return 'Contact name is required'
-			if (!contactPhone) return 'Contact phone is required'
-			if (!isValidPhone10(contactPhone)) return 'Contact phone must be a valid 10-digit number'
+			if (!contactPhone) return 'Contact WhatsApp number is required'
+			if (!isValidPhone10(contactPhone)) return 'Contact WhatsApp number must be a valid 10-digit number'
 			const list = Array.isArray(familyMembers) ? familyMembers : []
 			if (!list.length) return 'Add at least 1 family member'
 			if (selectedPlan.maxMembers && list.length > selectedPlan.maxMembers) {
@@ -239,7 +239,7 @@ const OfflineMembership = () => {
 				const n = normalizeText(fm?.name)
 				if (!n) return 'Each family member needs a name'
 				const p = normalizePhone10(fm?.phone)
-				if (p && !isValidPhone10(p)) return 'Family member phone must be a valid 10-digit number'
+				if (p && !isValidPhone10(p)) return 'Family member WhatsApp number must be a valid 10-digit number'
 				const g = normalizeGender(fm?.gender)
 				if (g === null) return 'Family member gender must be Male/Female/Other'
 				const a = normalizeAge(fm?.age)
@@ -251,8 +251,8 @@ const OfflineMembership = () => {
 		const name = normalizeText(member.name)
 		const phone = normalizePhone10(member.phone)
 		if (!name) return 'Name is required'
-		if (!phone) return 'Phone is required'
-		if (!isValidPhone10(phone)) return 'Phone must be a valid 10-digit number'
+		if (!phone) return 'WhatsApp number is required'
+		if (!isValidPhone10(phone)) return 'WhatsApp number must be a valid 10-digit number'
 		const g = normalizeGender(member.gender)
 		if (g === null) return 'Gender must be Male/Female/Other'
 		const a = normalizeAge(member.age)
@@ -479,7 +479,7 @@ const OfflineMembership = () => {
 												/>
 											</div>
 											<div className="col-12 col-md-6">
-												<label className="form-label" style={{ color: '#fff' }}>Contact Phone</label>
+												<label className="form-label" style={{ color: '#fff' }}>Contact WhatsApp Number</label>
 												<input
 													className="form-control form-control-sm"
 													value={member.phone}
@@ -494,7 +494,7 @@ const OfflineMembership = () => {
 												<input className="form-control form-control-sm" value={member.name} onChange={(e) => setMember({ ...member, name: e.target.value })} />
 											</div>
 											<div className="col-12 col-md-6">
-												<label className="form-label" style={{ color: '#fff' }}>Phone</label>
+												<label className="form-label" style={{ color: '#fff' }}>WhatsApp Number</label>
 												<input className="form-control form-control-sm" value={member.phone} onChange={(e) => setMember({ ...member, phone: e.target.value })} />
 											</div>
 										</div>
@@ -530,7 +530,7 @@ const OfflineMembership = () => {
 																/>
 															</div>
 															<div className="col-12 col-md-3">
-																<label className="form-label" style={{ color: '#fff' }}>Phone (optional)</label>
+																<label className="form-label" style={{ color: '#fff' }}>WhatsApp Number (optional)</label>
 																<input
 																	className="form-control form-control-sm"
 																	value={fm.phone}

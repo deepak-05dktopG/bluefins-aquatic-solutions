@@ -14,6 +14,7 @@ const AdminNavbar = () => {
 
 	const isDashboard = location.pathname === '/admin/dashboard'
 	const isOfflineMembership = location.pathname === '/admin/offline-membership'
+	const isMarketing = location.pathname === '/admin/marketing'
 
 	const linkStyle = (active) => ({
 		display: 'flex',
@@ -93,6 +94,10 @@ const AdminNavbar = () => {
 
 					<Link to="/admin/offline-membership" style={linkStyle(isOfflineMembership)}>
 						<FaRocket /> Offline Membership
+					</Link>
+
+					<Link to="/admin/marketing" style={linkStyle(isMarketing)}>
+						<FaRocket /> Marketing
 					</Link>
 
 					<button

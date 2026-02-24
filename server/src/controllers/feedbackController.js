@@ -1,4 +1,5 @@
 import Feedback from '../models/Feedback.js';
+import { upsertMarkettingLead } from '../utils/marketting.js';
 
 // @desc    Submit new feedback
 // @route   POST /api/feedback
@@ -29,6 +30,17 @@ export const createFeedback = async (req, res) => {
       userAgent,
       source: 'contact-form'
     });
+
+  // Best-effort: store for marketing use (no duplicates by WhatsApp number)
+  try {
+    void upsertMarkettingLead({
+      customerName: name,
+      whatsappNumber: phone,
+      source: 'contact-form',
+    }).catch(() => {})
+  } catch {
+    // ignore marketing persistence failures
+  }
 
     res.status(201).json({
       success: true,

@@ -11,7 +11,9 @@
     "create-admin": "node src/scripts/createAdmin.js",
     "seed-admin": "node src/scripts/seedAdmin.js",
     "seed-test-plan": "node src/scripts/seedTestPlan.js",
-    "seed-poster-plans": "node src/scripts/seedPosterPlans.js"
+    "seed-poster-plans": "node src/scripts/seedPosterPlans.js",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -25,11 +27,16 @@
     "express-async-handler": "^1.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.6.3",
+    "node-cron": "^3.0.3",
     "nodemailer": "^6.10.1",
     "qrcode": "^1.5.4",
     "razorpay": "^2.9.6"
   },
   "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "globals": "^15.0.0",
     "nodemon": "^3.0.1"
   }
 }

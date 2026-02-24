@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { FaCamera, FaKeyboard, FaStopCircle, FaSyncAlt } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
+import { formatTime } from '../../utils/dateTime'
 
 const safeReadJson = async (res) => {
 	const text = await res.text()
@@ -14,12 +15,7 @@ const safeReadJson = async (res) => {
 	}
 }
 
-const formatTime = (value) => {
-	if (!value) return ''
-	const d = new Date(value)
-	if (Number.isNaN(d.getTime())) return ''
-	return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-}
+
 
 export default function AttendanceScan() {
 	const navigate = useNavigate()
@@ -473,7 +469,10 @@ export default function AttendanceScan() {
 						<div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
 							<div>
 								<h2 style={{ margin: 0, color: 'rgba(255,255,255,0.92)', fontSize: '1.2rem', fontWeight: 700 }}>Camera Scan</h2>
-								<p style={{ margin: '8px 0 0 0', color: 'rgba(255,255,255,0.6)' }}>{scanning ? 'Scanning… hold QR steady' : 'Start the camera to scan member QR codes'}</p>
+								<p style={{ margin: '8px 0 0 0', color: 'rgba(255,255,255,0.6)' }}>{scanning ? 'Scanning… hold the QR steady' : 'Start the camera to scan member QR codes'}</p>
+								<p style={{ margin: '6px 0 0 0', color: 'rgba(255,255,255,0.55)', fontSize: '0.95rem' }}>
+									Tip: Zoom the QR (bring it closer) and keep it centered inside the box.
+								</p>
 							</div>
 							<div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
 								{!scanning ? (
@@ -650,7 +649,7 @@ export default function AttendanceScan() {
 												>
 													{lastScan.attendance?.result === 'rejected' ? 'REJECTED' : 'ACCEPTED'}
 												</div>
-												<div style={{ color: 'rgba(255,255,255,0.55)', marginTop: '8px', fontSize: '0.85rem' }}>{lastScan.duplicate ? 'Duplicate scan (ignored)' : formatTime(lastScan.attendance?.scannedAt)}</div>
+												<div style={{ color: 'rgba(255,255,255,0.55)', marginTop: '8px', fontSize: '0.85rem' }}>{lastScan.duplicate ? 'Duplicate scan (ignored)' : formatTime(lastScan.attendance?.scannedAt, { seconds: true })}</div>
 											</div>
 										</div>
 										{lastScan.attendance?.reason ? <div style={{ marginTop: '12px', color: 'rgba(255,255,255,0.75)' }}>{lastScan.attendance.reason}</div> : null}

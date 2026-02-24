@@ -4,6 +4,7 @@ import AdminNavbar from '../../components/adminPanel/AdminNavbar.jsx'
 import { FaCamera, FaDownload, FaTrash, FaSyncAlt } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
+import { formatDateTime } from '../../utils/dateTime'
 
 const safeReadJson = async (res) => {
 	const text = await res.text()
@@ -17,12 +18,7 @@ const safeReadJson = async (res) => {
 
 const todayISO = () => new Date().toISOString().slice(0, 10)
 
-const formatTime = (value) => {
-	if (!value) return ''
-	const d = new Date(value)
-	if (Number.isNaN(d.getTime())) return ''
-	return d.toLocaleString([], { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })
-}
+const formatTime = (value) => formatDateTime(value)
 
 const toQueryString = (params) => {
 	const sp = new URLSearchParams()

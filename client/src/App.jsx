@@ -20,6 +20,7 @@ import Members from './pages/AdminPanel/Members.jsx'
 import AttendanceScan from './pages/AdminPanel/AttendanceScan.jsx'
 import AttendanceRecords from './pages/AdminPanel/AttendanceRecords.jsx'
 import OfflineMembership from './pages/AdminPanel/OfflineMembership.jsx'
+import Marketing from './pages/AdminPanel/Marketing.jsx'
 import { useLocation } from 'react-router-dom'
 import React from 'react'
 import AOS from 'aos'
@@ -99,6 +100,7 @@ function App() {
 		  <Route path="/admin/attendance" element={<AttendanceRecords />} />
 		  <Route path="/admin/attendance/scan" element={<AttendanceScan />} />
 		  <Route path="/admin/offline-membership" element={<OfflineMembership />} />
+      <Route path="/admin/marketing" element={<Marketing />} />
         </Routes>
       </main> 
 	  <FooterMaybe />

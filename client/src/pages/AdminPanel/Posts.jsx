@@ -4,6 +4,7 @@ import AdminNavbar from "../../components/adminPanel/AdminNavbar.jsx";
 import { FaTrash, FaPlusCircle, FaImage, FaTimes, FaUpload, FaImages } from "react-icons/fa";
 import Swal from 'sweetalert2';
 import { adminFetch, isAdminAuthenticated } from "../../utils/adminAuth";
+import { formatDateTime } from "../../utils/dateTime";
 
 const Posts = () => {
   const navigate = useNavigate();
@@ -1042,7 +1043,7 @@ const Posts = () => {
                   )}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "15px" }}>
                     <span style={{ color: "#b0b0b0", fontSize: "0.85rem" }}>
-                      {new Date(post.createdAt).toLocaleString()}
+							{formatDateTime(post.createdAt)}
                     </span>
                     <button
                       onClick={() => deletePost(post._id)}

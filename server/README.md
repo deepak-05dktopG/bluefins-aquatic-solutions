@@ -57,6 +57,26 @@ PAYMENT_COMMISSION_PCT=2
 PAYMENT_COMMISSION_FLAT_INR=0
 PAYMENT_GST_PCT=18
 
+# WhatsApp Cloud API (expiry reminders)
+# Sends reminders 30/15/7/3 days before Member.expiryDate via a daily 2AM IST cron.
+WA_PHONE_ID=xxxxxxxxxxxxxxxxxxxx
+WA_TOKEN=EAAG...your_long_lived_token
+
+# Optional
+WA_REMINDERS_ENABLED=true
+WA_API_VERSION=v19.0
+WA_DEFAULT_COUNTRY_CODE=91
+APP_BASE_URL=https://yourapp.com
+
+# Recommended: proactive reminders usually require a WhatsApp *template*.
+# Create a template like: "Hi {{1}}! {{2}} days left. Renew: {{3}}"
+WA_TEMPLATE_NAME=membership_expiry_reminder
+WA_TEMPLATE_LANG=en_US
+
+# Cron + testing
+WA_REMINDER_CRON="0 2 * * *"  # 2:00 AM daily (Asia/Kolkata)
+WA_DRY_RUN=true               # logs messages but does not send
+
 # Testing only: force ONLINE payment total (Razorpay) to ₹1
 # This is intentionally gated so you can't accidentally ship ₹1 pricing.
 ENABLE_TEST_MODE=true

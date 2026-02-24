@@ -21,7 +21,7 @@ const officialPlans = [
 		type: 'monthly',
 		categoryRequired: false,
 		durationInDays: 30,
-		basePrice: 2000,
+		basePrice: 3000,
 		isRecurring: true,
 		isActive: true,
 	},
@@ -53,12 +53,12 @@ const officialPlans = [
 		isActive: true,
 	},
 	{
-		planName: 'Infant Plan (21 Days)',
-		type: 'summer',
+		planName: 'Infant (Per Month)',
+		type: 'monthly',
 		categoryRequired: false,
-		durationInDays: 21,
+		durationInDays: 30,
 		basePrice: 4000,
-		isRecurring: false,
+		isRecurring: true,
 		isActive: true,
 	},
 	{
@@ -72,7 +72,7 @@ const officialPlans = [
 		isActive: true,
 	},
 	{
-		planName: 'Coaching (One Month)',
+		planName: 'One Month Coaching',
 		type: 'monthly',
 		categoryRequired: false,
 		durationInDays: 30,
@@ -81,7 +81,7 @@ const officialPlans = [
 		isActive: true,
 	},
 	{
-		planName: 'Coaching (15 Days)',
+		planName: '15 Days Coaching',
 		type: 'summer',
 		categoryRequired: false,
 		durationInDays: 15,
@@ -90,7 +90,7 @@ const officialPlans = [
 		isActive: true,
 	},
 	{
-		planName: 'Adult & Ladies Batch (15 Days)',
+		planName: '15 Days Adult & Ladies Batch',
 		type: 'summer',
 		categoryRequired: false,
 		durationInDays: 15,

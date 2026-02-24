@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import emailjs from "@emailjs/browser";
 import Swal from 'sweetalert2';
+import { formatDateTime } from "../utils/dateTime";
 
 
 
@@ -65,7 +66,7 @@ const Contact = () => {
             from_email: formData.email,
             phone: formData.phone,
             message: formData.message,
-            time: new Date().toLocaleString(),
+				time: formatDateTime(new Date()),
           },
           "mbQp-0kZOmadPSjVn"
         );
@@ -210,7 +211,7 @@ const Contact = () => {
             <form onSubmit={handleSubmit}>
               <input type="text" name="name" placeholder="Your Name" value={formData.name} onChange={handleChange} required style={{ background: "rgba(255, 255, 255, 0.1)", border: "1.5px solid rgba(255, 255, 255, 0.2)", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontSize: "0.95rem", fontWeight: "500", transition: "all 0.3s ease", marginBottom: "18px", width: "100%", boxSizing: "border-box" }} />
               <input type="email" name="email" placeholder="Your Email" value={formData.email} onChange={handleChange} required style={{ background: "rgba(255, 255, 255, 0.1)", border: "1.5px solid rgba(255, 255, 255, 0.2)", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontSize: "0.95rem", fontWeight: "500", transition: "all 0.3s ease", marginBottom: "18px", width: "100%", boxSizing: "border-box" }} />
-              <input type="number"  required pattern="[0-9]{10,14}" minLength="10" maxLength="14" name="phone" placeholder="Phone 10 digit only" value={formData.phone} onChange={handleChange}  style={{ background: "rgba(255, 255, 255, 0.1)", border: "1.5px solid rgba(255, 255, 255, 0.2)", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontSize: "0.95rem", fontWeight: "500", transition: "all 0.3s ease", marginBottom: "18px", width: "100%", boxSizing: "border-box" }} />
+              <input type="number"  required pattern="[0-9]{10,14}" minLength="10" maxLength="14" name="phone" placeholder="WhatsApp Number (10 digits)" value={formData.phone} onChange={handleChange}  style={{ background: "rgba(255, 255, 255, 0.1)", border: "1.5px solid rgba(255, 255, 255, 0.2)", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontSize: "0.95rem", fontWeight: "500", transition: "all 0.3s ease", marginBottom: "18px", width: "100%", boxSizing: "border-box" }} />
               <textarea className="w-100" name="message" placeholder="Your Message" rows="5" value={formData.message} onChange={handleChange} required />
               <button type="submit" style={{ background: "linear-gradient(135deg, #FF6B6B, #FF9FF3)", border: "none", color: "#fff", fontWeight: "700", fontSize: "1rem", padding: "14px 40px", borderRadius: "10px", cursor: "pointer", transition: "all 0.3s ease", boxShadow: "0 4px 15px rgba(255, 107, 107, 0.4)", width: "100%", marginTop: "10px", ...(submitHovered ? { transform: "translateY(-3px)", boxShadow: "0 6px 25px rgba(255, 107, 107, 0.6)" } : {}) }} onMouseEnter={() => setSubmitHovered(true)} onMouseLeave={() => setSubmitHovered(false)}> {loading ? "Sending..." : "Send Message"}   </button>
             </form>

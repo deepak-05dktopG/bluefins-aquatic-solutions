@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { downloadMemberIdCard } from '../utils/idCard'
+import { formatDateTime, formatHHmmTo12Hour } from '../utils/dateTime'
 
 const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
 
@@ -43,7 +44,7 @@ const PLAN_TYPE_LABEL = {
   monthly: 'Monthly Training',
   yearly: 'Individual (1 Year)',
   family: 'Family (1 Year)',
-  public: 'Public Entry (Per Session)',
+  public: 'Public Batch (Per Session)',
 }
 
 const CATEGORY_LABEL = {
@@ -318,8 +319,8 @@ const Membership = () => {
         const contactName = normalizeText(member.name)
         const contactPhone = normalizePhone10(member.phone)
         if (!contactName) return 'Contact name is required'
-        if (!contactPhone) return 'Contact phone is required'
-        if (!isValidPhone10(contactPhone)) return 'Contact phone must be a valid 10-digit number'
+        if (!contactPhone) return 'Contact WhatsApp number is required'
+        if (!isValidPhone10(contactPhone)) return 'Contact WhatsApp number must be a valid 10-digit number'
 
         const list = Array.isArray(familyMembers) ? familyMembers : []
         if (!list.length) return 'Add at least 1 family member'
@@ -331,7 +332,7 @@ const Membership = () => {
           const n = normalizeText(fm?.name)
           if (!n) return 'All family members require a name'
           const p = normalizePhone10(fm?.phone)
-          if (p && !isValidPhone10(p)) return 'Family member phone must be a valid 10-digit number'
+          if (p && !isValidPhone10(p)) return 'Family member WhatsApp number must be a valid 10-digit number'
           const g = normalizeGender(fm?.gender)
           if (g === null) return 'Family member gender must be Male/Female/Other'
           const a = normalizeAge(fm?.age)
@@ -341,8 +342,8 @@ const Membership = () => {
         const name = normalizeText(member.name)
         const phone = normalizePhone10(member.phone)
         if (!name) return 'Name is required'
-        if (!phone) return 'Phone is required'
-        if (!isValidPhone10(phone)) return 'Phone must be a valid 10-digit number'
+        if (!phone) return 'WhatsApp number is required'
+        if (!isValidPhone10(phone)) return 'WhatsApp number must be a valid 10-digit number'
         const g = normalizeGender(member.gender)
         if (g === null) return 'Gender must be Male/Female/Other'
         const a = normalizeAge(member.age)
@@ -685,7 +686,7 @@ const Membership = () => {
                     <div className="membership-card membership-section">
                       <h6 style={{ color: '#fff', margin: 0, fontWeight: 800 }}>Choose a plan</h6>
                       <div style={{ color: 'rgba(255,255,255,0.78)', fontSize: 12, marginTop: 6 }}>
-                        Public Entry plans appear first.
+                        Public Batch plans appear first.
                       </div>
 
                       {loadingPlans ? (
@@ -721,7 +722,7 @@ const Membership = () => {
                                 </div>
 
                                 {p.type === 'public' ? (
-                                  <div className="membership-plan-tag">Public Entry</div>
+                                  <div className="membership-plan-tag">Public Batch</div>
                                 ) : p.type === 'family' ? (
                                   <div className="membership-plan-tag">Family</div>
                                 ) : null}
@@ -832,8 +833,8 @@ const Membership = () => {
                                 </div>
                               </div>
                               <div className="mt-2" style={{ color: 'rgba(255,255,255,0.82)', fontSize: 12 }}>
-                                Entry window: {selectedPlan.publicEntryWindow?.startTime || '—'} to{' '}
-                                {selectedPlan.publicEntryWindow?.endTime || '—'}. If End Time is empty, it defaults to +1 hour.
+                                Entry window: {formatHHmmTo12Hour(selectedPlan.publicEntryWindow?.startTime) || '—'} to{' '}
+                                {formatHHmmTo12Hour(selectedPlan.publicEntryWindow?.endTime) || '—'}. If End Time is empty, it defaults to +1 hour.
                               </div>
                             </div>
                           ) : null}
@@ -844,7 +845,7 @@ const Membership = () => {
                         <div className="membership-subcard-title">Ready to book?</div>
                         <div style={{ color: 'rgba(255,255,255,0.82)', fontSize: 12, lineHeight: 1.6 }}>
                           <div>
-                            <b>Public Entry:</b> choose date, time, and number of people, then continue to pay.
+                            <b>Public Batch:</b> choose date, time, and number of people, then continue to pay.
                           </div>
                           <div className="mt-1">
                             <b>Membership/Coaching:</b> choose the plan type (Monthly/Yearly/Family), select category/add-ons if available,
@@ -891,7 +892,7 @@ const Membership = () => {
                           </div>
                           <div className="mb-2">
                             <label className="form-label" style={{ color: '#fff' }}>
-                              Contact Phone (payer)
+                              Contact WhatsApp Number (payer)
                             </label>
                             <input
                               className="form-control form-control-sm"
@@ -932,7 +933,7 @@ const Membership = () => {
                                 </div>
                                 <div className="col-12">
                                   <label className="form-label" style={{ color: '#fff' }}>
-                                    Phone (optional)
+                                    WhatsApp Number (optional)
                                   </label>
                                   <input
                                     className="form-control form-control-sm"
@@ -1009,7 +1010,7 @@ const Membership = () => {
 
                           <div className="mb-2">
                             <label className="form-label" style={{ color: '#fff' }}>
-                              Phone
+                              WhatsApp Number
                             </label>
                             <input
                               className="form-control form-control-sm"
@@ -1156,7 +1157,7 @@ const Membership = () => {
                       <div>
                         <b>Slot:</b>{' '}
                         {selection.publicSlot?.date ? selection.publicSlot.date : '—'}{' '}
-                        {selection.publicSlot?.startTime ? selection.publicSlot.startTime : ''}
+                        {selection.publicSlot?.startTime ? formatHHmmTo12Hour(selection.publicSlot.startTime) : ''}
                       </div>
                     ) : null}
                     {selectedPlan.type === 'family' ? (
@@ -1193,7 +1194,7 @@ const Membership = () => {
                       <b>Paid:</b> {result?.payment?.status === 'paid' ? 'Yes' : 'Pending'}
                     </div>
                     <div>
-                      <b>Expiry preview:</b> {computedExpiryPreview ? computedExpiryPreview.toLocaleString() : '—'}
+							<b>Expiry preview:</b> {computedExpiryPreview ? formatDateTime(computedExpiryPreview) : '—'}
                     </div>
                   </div>
                 )}

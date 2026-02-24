@@ -78,6 +78,14 @@ const AdminDashboard = () => {
       color: "#FFB6C1",
       count: "",
     },
+    {
+      title: "Marketing (WhatsApp)",
+      description: "Filter members/customers and send bulk WhatsApp",
+      icon: <FaComments />,
+      path: "/admin/marketing",
+      color: "#00FFD4",
+      count: "",
+    },
   ];
 
   const stats = [

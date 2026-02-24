@@ -6,6 +6,8 @@ import MembershipPlan from '../models/MembershipPlan.js'
 import Member from '../models/Member.js'
 import Payment from '../models/Payment.js'
 import Attendance from '../models/Attendance.js'
+import { upsertMarkettingLead } from '../utils/marketting.js'
+import Marketting from '../models/Marketting.js'
 
 const BUSINESS_TZ_OFFSET_MINUTES = Number.parseInt(process.env.BUSINESS_TZ_OFFSET_MINUTES || '330', 10)
 
@@ -175,7 +177,7 @@ const computeMemberStatus = ({ expiryDate, planType, publicSlot }) => {
 	if (!eod) return 'expired'
 	return eod.getTime() >= now ? 'active' : 'expired'
 }
-
+ 
 const getCategoryPrice = (plan, category) => {
 	const normalized = category ? String(category).toLowerCase() : ''
 	const match = (plan.categoryPrices || []).find((p) => p.category === normalized)
@@ -475,6 +477,18 @@ const createMembersForDraft = async ({ plan, amountRes, membersToCreate, joinDat
 		doc.qrPayload = qrPayload
 		doc.qrCode = qrCode
 		await doc.save()
+
+		// Best-effort: store for marketing use (no duplicates by WhatsApp number)
+		try {
+			void upsertMarkettingLead({
+				customerName: doc?.name,
+				whatsappNumber: doc?.phone,
+				source: 'membership',
+			}).catch(() => {})
+		} catch {
+			// ignore marketing persistence failures
+		}
+
 		createdMembers.push(doc)
 	}
 	return createdMembers
@@ -619,7 +633,7 @@ export const seedOfficialPlans = asyncHandler(async (req, res) => {
 
 	const officialPlans = [
 		{
-			planName: 'Public Entry (Per Session)',
+			planName: 'Public Batch (Per Session)',
 			type: 'public',
 			categoryRequired: false,
 			durationInMinutes: 60,
@@ -633,7 +647,7 @@ export const seedOfficialPlans = asyncHandler(async (req, res) => {
 			type: 'monthly',
 			categoryRequired: false,
 			durationInDays: 30,
-			basePrice: 2000,
+			basePrice: 3000,
 			isRecurring: true,
 			isActive: true,
 		},
@@ -665,12 +679,12 @@ export const seedOfficialPlans = asyncHandler(async (req, res) => {
 			isActive: true,
 		},
 		{
-			planName: 'Infant Plan (21 Days)',
-			type: 'summer',
+			planName: 'Infant (Per Month)',
+			type: 'monthly',
 			categoryRequired: false,
-			durationInDays: 21,
+			durationInDays: 30,
 			basePrice: 4000,
-			isRecurring: false,
+			isRecurring: true,
 			isActive: true,
 		},
 		{
@@ -684,7 +698,7 @@ export const seedOfficialPlans = asyncHandler(async (req, res) => {
 			isActive: true,
 		},
 		{
-			planName: 'Coaching (One Month)',
+			planName: 'One Month Coaching',
 			type: 'monthly',
 			categoryRequired: false,
 			durationInDays: 30,
@@ -693,7 +707,7 @@ export const seedOfficialPlans = asyncHandler(async (req, res) => {
 			isActive: true,
 		},
 		{
-			planName: 'Coaching (15 Days)',
+			planName: '15 Days Coaching',
 			type: 'summer',
 			categoryRequired: false,
 			durationInDays: 15,
@@ -702,7 +716,7 @@ export const seedOfficialPlans = asyncHandler(async (req, res) => {
 			isActive: true,
 		},
 		{
-			planName: 'Adult & Ladies Batch (15 Days)',
+			planName: '15 Days Adult & Ladies Batch',
 			type: 'summer',
 			categoryRequired: false,
 			durationInDays: 15,
