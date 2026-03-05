@@ -1,5 +1,14 @@
+/**
+ * What it is: Database connector (MongoDB).
+ * Non-tech note: This connects the server to the database where data is stored.
+ */
+
 import mongoose from 'mongoose'
 
+/**
+ * Purpose: Do Connect DB
+ * Plain English: What this function is used for.
+ */
 const connectDB = async () => {
   try {
     const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/bluefins'
@@ -13,7 +22,13 @@ const connectDB = async () => {
       try {
         const members = conn.connection.db.collection('members')
         const indexes = await members.indexes()
-        const emailIndex = indexes.find((i) => i?.name === 'email_1')
+        const emailIndex = indexes.find(/**
+         * Purpose: Array search callback (finds the first matching item)
+         * Plain English: What this function is used for.
+         */
+        i => {
+          return i?.name === 'email_1';
+        })
         if (emailIndex?.unique && emailIndex?.sparse !== true) {
           await members.dropIndex('email_1')
           console.log('🧹 Dropped legacy unique index members.email_1 (non-sparse)')
@@ -28,6 +43,6 @@ const connectDB = async () => {
     console.error('💡 Tip: Start local MongoDB and ensure it is listening on 127.0.0.1:27017')
     process.exit(1)
   }
-}
+};
 
 export default connectDB

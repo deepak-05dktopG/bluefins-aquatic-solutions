@@ -1,9 +1,18 @@
+/**
+ * What it is: Feedback API controller.
+ * Non-tech note: Saves and manages messages users submit from the Contact page.
+ */
+
 import Feedback from '../models/Feedback.js';
 
 // @desc    Submit new feedback
 // @route   POST /api/feedback
 // @access  Public
-export const createFeedback = async (req, res) => {
+export /**
+ * Purpose: Create Feedback
+ * Plain English: What this function is used for.
+ */
+const createFeedback = async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
 
@@ -45,7 +54,13 @@ export const createFeedback = async (req, res) => {
     
     // Handle validation errors
     if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(err => err.message);
+      const messages = Object.values(error.errors).map(/**
+       * Purpose: Array mapping callback (converts each item to a new value)
+       * Plain English: What this function is used for.
+       */
+      err => {
+        return err.message;
+      });
       return res.status(400).json({
         success: false,
         message: messages.join(', ')
@@ -62,7 +77,11 @@ export const createFeedback = async (req, res) => {
 // @desc    Get all feedback (Admin only)
 // @route   GET /api/feedback
 // @access  Private/Admin
-export const getAllFeedback = async (req, res) => {
+export /**
+ * Purpose: Get All Feedback
+ * Plain English: What this function is used for.
+ */
+const getAllFeedback = async (req, res) => {
   try {
     const { status, limit = 50, page = 1 } = req.query;
 
@@ -104,7 +123,11 @@ export const getAllFeedback = async (req, res) => {
 // @desc    Get single feedback by ID
 // @route   GET /api/feedback/:id
 // @access  Private/Admin
-export const getFeedbackById = async (req, res) => {
+export /**
+ * Purpose: Get Feedback By Id
+ * Plain English: What this function is used for.
+ */
+const getFeedbackById = async (req, res) => {
   try {
     const feedback = await Feedback.findById(req.params.id);
 
@@ -131,7 +154,11 @@ export const getFeedbackById = async (req, res) => {
 // @desc    Update feedback status
 // @route   PATCH /api/feedback/:id
 // @access  Private/Admin
-export const updateFeedbackStatus = async (req, res) => {
+export /**
+ * Purpose: Do Update Feedback Status
+ * Plain English: What this function is used for.
+ */
+const updateFeedbackStatus = async (req, res) => {
   try {
     const { status } = req.body;
 
@@ -172,7 +199,11 @@ export const updateFeedbackStatus = async (req, res) => {
 // @desc    Delete feedback
 // @route   DELETE /api/feedback/:id
 // @access  Private/Admin
-export const deleteFeedback = async (req, res) => {
+export /**
+ * Purpose: Do Delete Feedback
+ * Plain English: What this function is used for.
+ */
+const deleteFeedback = async (req, res) => {
   try {
     const feedback = await Feedback.findByIdAndDelete(req.params.id);
 
@@ -199,7 +230,11 @@ export const deleteFeedback = async (req, res) => {
 // @desc    Get feedback statistics
 // @route   GET /api/feedback/stats
 // @access  Private/Admin
-export const getFeedbackStats = async (req, res) => {
+export /**
+ * Purpose: Get Feedback Stats
+ * Plain English: What this function is used for.
+ */
+const getFeedbackStats = async (req, res) => {
   try {
     const totalFeedback = await Feedback.countDocuments();
     const unreadFeedback = await Feedback.countDocuments({ status: 'unread' });

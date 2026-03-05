@@ -1,8 +1,23 @@
-﻿import { useEffect } from "react"
+﻿/**
+ * What it is: Website page (Team screen).
+ * Non-tech note: This file shows team members and related information.
+ */
+
+import { useEffect } from "react"
+import { NavLink } from "react-router-dom"
+import Navbar from "../components/Navbar"
 import AOS from "aos"
 import "aos/dist/aos.css"
+/**
+ * Purpose: Do Team
+ * Plain English: What this function is used for.
+ */
 const Team = () => {
-  useEffect(() => {
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
     AOS.init({ 
       duration: 1000, 
       easing: "ease-in-out-cubic",
@@ -104,7 +119,6 @@ const Team = () => {
         }
       `}</style>
       <Navbar />
-
       <section style={{ position: "relative", color: "white", padding: "clamp(84px, 12vw, 100px) 0 clamp(24px, 5vw, 40px)", background: "linear-gradient(135deg, #FF6B6B, #FFE66D, #4ECDC4, #667eea)", backgroundSize: "200% 200%", animation: "gradientShift 12s ease infinite", minHeight: "auto", display: "flex", alignItems: "center" }}>
         <div style={{ position: "absolute", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(255,107,107,0.15) 0%, transparent 70%)", borderRadius: "50%", top: "20%", right: "-10%" }} />
         <div style={{ position: "absolute", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(78,205,196,0.15) 0%, transparent 70%)", borderRadius: "50%", bottom: "10%", left: "-5%" }} />
@@ -112,14 +126,23 @@ const Team = () => {
           <div style={{ textAlign: "center" }} data-aos="fade-up" data-aos-delay="100">
             <h1 style={{ fontSize: "clamp(2.2rem, 6vw, 4rem)", fontWeight: "900", lineHeight: 1.05, marginBottom: "1rem", color: "#fff", textShadow: "0 4px 15px rgba(0,0,0,0.2)" }}>Meet Our Expert <span style={{ color: "#FFE66D" }}>Team</span></h1>
             <p style={{ fontSize: "1.2rem", opacity: 0.95, marginBottom: "2rem", lineHeight: 1.9, maxWidth: "700px", margin: "0 auto" }}>Our team of 25+ certified coaches brings decades of combined experience in competitive swimming, coaching, and institutional management.</p>
-            <NavLink to="/contact" style={{ textDecoration: "none" }}><button style={{ background: "#fff", color: "#FF6B6B", border: "none", padding: "14px 32px", borderRadius: "50px", fontWeight: "700", fontSize: "0.95rem", cursor: "pointer", transition: "all 0.3s ease", boxShadow: "0 8px 25px rgba(255,255,255,0.4)" }} onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-4px) scale(1.05)"} onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0) scale(1)"}>Connect With Us</button></NavLink>
+            <NavLink to="/contact" style={{ textDecoration: "none" }}><button style={{ background: "#fff", color: "#FF6B6B", border: "none", padding: "14px 32px", borderRadius: "50px", fontWeight: "700", fontSize: "0.95rem", cursor: "pointer", transition: "all 0.3s ease", boxShadow: "0 8px 25px rgba(255,255,255,0.4)" }} onMouseEnter={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
+              return e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
+            }} onMouseLeave={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
+              return e.currentTarget.style.transform = "translateY(0) scale(1)";
+            }}>Connect With Us</button></NavLink>
           </div>
         </div>
         <svg viewBox="0 0 1440 200" preserveAspectRatio="none" style={{ position: "absolute", bottom: -2, left: 0, width: "100%" }}><defs><linearGradient id="teamHeroWave" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style={{ stopColor: "rgba(102,126,234,0.2)", stopOpacity: 1 }} /><stop offset="100%" style={{ stopColor: "#f5f3ff", stopOpacity: 1 }} /></linearGradient></defs><path fill="url(#teamHeroWave)" d="M0,100 Q180,50 360,100 T720,100 T1080,100 T1440,100 L1440,200 L0,200 Z" /></svg>
       </section>
-
-      
-
       <section style={{ background: "linear-gradient(180deg, #f5f3ff 0%, #fff5f0 50%, #f0f9ff 100%)", position: "relative", padding: "80px 0", overflow: "hidden" }}>
         {/* Futuristic Background Elements */}
         <div style={{
@@ -229,7 +252,19 @@ const Team = () => {
             {/* CEO */}
             <Row className="mb-5 justify-content-center">
               <Col xs={12} sm={10} md={6} lg={4} className="d-flex justify-content-center">
-                <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(255,107,107,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #FF6B6B30" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-10px)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(255,107,107,0.3)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 10px 40px rgba(255,107,107,0.2)"; }}>
+                <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(255,107,107,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #FF6B6B30" }} onMouseEnter={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
+                  e.currentTarget.style.transform = "translateY(-10px)";e.currentTarget.style.boxShadow = "0 20px 60px rgba(255,107,107,0.3)";
+                }} onMouseLeave={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
+                  e.currentTarget.style.transform = "translateY(0)";e.currentTarget.style.boxShadow = "0 10px 40px rgba(255,107,107,0.2)";
+                }}>
                   <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
                     <img src={teamData.leadership.members[0].image} alt={teamData.leadership.members[0].name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </div>
@@ -237,9 +272,13 @@ const Team = () => {
                     <h4 style={{ color: "#FF6B6B", fontWeight: "800", fontSize: "0.95rem", margin: "0 0 3px 0" }}>{teamData.leadership.members[0].name}</h4>
                     <p style={{ color: "#FF6B6B", fontWeight: "600", fontSize: "0.75rem", margin: "0 0 10px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>{teamData.leadership.members[0].position}</p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", justifyContent: "center" }}>
-                      {teamData.leadership.members[0].eligibilities.slice(0, 2).map((elig, idx) => (
-                        <span key={idx} style={{ background: "#FF6B6B20", color: "#FF6B6B", padding: "3px 6px", borderRadius: "10px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "wrap" }}>{elig}</span>
-                      ))}
+                      {teamData.leadership.members[0].eligibilities.slice(0, 2).map(/**
+                       * Purpose: Array mapping callback (converts each item to a new value)
+                       * Plain English: What this function is used for.
+                       */
+                      (elig, idx) => {
+                        return (<span key={idx} style={{ background: "#FF6B6B20", color: "#FF6B6B", padding: "3px 6px", borderRadius: "10px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "wrap" }}>{elig}</span>);
+                      })}
                     </div>
                   </div>
                 </div>
@@ -248,24 +287,46 @@ const Team = () => {
 
             {/* Directors */}
             <Row className="g-4" data-aos="fade-up">
-              {teamData.leadership.members.slice(1).map((member, i) => (
-                <Col xs={12} sm={6} md={4} key={i} className="d-flex justify-content-center" data-aos="zoom-in" data-aos-delay={i * 50}>
-                  <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(255,107,107,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #FF6B6B30" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-10px)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(255,107,107,0.3)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 10px 40px rgba(255,107,107,0.2)"; }}>
-                    <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
-                      <img src={member.image} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    </div>
-                    <div style={{ padding: "15px", textAlign: "center" }}>
-                      <h4 style={{ color: "#FF6B6B", fontWeight: "800", fontSize: "0.95rem", margin: "0 0 3px 0" }}>{member.name}</h4>
-                      <p style={{ color: "#FF6B6B", fontWeight: "600", fontSize: "0.75rem", margin: "0 0 10px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>{member.position}</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", justifyContent: "center" }}>
-                        {member.eligibilities.slice(0, 2).map((elig, idx) => (
-                          <span key={idx} style={{ background: "#FF6B6B20", color: "#FF6B6B", padding: "3px 6px", borderRadius: "10px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "nowrap" }}>{elig}</span>
-                        ))}
+              {teamData.leadership.members.slice(1).map(/**
+               * Purpose: Array mapping callback (converts each item to a new value)
+               * Plain English: What this function is used for.
+               */
+              (member, i) => {
+                return (
+                  <Col xs={12} sm={6} md={4} key={i} className="d-flex justify-content-center" data-aos="zoom-in" data-aos-delay={i * 50}>
+                    <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(255,107,107,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #FF6B6B30" }} onMouseEnter={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.transform = "translateY(-10px)";e.currentTarget.style.boxShadow = "0 20px 60px rgba(255,107,107,0.3)";
+                    }} onMouseLeave={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.transform = "translateY(0)";e.currentTarget.style.boxShadow = "0 10px 40px rgba(255,107,107,0.2)";
+                    }}>
+                      <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
+                        <img src={member.image} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                      <div style={{ padding: "15px", textAlign: "center" }}>
+                        <h4 style={{ color: "#FF6B6B", fontWeight: "800", fontSize: "0.95rem", margin: "0 0 3px 0" }}>{member.name}</h4>
+                        <p style={{ color: "#FF6B6B", fontWeight: "600", fontSize: "0.75rem", margin: "0 0 10px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>{member.position}</p>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", justifyContent: "center" }}>
+                          {member.eligibilities.slice(0, 2).map(/**
+                           * Purpose: Array mapping callback (converts each item to a new value)
+                           * Plain English: What this function is used for.
+                           */
+                          (elig, idx) => {
+                            return (<span key={idx} style={{ background: "#FF6B6B20", color: "#FF6B6B", padding: "3px 6px", borderRadius: "10px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "nowrap" }}>{elig}</span>);
+                          })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Col>
-              ))}
+                  </Col>
+                );
+              })}
             </Row>
           </div>
 
@@ -273,24 +334,46 @@ const Team = () => {
           <div className="mb-5" data-aos="fade-up">
             <h3 style={{ fontSize: "1.8rem", color: "#667eea", fontWeight: "bold", marginBottom: "40px", paddingBottom: "15px", borderBottom: "3px solid #667eea" }}>Coaching Team</h3>
             <Row className="g-4">
-              {teamData.coaching.members.map((member, i) => (
-                <Col xs={12} sm={6} md={4} lg={3} key={i} className="d-flex justify-content-center" data-aos="zoom-in" data-aos-delay={i * 30}>
-                  <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(102,126,234,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #667eea30" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-10px)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(102,126,234,0.3)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 10px 40px rgba(102,126,234,0.2)"; }}>
-                    <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
-                      <img src={member.image} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    </div>
-                    <div style={{ padding: "15px", textAlign: "center" }}>
-                      <h4 style={{ color: "#667eea", fontWeight: "800", fontSize: "0.9rem", margin: "0 0 3px 0" }}>{member.name}</h4>
-                      <p style={{ color: "#667eea", fontWeight: "600", fontSize: "0.7rem", margin: "0 0 8px 0", textTransform: "uppercase", letterSpacing: "0.3px" }}>{member.position}</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "3px", justifyContent: "center" }}>
-                        {member.eligibilities.slice(0, 2).map((elig, idx) => (
-                          <span key={idx} style={{ background: "#667eea20", color: "#667eea", padding: "2px 5px", borderRadius: "8px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "nowrap" }}>{elig}</span>
-                        ))}
+              {teamData.coaching.members.map(/**
+               * Purpose: Array mapping callback (converts each item to a new value)
+               * Plain English: What this function is used for.
+               */
+              (member, i) => {
+                return (
+                  <Col xs={12} sm={6} md={4} lg={3} key={i} className="d-flex justify-content-center" data-aos="zoom-in" data-aos-delay={i * 30}>
+                    <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(102,126,234,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #667eea30" }} onMouseEnter={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.transform = "translateY(-10px)";e.currentTarget.style.boxShadow = "0 20px 60px rgba(102,126,234,0.3)";
+                    }} onMouseLeave={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.transform = "translateY(0)";e.currentTarget.style.boxShadow = "0 10px 40px rgba(102,126,234,0.2)";
+                    }}>
+                      <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
+                        <img src={member.image} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                      <div style={{ padding: "15px", textAlign: "center" }}>
+                        <h4 style={{ color: "#667eea", fontWeight: "800", fontSize: "0.9rem", margin: "0 0 3px 0" }}>{member.name}</h4>
+                        <p style={{ color: "#667eea", fontWeight: "600", fontSize: "0.7rem", margin: "0 0 8px 0", textTransform: "uppercase", letterSpacing: "0.3px" }}>{member.position}</p>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "3px", justifyContent: "center" }}>
+                          {member.eligibilities.slice(0, 2).map(/**
+                           * Purpose: Array mapping callback (converts each item to a new value)
+                           * Plain English: What this function is used for.
+                           */
+                          (elig, idx) => {
+                            return (<span key={idx} style={{ background: "#667eea20", color: "#667eea", padding: "2px 5px", borderRadius: "8px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "nowrap" }}>{elig}</span>);
+                          })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Col>
-              ))}
+                  </Col>
+                );
+              })}
             </Row>
           </div>
 
@@ -298,24 +381,46 @@ const Team = () => {
           <div className="mb-5" data-aos="fade-up">
             <h3 style={{ fontSize: "1.8rem", color: "#FF9FF3", fontWeight: "bold", marginBottom: "40px", paddingBottom: "15px", borderBottom: "3px solid #FF9FF3" }}>Safety & Support</h3>
             <Row className="g-4 justify-content-center">
-              {teamData.safety.members.map((member, i) => (
-                <Col xs={12} sm={6} md={4} lg={4} key={i} className="d-flex justify-content-center" data-aos="zoom-in" data-aos-delay={i * 50}>
-                  <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(255,159,243,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #FF9FF330" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-10px)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(255,159,243,0.3)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 10px 40px rgba(255,159,243,0.2)"; }}>
-                    <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
-                      <img src={member.image} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    </div>
-                    <div style={{ padding: "15px", textAlign: "center" }}>
-                      <h4 style={{ color: "#FF9FF3", fontWeight: "800", fontSize: "0.95rem", margin: "0 0 3px 0" }}>{member.name}</h4>
-                      <p style={{ color: "#FF9FF3", fontWeight: "600", fontSize: "0.75rem", margin: "0 0 10px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>{member.position}</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", justifyContent: "center" }}>
-                        {member.eligibilities.slice(0, 2).map((elig, idx) => (
-                          <span key={idx} style={{ background: "#FF9FF320", color: "#FF9FF3", padding: "3px 6px", borderRadius: "10px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "nowrap" }}>{elig}</span>
-                        ))}
+              {teamData.safety.members.map(/**
+               * Purpose: Array mapping callback (converts each item to a new value)
+               * Plain English: What this function is used for.
+               */
+              (member, i) => {
+                return (
+                  <Col xs={12} sm={6} md={4} lg={4} key={i} className="d-flex justify-content-center" data-aos="zoom-in" data-aos-delay={i * 50}>
+                    <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(255,159,243,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #FF9FF330" }} onMouseEnter={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.transform = "translateY(-10px)";e.currentTarget.style.boxShadow = "0 20px 60px rgba(255,159,243,0.3)";
+                    }} onMouseLeave={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.transform = "translateY(0)";e.currentTarget.style.boxShadow = "0 10px 40px rgba(255,159,243,0.2)";
+                    }}>
+                      <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
+                        <img src={member.image} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                      <div style={{ padding: "15px", textAlign: "center" }}>
+                        <h4 style={{ color: "#FF9FF3", fontWeight: "800", fontSize: "0.95rem", margin: "0 0 3px 0" }}>{member.name}</h4>
+                        <p style={{ color: "#FF9FF3", fontWeight: "600", fontSize: "0.75rem", margin: "0 0 10px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>{member.position}</p>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", justifyContent: "center" }}>
+                          {member.eligibilities.slice(0, 2).map(/**
+                           * Purpose: Array mapping callback (converts each item to a new value)
+                           * Plain English: What this function is used for.
+                           */
+                          (elig, idx) => {
+                            return (<span key={idx} style={{ background: "#FF9FF320", color: "#FF9FF3", padding: "3px 6px", borderRadius: "10px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "nowrap" }}>{elig}</span>);
+                          })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Col>
-              ))}
+                  </Col>
+                );
+              })}
             </Row>
           </div>
 
@@ -323,52 +428,104 @@ const Team = () => {
           <div data-aos="fade-up">
             <h3 style={{ fontSize: "1.8rem", color: "#54A0FF", fontWeight: "bold", marginBottom: "40px", paddingBottom: "15px", borderBottom: "3px solid #54A0FF" }}>Administration & Promotion</h3>
             <Row className="g-4 justify-content-center">
-              {teamData.administration.members.map((member, i) => (
-                <Col xs={12} sm={6} md={4} lg={4} key={i} className="d-flex justify-content-center" data-aos="zoom-in" data-aos-delay={i * 50}>
-                  <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(84,160,255,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #54A0FF30" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-10px)"; e.currentTarget.style.boxShadow = "0 20px 60px rgba(84,160,255,0.3)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 10px 40px rgba(84,160,255,0.2)"; }}>
-                    <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
-                      <img src={member.image} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    </div>
-                    <div style={{ padding: "15px", textAlign: "center" }}>
-                      <h4 style={{ color: "#54A0FF", fontWeight: "800", fontSize: "0.95rem", margin: "0 0 3px 0" }}>{member.name}</h4>
-                      <p style={{ color: "#54A0FF", fontWeight: "600", fontSize: "0.75rem", margin: "0 0 10px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>{member.position}</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", justifyContent: "center" }}>
-                        {member.eligibilities.slice(0, 2).map((elig, idx) => (
-                          <span key={idx} style={{ background: "#54A0FF20", color: "#54A0FF", padding: "3px 6px", borderRadius: "10px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "nowrap" }}>{elig}</span>
-                        ))}
+              {teamData.administration.members.map(/**
+               * Purpose: Array mapping callback (converts each item to a new value)
+               * Plain English: What this function is used for.
+               */
+              (member, i) => {
+                return (
+                  <Col xs={12} sm={6} md={4} lg={4} key={i} className="d-flex justify-content-center" data-aos="zoom-in" data-aos-delay={i * 50}>
+                    <div style={{ width: "100%", maxWidth: "250px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 10px 40px rgba(84,160,255,0.2)", transition: "all 0.3s ease", cursor: "pointer", border: "3px solid #54A0FF30" }} onMouseEnter={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.transform = "translateY(-10px)";e.currentTarget.style.boxShadow = "0 20px 60px rgba(84,160,255,0.3)";
+                    }} onMouseLeave={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.transform = "translateY(0)";e.currentTarget.style.boxShadow = "0 10px 40px rgba(84,160,255,0.2)";
+                    }}>
+                      <div style={{ aspectRatio: "4/5", overflow: "hidden", background: "#f0f0f0" }}>
+                        <img src={member.image} alt={member.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                      <div style={{ padding: "15px", textAlign: "center" }}>
+                        <h4 style={{ color: "#54A0FF", fontWeight: "800", fontSize: "0.95rem", margin: "0 0 3px 0" }}>{member.name}</h4>
+                        <p style={{ color: "#54A0FF", fontWeight: "600", fontSize: "0.75rem", margin: "0 0 10px 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>{member.position}</p>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", justifyContent: "center" }}>
+                          {member.eligibilities.slice(0, 2).map(/**
+                           * Purpose: Array mapping callback (converts each item to a new value)
+                           * Plain English: What this function is used for.
+                           */
+                          (elig, idx) => {
+                            return (<span key={idx} style={{ background: "#54A0FF20", color: "#54A0FF", padding: "3px 6px", borderRadius: "10px", fontSize: "0.6rem", fontWeight: "600", whiteSpace: "nowrap" }}>{elig}</span>);
+                          })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Col>
-              ))}
+                  </Col>
+                );
+              })}
             </Row>
           </div>
         </Container>
         </div>
       </section>
-
       <section style={{ background: "linear-gradient(135deg, #667eea, #764ba2, #f093fb, #f5576c)", backgroundSize: "200% 200%", animation: "gradientShift 15s ease infinite", color: "white", position: "relative", padding: "100px 0" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
           <div style={{ textAlign: "center", marginBottom: "60px" }} data-aos="fade-up">
             <h2 style={{ fontSize: "2.8rem", marginBottom: "1rem", color: "#fff", fontWeight: "bold" }}>Why Our Team Stands Out</h2>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "30px" }}>
-            {[{ title: "Certified Excellence", desc: "International certifications and continuous training" }, { title: "Proven Success", desc: "Track record of developing national-level swimmers" }, { title: "Passion & Dedication", desc: "Committed to every student's personal growth" }, { title: "Modern Methods", desc: "Latest coaching techniques and training methodologies" }, { title: "Safety First", desc: "Professional lifeguards and safety protocols" }, { title: "Personalized Attention", desc: "Small batch training for individual development" }].map((r, i) => <div key={i} data-aos="fade-up" data-aos-delay={i * 100} style={{ background: "rgba(255,255,255,0.15)", padding: "30px", borderRadius: "18px", border: "2px solid rgba(255,255,255,0.3)", transition: "all 0.4s ease", cursor: "pointer", backdropFilter: "blur(10px)" }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)"; e.currentTarget.style.transform = "translateY(-10px)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"; e.currentTarget.style.transform = "translateY(0)"; }}><h5 style={{ color: "#FFE66D", fontWeight: "700", marginBottom: "0.8rem", fontSize: "1.1rem" }}> {r.title}</h5><p style={{ color: "rgba(255,255,255,0.9)", fontSize: "0.9rem", lineHeight: 1.6, margin: "0", fontWeight: "500" }}>{r.desc}</p></div>)}
+            {[{ title: "Certified Excellence", desc: "International certifications and continuous training" }, { title: "Proven Success", desc: "Track record of developing national-level swimmers" }, { title: "Passion & Dedication", desc: "Committed to every student's personal growth" }, { title: "Modern Methods", desc: "Latest coaching techniques and training methodologies" }, { title: "Safety First", desc: "Professional lifeguards and safety protocols" }, { title: "Personalized Attention", desc: "Small batch training for individual development" }].map(/**
+             * Purpose: Array mapping callback (converts each item to a new value)
+             * Plain English: What this function is used for.
+             */
+            (r, i) => {
+              return (
+                <div key={i} data-aos="fade-up" data-aos-delay={i * 100} style={{ background: "rgba(255,255,255,0.15)", padding: "30px", borderRadius: "18px", border: "2px solid rgba(255,255,255,0.3)", transition: "all 0.4s ease", cursor: "pointer", backdropFilter: "blur(10px)" }} onMouseEnter={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)";e.currentTarget.style.transform = "translateY(-10px)";
+                }} onMouseLeave={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";e.currentTarget.style.transform = "translateY(0)";
+                }}><h5 style={{ color: "#FFE66D", fontWeight: "700", marginBottom: "0.8rem", fontSize: "1.1rem" }}> {r.title}</h5><p style={{ color: "rgba(255,255,255,0.9)", fontSize: "0.9rem", lineHeight: 1.6, margin: "0", fontWeight: "500" }}>{r.desc}</p></div>
+              );
+            })}
           </div>
         </div>
         <svg viewBox="0 0 1440 200" preserveAspectRatio="none" style={{ position: "absolute", bottom: -2, left: 0, width: "100%" }}><path fill="#fff5f0" d="M0,100 Q360,50 720,100 T1440,100 L1440,200 L0,200 Z" /></svg>
       </section>
-
       <section style={{ background: "linear-gradient(180deg, #fff5f0 0%, #f0f9ff 100%)", position: "relative", padding: "100px 0" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px", textAlign: "center" }} data-aos="zoom-in">
           <h2 style={{ fontSize: "2.5rem", color: "#001f3f", fontWeight: "bold", marginBottom: "1.5rem" }}>Join Our Community Today</h2>
           <p style={{ fontSize: "1.05rem", marginBottom: "2.5rem", maxWidth: "700px", margin: "0 auto 2.5rem", fontWeight: "500", lineHeight: 1.8, color: "#555" }}>Experience world-class coaching and be part of our growing family.</p>
-          <NavLink to="/contact" style={{ textDecoration: "none" }}><button style={{ background: "linear-gradient(135deg, #FF6B6B, #FFE66D)", color: "#fff", border: "none", padding: "14px 32px", borderRadius: "50px", fontWeight: "700", cursor: "pointer", transition: "all 0.3s ease", boxShadow: "0 8px 25px rgba(255,107,107,0.3)", fontSize: "0.95rem" }} onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-4px) scale(1.05)"} onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0) scale(1)"}> Get Started Now</button></NavLink>
+          <NavLink to="/contact" style={{ textDecoration: "none" }}><button style={{ background: "linear-gradient(135deg, #FF6B6B, #FFE66D)", color: "#fff", border: "none", padding: "14px 32px", borderRadius: "50px", fontWeight: "700", cursor: "pointer", transition: "all 0.3s ease", boxShadow: "0 8px 25px rgba(255,107,107,0.3)", fontSize: "0.95rem" }} onMouseEnter={/**
+           * Purpose: Helper callback used inside a larger operation
+           * Plain English: What this function is used for.
+           */
+          e => {
+            return e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
+          }} onMouseLeave={/**
+           * Purpose: Helper callback used inside a larger operation
+           * Plain English: What this function is used for.
+           */
+          e => {
+            return e.currentTarget.style.transform = "translateY(0) scale(1)";
+          }}> Get Started Now</button></NavLink>
         </div>
       </section>
     </div>
-  )
-}
+  );
+};
 
 export default Team;
 

@@ -1,3 +1,8 @@
+/**
+ * What it is: Frontend linting rules (ESLint config).
+ * Non-tech note: Helps keep code clean and catch mistakes while coding.
+ */
+
 import js from '@eslint/js'
 import globals from 'globals'
 import react from 'eslint-plugin-react'

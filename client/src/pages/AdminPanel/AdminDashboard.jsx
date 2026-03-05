@@ -1,5 +1,10 @@
+/**
+ * What it is: Admin panel page (Dashboard screen).
+ * Non-tech note: This is the admin home page with shortcuts to admin tools.
+ */
+
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { isAdminAuthenticated } from "../../utils/adminAuth";
 import AdminNavbar from "../../components/adminPanel/AdminNavbar";
 import {
@@ -12,10 +17,18 @@ import {
   FaUsers,
 } from "react-icons/fa";
 
+/**
+ * Purpose: Do Admin Dashboard
+ * Plain English: What this function is used for.
+ */
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
     if (!isAdminAuthenticated()) {
       navigate("/admin");
     }
@@ -97,7 +110,6 @@ const AdminDashboard = () => {
       }}
     >
       <AdminNavbar />
-
       <div style={{ padding: "40px", maxWidth: "1400px", margin: "0 auto" }}>
         {/* Welcome Section */}
         <div style={{ marginBottom: "40px" }}>
@@ -175,96 +187,109 @@ const AdminDashboard = () => {
             gap: "25px",
           }}
         >
-          {dashboardCards.map((card, index) => (
-            <Link
-              key={index}
-              to={card.path}
-              style={{
-                textDecoration: "none",
-                background: "rgba(15, 25, 50, 0.7)",
-                border: `1px solid ${card.color}`,
-                borderRadius: "16px",
-                padding: "30px",
-                transition: "all 0.3s ease",
-                position: "relative",
-                overflow: "hidden",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-8px)";
-                e.currentTarget.style.boxShadow = `0 15px 40px rgba(${hexToRgb(card.color)}, 0.4)`;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              {/* Background Gradient */}
-              <div
+          {dashboardCards.map(/**
+           * Purpose: Array mapping callback (converts each item to a new value)
+           * Plain English: What this function is used for.
+           */
+          (card, index) => {
+            return (
+              <Link
+                key={index}
+                to={card.path}
                 style={{
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                  width: "150px",
-                  height: "150px",
-                  background: `radial-gradient(circle, ${card.color}20 0%, transparent 70%)`,
-                  borderRadius: "50%",
-                  transform: "translate(30%, -30%)",
+                  textDecoration: "none",
+                  background: "rgba(15, 25, 50, 0.7)",
+                  border: `1px solid ${card.color}`,
+                  borderRadius: "16px",
+                  padding: "30px",
+                  transition: "all 0.3s ease",
+                  position: "relative",
+                  overflow: "hidden",
                 }}
-              />
-
-              <div style={{ position: "relative", zIndex: 1 }}>
+                onMouseEnter={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
+                  e.currentTarget.style.transform = "translateY(-8px)";
+                  e.currentTarget.style.boxShadow = `0 15px 40px rgba(${hexToRgb(card.color)}, 0.4)`;
+                }}
+                onMouseLeave={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                {/* Background Gradient */}
                 <div
                   style={{
-                    fontSize: "2.5rem",
-                    color: card.color,
-                    marginBottom: "15px",
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    width: "150px",
+                    height: "150px",
+                    background: `radial-gradient(circle, ${card.color}20 0%, transparent 70%)`,
+                    borderRadius: "50%",
+                    transform: "translate(30%, -30%)",
                   }}
-                >
-                  {card.icon}
-                </div>
-
-                <h3
-                  style={{
-                    color: card.color,
-                    fontSize: "1.4rem",
-                    fontWeight: 700,
-                    marginBottom: "10px",
-                  }}
-                >
-                  {card.title}
-                </h3>
-
-                <p
-                  style={{
-                    color: "rgba(255, 255, 255, 0.7)",
-                    marginBottom: "20px",
-                    lineHeight: "1.6",
-                  }}
-                >
-                  {card.description}
-                </p>
-
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <span
+                />
+                <div style={{ position: "relative", zIndex: 1 }}>
+                  <div
                     style={{
+                      fontSize: "2.5rem",
                       color: card.color,
-                      fontWeight: 700,
-                      fontSize: "0.9rem",
+                      marginBottom: "15px",
                     }}
                   >
-                    {card.count}
-                  </span>
-                  <FaArrowRight style={{ color: card.color }} />
+                    {card.icon}
+                  </div>
+
+                  <h3
+                    style={{
+                      color: card.color,
+                      fontSize: "1.4rem",
+                      fontWeight: 700,
+                      marginBottom: "10px",
+                    }}
+                  >
+                    {card.title}
+                  </h3>
+
+                  <p
+                    style={{
+                      color: "rgba(255, 255, 255, 0.7)",
+                      marginBottom: "20px",
+                      lineHeight: "1.6",
+                    }}
+                  >
+                    {card.description}
+                  </p>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: card.color,
+                        fontWeight: 700,
+                        fontSize: "0.9rem",
+                      }}
+                    >
+                      {card.count}
+                    </span>
+                    <FaArrowRight style={{ color: card.color }} />
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Recent Activity Section */}
@@ -310,8 +335,12 @@ const AdminDashboard = () => {
   );
 };
 
+/**
+ * Purpose: Do Hex To Rgb
+ * Plain English: What this function is used for.
+ */
 // Helper function
-const hexToRgb = (hex) => {
+const hexToRgb = hex => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : "0, 0, 0";
 };

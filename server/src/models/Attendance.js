@@ -1,3 +1,8 @@
+/**
+ * What it is: Database model for attendance entries.
+ * Non-tech note: Stores “who attended on which day” records.
+ */
+
 import mongoose from 'mongoose'
 
 const attendanceSchema = new mongoose.Schema(

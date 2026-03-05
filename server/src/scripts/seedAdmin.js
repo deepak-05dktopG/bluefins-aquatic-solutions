@@ -1,3 +1,9 @@
+/**
+ * What it is: Developer seed script to insert a default admin user.
+ * Non-tech note: Only use if you know what credentials you want to seed.
+ * Command: `cd server` then `npm run seed-admin`
+ */
+
 import '../config/env.js'
 import bcrypt from 'bcryptjs'
 import connectDB from '../config/db.js'
@@ -11,31 +17,35 @@ const ADMIN = {
 	role: 'admin', // 'admin' | 'superadmin'
 }
 
+/**
+ * Purpose: Do Main
+ * Plain English: What this function is used for.
+ */
 const main = async () => {
-	if (!ADMIN.email || !ADMIN.password) {
+    if (!ADMIN.email || !ADMIN.password) {
 		throw new Error('Seed admin requires ADMIN.email and ADMIN.password')
 	}
-	if (!['admin', 'superadmin'].includes(ADMIN.role)) {
+    if (!['admin', 'superadmin'].includes(ADMIN.role)) {
 		throw new Error("Seed admin role must be 'admin' or 'superadmin'")
 	}
-	if (!String(ADMIN.email).includes('@')) {
+    if (!String(ADMIN.email).includes('@')) {
 		throw new Error('Seed admin email is invalid')
 	}
 
-	await connectDB()
+    await connectDB()
 
-	// Ensure indexes match schema (esp. sparse unique indexes)
-	try {
+    // Ensure indexes match schema (esp. sparse unique indexes)
+    try {
 		await Admin.syncIndexes()
 	} catch {
 		// ignore
 	}
 
-	const email = String(ADMIN.email).trim().toLowerCase()
-	const adminId = email
-	const passwordHash = await bcrypt.hash(String(ADMIN.password), 10)
+    const email = String(ADMIN.email).trim().toLowerCase()
+    const adminId = email
+    const passwordHash = await bcrypt.hash(String(ADMIN.password), 10)
 
-	const update = {
+    const update = {
 		adminId,
 		email,
 		passwordHash,
@@ -43,13 +53,17 @@ const main = async () => {
 		isActive: true,
 	}
 
-	await Admin.findOneAndUpdate({ $or: [{ email }, { adminId }] }, update, { upsert: true, new: true })
+    await Admin.findOneAndUpdate({ $or: [{ email }, { adminId }] }, update, { upsert: true, new: true })
 
-	console.log(`✅ Seeded admin: ${email} (${ADMIN.role})`)
-	process.exit(0)
-}
+    console.log(`✅ Seeded admin: ${email} (${ADMIN.role})`)
+    process.exit(0)
+};
 
-main().catch((e) => {
-	console.error('❌ Failed to seed admin:', e?.message || e)
-	process.exit(1)
+main().catch(/**
+ * Purpose: Promise error handler (runs when async work fails)
+ * Plain English: What this function is used for.
+ */
+e => {
+    console.error('❌ Failed to seed admin:', e?.message || e)
+    process.exit(1)
 })

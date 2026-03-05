@@ -2,6 +2,20 @@
 
 Backend API for Bluefins Swimming Academy management system.
 
+## Quick start (simple)
+
+If you only want to start the backend API on your computer:
+
+```bash
+cd server
+npm install
+npm run dev
+```
+
+Plain English: “Download what the server needs, then start it.”
+
+For the full non‑technical guide (including starting the frontend website), see `../docs/START_HERE.md`.
+
 ## Features
 - Contact form management with feedback storage
 - Posts/Announcements management with Cloudinary integration

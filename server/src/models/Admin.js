@@ -1,3 +1,8 @@
+/**
+ * What it is: Database model for admins (admin login accounts).
+ * Non-tech note: Defines what an admin user is in the database.
+ */
+
 import mongoose from 'mongoose'
 
 const adminSchema = new mongoose.Schema(

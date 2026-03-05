@@ -1,3 +1,8 @@
+/**
+ * What it is: Database model for feedback (contact messages).
+ * Non-tech note: Stores messages submitted from the Contact page.
+ */
+
 import mongoose from 'mongoose';
 
 const feedbackSchema = new mongoose.Schema({

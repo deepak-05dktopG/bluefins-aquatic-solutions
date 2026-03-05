@@ -2,6 +2,20 @@
 
 Modern React application for Bluefins Swimming Academy management system.
 
+## Quick start (simple)
+
+If you only want to run the website on your computer:
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+Plain English: “Download what this website needs, then start it.”
+
+For the full non‑technical guide (including starting the backend API), see `../docs/START_HERE.md`.
+
 ## Features
 - Responsive design with React Bootstrap
 - Contact form with EmailJS integration

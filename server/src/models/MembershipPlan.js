@@ -1,3 +1,8 @@
+/**
+ * What it is: Database model for membership plans (prices, durations, types).
+ * Non-tech note: Defines the different plans people can buy.
+ */
+
 import mongoose from 'mongoose'
 
 const categoryPriceSchema = new mongoose.Schema(

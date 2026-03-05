@@ -1,3 +1,8 @@
+/**
+ * What it is: Frontend build/dev configuration (Vite).
+ * Non-tech note: Controls how the website starts locally and how it is built for hosting.
+ */
+
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 

@@ -1,3 +1,8 @@
+/**
+ * What it is: API route list (maps URLs to controller functions).
+ * Non-tech note: This file decides “which link does what” on the backend.
+ */
+
 import express from 'express';
 import { adminLogin, adminMe } from '../controllers/adminAuthController.js';
 import requireAdminAuth from '../middleware/requireAdminAuth.js';

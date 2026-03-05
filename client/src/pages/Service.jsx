@@ -1,9 +1,24 @@
+/**
+ * What it is: Website page (Services / Programs screen).
+ * Non-tech note: This file controls what users see in the services section.
+ */
+
 import { useEffect } from "react";
+import { NavLink } from "react-router-dom";
+import Navbar from "../components/Navbar";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { FaTrophy, FaUsers, FaChartLine, FaAward, FaShieldAlt, FaClock } from "react-icons/fa";
+/**
+ * Purpose: Do Service
+ * Plain English: What this function is used for.
+ */
 const Service = () => {
-  useEffect(() => {
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
     AOS.init({
       duration: 1000,
       easing: "ease-in-out-cubic",
@@ -128,10 +143,18 @@ const Service = () => {
                         transition: "all 0.3s ease",
                         boxShadow: "0 8px 25px rgba(255,107,107,0.3)",
                       }}
-                      onMouseEnter={(e) => {
+                      onMouseEnter={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
                         e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
                       }}
-                      onMouseLeave={(e) => {
+                      onMouseLeave={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
                         e.currentTarget.style.transform = "translateY(0) scale(1)";
                       }}
                     >
@@ -152,11 +175,19 @@ const Service = () => {
                         transition: "all 0.3s ease",
                         backdropFilter: "blur(10px)",
                       }}
-                      onMouseEnter={(e) => {
+                      onMouseEnter={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
                         e.currentTarget.style.background = "rgba(255,255,255,0.25)";
                         e.currentTarget.style.transform = "scale(1.05)";
                       }}
-                      onMouseLeave={(e) => {
+                      onMouseLeave={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
                         e.currentTarget.style.background = "rgba(255,255,255,0.15)";
                         e.currentTarget.style.transform = "scale(1)";
                       }}
@@ -206,7 +237,6 @@ const Service = () => {
             ></path>
           </svg>
       </section>
-
       {/* ===================== SERVICE CARDS - HORIZONTAL SCROLL STYLE ===================== */}
       <section className="py-5" style={{ background: "linear-gradient(180deg, #f5f3ff 0%, #fff5f0 100%)", position: "relative", overflow: "hidden" }}>
         <div className="container py-5">
@@ -253,56 +283,70 @@ const Service = () => {
                 c1: "#FFD93D",
                 c2: "#FF9FF3",
               },
-            ].map((svc, i) => (
-              <div className="col-lg-6 col-xl-3" key={i} data-aos="zoom-in" data-aos-delay={i * 150}>
-                <div
-                  className="service-card-modern"
-                  style={{
-                    "--color-1": svc.c1,
-                    "--color-2": svc.c2,
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
-                    <span style={{ fontSize: "clamp(2.4rem, 6vw, 3.5rem)", fontWeight: "900", color: svc.c1, opacity: 0.15 }}>
-                      {svc.num}
-                    </span>
-                    <div style={{ fontSize: "2.5rem" }}>{svc.icon}</div>
+            ].map(/**
+             * Purpose: Array mapping callback (converts each item to a new value)
+             * Plain English: What this function is used for.
+             */
+            (svc, i) => {
+              return (
+                <div className="col-lg-6 col-xl-3" key={i} data-aos="zoom-in" data-aos-delay={i * 150}>
+                  <div
+                    className="service-card-modern"
+                    style={{
+                      "--color-1": svc.c1,
+                      "--color-2": svc.c2,
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
+                      <span style={{ fontSize: "clamp(2.4rem, 6vw, 3.5rem)", fontWeight: "900", color: svc.c1, opacity: 0.15 }}>
+                        {svc.num}
+                      </span>
+                      <div style={{ fontSize: "2.5rem" }}>{svc.icon}</div>
+                    </div>
+                    <h4 style={{ color: "#0F3460", fontWeight: "700", marginBottom: "0.8rem", fontSize: "1.3rem" }}>
+                      {svc.title}
+                    </h4>
+                    <p style={{ color: "#555", lineHeight: 1.7, marginBottom: "1.5rem", fontSize: "0.95rem" }}>
+                      {svc.desc}
+                    </p>
+                    <NavLink to="/contact" style={{ textDecoration: "none" }}>
+                      <button
+                        style={{
+                          background: `linear-gradient(135deg, ${svc.c1}, ${svc.c2})`,
+                          color: "white",
+                          border: "none",
+                          padding: "10px 20px",
+                          borderRadius: "20px",
+                          fontWeight: "700",
+                          fontSize: "0.85rem",
+                          cursor: "pointer",
+                          transition: "all 0.3s ease",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                        }}
+                        onMouseEnter={/**
+                         * Purpose: Helper callback used inside a larger operation
+                         * Plain English: What this function is used for.
+                         */
+                        e => {
+                          e.currentTarget.style.transform = "translateX(5px)";
+                        }}
+                        onMouseLeave={/**
+                         * Purpose: Helper callback used inside a larger operation
+                         * Plain English: What this function is used for.
+                         */
+                        e => {
+                          e.currentTarget.style.transform = "translateX(0)";
+                        }}
+                      >
+                        Learn More →
+                      </button>
+                    </NavLink>
                   </div>
-                  <h4 style={{ color: "#0F3460", fontWeight: "700", marginBottom: "0.8rem", fontSize: "1.3rem" }}>
-                    {svc.title}
-                  </h4>
-                  <p style={{ color: "#555", lineHeight: 1.7, marginBottom: "1.5rem", fontSize: "0.95rem" }}>
-                    {svc.desc}
-                  </p>
-                  <NavLink to="/contact" style={{ textDecoration: "none" }}>
-                    <button
-                      style={{
-                        background: `linear-gradient(135deg, ${svc.c1}, ${svc.c2})`,
-                        color: "white",
-                        border: "none",
-                        padding: "10px 20px",
-                        borderRadius: "20px",
-                        fontWeight: "700",
-                        fontSize: "0.85rem",
-                        cursor: "pointer",
-                        transition: "all 0.3s ease",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translateX(5px)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translateX(0)";
-                      }}
-                    >
-                      Learn More →
-                    </button>
-                  </NavLink>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -317,7 +361,6 @@ const Service = () => {
           <circle cx="250" cy="250" r="150" fill="none" stroke="#4ECDC4" strokeWidth="20" />
         </svg>
       </section>
-
       {/* ===================== FEATURES SECTION - 3 COLUMN ===================== */}
       <section
         className="py-5"
@@ -343,7 +386,11 @@ const Service = () => {
               { icon: FaClock, title: "Flexible Scheduling", desc: "Custom programs that fit your institutional calendar" },
               { icon: FaUsers, title: "Expert Team", desc: "25+ certified coaches with national experience" },
               { icon: FaTrophy, title: "Proven Results", desc: "45+ national medals and 65+ trained swimmers" },
-            ].map((feature, i) => {
+            ].map(/**
+             * Purpose: Array mapping callback (converts each item to a new value)
+             * Plain English: What this function is used for.
+             */
+            (feature, i) => {
               const Icon = feature.icon;
               return (
                 <div className="col-md-6 col-lg-4" key={i} data-aos="fade-up" data-aos-delay={i * 100}>
@@ -359,12 +406,20 @@ const Service = () => {
                       textAlign: "center",
                       color: "white",
                     }}
-                    onMouseEnter={(e) => {
+                    onMouseEnter={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
                       e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)";
                       e.currentTarget.style.transform = "translateY(-12px) scale(1.03)";
                       e.currentTarget.style.background = "rgba(255,255,255,0.25)";
                     }}
-                    onMouseLeave={(e) => {
+                    onMouseLeave={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
                       e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
                       e.currentTarget.style.transform = "translateY(0) scale(1)";
                       e.currentTarget.style.background = "rgba(255,255,255,0.15)";
@@ -395,7 +450,6 @@ const Service = () => {
           <path fill="#f5f3ff" d="M0,75 Q360,25 720,75 T1440,75 L1440,150 L0,150 Z"></path>
         </svg>
       </section>
-
       {/* ===================== PRICING TIERS - UNIQUE LAYOUT ===================== */}
       {/* <section className="py-5" style={{ background: "linear-gradient(180deg, #f5f3ff 0%, #fff5f0 100%)" }}>
         <div className="container py-5">
@@ -532,7 +586,6 @@ const Service = () => {
           </div>
         </div>
       </section> */}
-
       {/* ===================== FINAL CTA ===================== */}
       <section
         style={{
@@ -566,10 +619,18 @@ const Service = () => {
                 transition: "all 0.3s ease",
                 boxShadow: "0 8px 25px rgba(255,107,107,0.3)",
               }}
-              onMouseEnter={(e) => {
+              onMouseEnter={/**
+               * Purpose: Helper callback used inside a larger operation
+               * Plain English: What this function is used for.
+               */
+              e => {
                 e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={/**
+               * Purpose: Helper callback used inside a larger operation
+               * Plain English: What this function is used for.
+               */
+              e => {
                 e.currentTarget.style.transform = "translateY(0) scale(1)";
               }}
             >

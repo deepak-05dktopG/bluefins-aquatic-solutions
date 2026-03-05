@@ -1,3 +1,8 @@
+/**
+ * What it is: Database model for gallery images.
+ * Non-tech note: Stores image links and metadata for the gallery.
+ */
+
 import mongoose from 'mongoose';
 
 const gallerySchema = new mongoose.Schema(

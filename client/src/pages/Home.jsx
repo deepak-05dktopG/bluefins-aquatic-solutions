@@ -1,14 +1,30 @@
+/**
+ * What it is: Website page (Home screen).
+ * Non-tech note: This file controls what users see on the Home page.
+ */
+
 import { useEffect, useState } from "react";
+import { NavLink } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Slider from "react-slick";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+/**
+ * Purpose: Do Home
+ * Plain English: What this function is used for.
+ */
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [galleryImages, setGalleryImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
     AOS.init({
       duration: 500,
       easing: "ease-in-out-cubic",
@@ -21,6 +37,10 @@ const Home = () => {
     fetchGallery();
   }, []);
 
+  /**
+   * Purpose: Fetch Posts from server
+   * Plain English: What this function is used for.
+   */
   const fetchPosts = async () => {
     try {
       setLoading(true);
@@ -36,6 +56,10 @@ const Home = () => {
     }
   };
 
+  /**
+   * Purpose: Fetch Gallery from server
+   * Plain English: What this function is used for.
+   */
   const fetchGallery = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/gallery?isActive=true`);
@@ -89,7 +113,6 @@ const Home = () => {
         }
       `}</style>
       <Navbar />
-
       {/* ===================== HERO ===================== */}
       <section
         style={{
@@ -103,18 +126,24 @@ const Home = () => {
         }}
       >
         {/* Floating bubbles */}
-        {[...Array(8)].map((_, i) => (
-          <span
-            key={i}
-            className="bubble"
-            style={{
-              left: `${(i + 1) * 10}%`,
-              width: `${10 + i * 4}px`,
-              height: `${10 + i * 4}px`,
-              animationDelay: `${i * 1.2}s`,
-            }}
-          />
-        ))}
+        {[...Array(8)].map(/**
+         * Purpose: Array mapping callback (converts each item to a new value)
+         * Plain English: What this function is used for.
+         */
+        (_, i) => {
+          return (
+            <span
+              key={i}
+              className="bubble"
+              style={{
+                left: `${(i + 1) * 10}%`,
+                width: `${10 + i * 4}px`,
+                height: `${10 + i * 4}px`,
+                animationDelay: `${i * 1.2}s`,
+              }}
+            />
+          );
+        })}
 
         <div className="container">
           <div className="row align-items-center">
@@ -352,7 +381,11 @@ const Home = () => {
               pauseOnHover={true}
               cssEase="cubic-bezier(0.645, 0.045, 0.355, 1)"
             >
-              {posts.map((post) => {
+              {posts.map(/**
+               * Purpose: Array mapping callback (converts each item to a new value)
+               * Plain English: What this function is used for.
+               */
+              post => {
                 // Determine main content priority: Image > Content > Caption > Title
                 const hasImage = !!post.imageUrl;
                 const hasContent = !!post.content;
@@ -519,7 +552,6 @@ const Home = () => {
           ></path>
         </svg>
       </section>
-
       {/* ===================== ABOUT (Glass Panel) ===================== */}
       <section
         className="py-5"
@@ -582,9 +614,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-
-
       {/* ===================== PROGRAMS ===================== */}
       {/* <section
         id="programs"
@@ -741,8 +770,6 @@ const Home = () => {
           </div>
         </div>
       </section> */}
-
-
       {/* ===================== WHY CHOOSE US (Bootstrap 5 Futuristic) ===================== */}
       {/* ===================== WHY CHOOSE US (Bootstrap 5 Futuristic) ===================== */}
       <section
@@ -796,77 +823,87 @@ const Home = () => {
                 title: "Performance Tracking",
                 desc: "Comprehensive reporting and progress documentation for institutional clients.",
               },
-            ].map((item, idx) => (
-              <div
-                className="col-10 col-sm-6 col-lg-3"
-                key={idx}
-                data-aos="zoom-in-up"
-                data-aos-delay={idx * 150}
-                data-aos-duration="1000"
-              >
+            ].map(/**
+             * Purpose: Array mapping callback (converts each item to a new value)
+             * Plain English: What this function is used for.
+             */
+            (item, idx) => {
+              return (
                 <div
-                  className="card h-100 border-0 shadow-sm p-4 rounded-4 bg-white"
-                  style={{
-                    background:
-                      "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(230,250,255,0.9) 100%)",
-                    boxShadow: "0 8px 24px rgba(0,180,216,0.15)",
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-6px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 12px 30px rgba(0,180,216,0.25)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow =
-                      "0 8px 24px rgba(0,180,216,0.15)";
-                  }}
+                  className="col-10 col-sm-6 col-lg-3"
+                  key={idx}
+                  data-aos="zoom-in-up"
+                  data-aos-delay={idx * 150}
+                  data-aos-duration="1000"
                 >
-                  {/* Icon */}
                   <div
-                    className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                    className="card h-100 border-0 shadow-sm p-4 rounded-4 bg-white"
                     style={{
-                      width: "clamp(56px, 12vw, 70px)",
-                      height: "clamp(56px, 12vw, 70px)",
                       background:
-                        "linear-gradient(135deg, #00B4D8, #48CAE4, #90E0EF)",
-                      boxShadow: "0 0 18px rgba(0,180,216,0.4)",
-                      color: "white",
-                      fontSize: "clamp(22px, 4.5vw, 30px)",
+                        "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(230,250,255,0.9) 100%)",
+                      boxShadow: "0 8px 24px rgba(0,180,216,0.15)",
+                      transition: "all 0.3s ease",
                     }}
-                    data-aos="zoom-in"
-                    data-aos-delay={idx * 200 + 200}
+                    onMouseEnter={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.transform = "translateY(-6px)";
+                      e.currentTarget.style.boxShadow =
+                        "0 12px 30px rgba(0,180,216,0.25)";
+                    }}
+                    onMouseLeave={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow =
+                        "0 8px 24px rgba(0,180,216,0.15)";
+                    }}
                   >
-                    {item.icon}
-                  </div>
+                    {/* Icon */}
+                    <div
+                      className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                      style={{
+                        width: "clamp(56px, 12vw, 70px)",
+                        height: "clamp(56px, 12vw, 70px)",
+                        background:
+                          "linear-gradient(135deg, #00B4D8, #48CAE4, #90E0EF)",
+                        boxShadow: "0 0 18px rgba(0,180,216,0.4)",
+                        color: "white",
+                        fontSize: "clamp(22px, 4.5vw, 30px)",
+                      }}
+                      data-aos="zoom-in"
+                      data-aos-delay={idx * 200 + 200}
+                    >
+                      {item.icon}
+                    </div>
 
-                  {/* Text */}
-                  <h5
-                    className="fw-semibold"
-                    style={{ color: "#0077B6" }}
-                    data-aos="fade-up"
-                    data-aos-delay={idx * 200 + 250}
-                  >
-                    {item.title}
-                  </h5>
-                  <p
-                    className="text-muted small mb-0"
-                    data-aos="fade-up"
-                    data-aos-delay={idx * 200 + 300}
-                  >
-                    {item.desc}
-                  </p>
+                    {/* Text */}
+                    <h5
+                      className="fw-semibold"
+                      style={{ color: "#0077B6" }}
+                      data-aos="fade-up"
+                      data-aos-delay={idx * 200 + 250}
+                    >
+                      {item.title}
+                    </h5>
+                    <p
+                      className="text-muted small mb-0"
+                      data-aos="fade-up"
+                      data-aos-delay={idx * 200 + 300}
+                    >
+                      {item.desc}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
-
-
-
-
       {/* ===================== GALLERY ===================== */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -932,40 +969,56 @@ const Home = () => {
           ) : (
             <>
               <div className="row g-3 mt-2">
-                {galleryImages.map((image, i) => (
-                  <div
-                    className="col-6 col-md-4"
-                    key={image._id}
-                    data-aos="zoom-in"
-                    data-aos-delay={i * 150}
-                    data-aos-duration="900"
-                  >
-                    <span
-                      className="soft"
-                      
+                {galleryImages.map(/**
+                 * Purpose: Array mapping callback (converts each item to a new value)
+                 * Plain English: What this function is used for.
+                 */
+                (image, i) => {
+                  return (
+                    <div
+                      className="col-6 col-md-4"
+                      key={image._id}
+                      data-aos="zoom-in"
+                      data-aos-delay={i * 150}
+                      data-aos-duration="900"
                     >
-                      <img
-                        src={image.imageUrl}
-                        alt={image.title || `Gallery ${i + 1}`}
-                        title={image.description || image.title}
-                        className="img-fluid "
-                        style={{
-                          transform: "scale(1.02)",
-                          transition: "transform .35s ease",
-                          width: "100%",
-                          height: "250px",
-                          objectFit: "contain",
-                        }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.transform = "scale(1.08)")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.transform = "scale(1.02)")
-                        }
-                      />
-                    </span>
-                  </div>
-                ))}
+                      <span
+                        className="soft"
+                        
+                      >
+                        <img
+                          src={image.imageUrl}
+                          alt={image.title || `Gallery ${i + 1}`}
+                          title={image.description || image.title}
+                          className="img-fluid "
+                          style={{
+                            transform: "scale(1.02)",
+                            transition: "transform .35s ease",
+                            width: "100%",
+                            height: "250px",
+                            objectFit: "contain",
+                          }}
+                          onMouseEnter={/**
+                           * Purpose: Helper callback used inside a larger operation
+                           * Plain English: What this function is used for.
+                           */
+                          e => {
+                            return (e.currentTarget.style.transform = "scale(1.08)");
+                          }
+                          }
+                          onMouseLeave={/**
+                           * Purpose: Helper callback used inside a larger operation
+                           * Plain English: What this function is used for.
+                           */
+                          e => {
+                            return (e.currentTarget.style.transform = "scale(1.02)");
+                          }
+                          }
+                        />
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
 
               <NavLink
@@ -984,8 +1037,6 @@ const Home = () => {
           )}
         </div>
       </section>
-
-
       {/* ===================== TESTIMONIALS (Futuristic Gen-Z) ===================== */}
       <svg
         data-name="Layer 1"
@@ -1007,10 +1058,6 @@ const Home = () => {
           style={{ fill: '#bae2fdff' }}
         ></path>
       </svg>
-
-
-
-
       {/* ===================== CTA ===================== */}
       {/* ===================== FUTURISTIC CTA ===================== */}
       <section
@@ -1096,13 +1143,21 @@ const Home = () => {
               boxShadow: "0 0 25px rgba(255,255,255,0.25)",
               transition: "all 0.4s ease",
             }}
-            onMouseEnter={(e) => {
+            onMouseEnter={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
               e.currentTarget.style.backgroundPosition = "100% 0%";
               e.currentTarget.style.boxShadow =
                 "0 0 40px rgba(255,255,255,0.45)";
               e.currentTarget.style.transform = "translateY(-4px)";
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
               e.currentTarget.style.backgroundPosition = "0% 0%";
               e.currentTarget.style.boxShadow =
                 "0 0 25px rgba(255,255,255,0.25)";
@@ -1130,8 +1185,6 @@ const Home = () => {
           ></path>
         </svg>
       </section>
-
-
     </div>
   );
 };

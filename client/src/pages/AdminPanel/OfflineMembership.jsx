@@ -1,3 +1,8 @@
+/**
+ * What it is: Admin panel page (Offline membership / cash registration).
+ * Non-tech note: Admins can register members and generate their ID cards.
+ */
+
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { downloadMemberIdCard } from '../../utils/idCard'
@@ -22,56 +27,88 @@ const CATEGORY_LABEL = {
 const emptyMember = { name: '', phone: '', age: '', gender: 'other' }
 const emptyFamilyMember = { name: '', phone: '', age: '', gender: 'other' }
 
-const normalizeText = (v) => (v == null ? '' : String(v)).trim()
+/**
+ * Purpose: Do Normalize Text
+ * Plain English: What this function is used for.
+ */
+const normalizeText = v => {
+    return (v == null ? '' : String(v)).trim();
+};
 
-const normalizePhone10 = (v) => {
-	const raw = normalizeText(v)
-	if (!raw) return ''
-	const digits = raw.replace(/\D/g, '')
-	if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2)
-	if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1)
-	return digits
-}
+/**
+ * Purpose: Do Normalize Phone10
+ * Plain English: What this function is used for.
+ */
+const normalizePhone10 = v => {
+    const raw = normalizeText(v)
+    if (!raw) return ''
+    const digits = raw.replace(/\D/g, '')
+    if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2)
+    if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1)
+    return digits
+};
 
-const isValidPhone10 = (v) => /^\d{10}$/.test(String(v || ''))
+/**
+ * Purpose: Check whether Valid Phone10
+ * Plain English: What this function is used for.
+ */
+const isValidPhone10 = v => {
+    return /^\d{10}$/.test(String(v || ''));
+};
 
-const normalizeGender = (v) => {
-	const raw = normalizeText(v)
-	if (!raw) return 'other'
-	const g = raw.toLowerCase()
-	if (g === 'male' || g === 'female' || g === 'other') return g
-	return null
-}
+/**
+ * Purpose: Do Normalize Gender
+ * Plain English: What this function is used for.
+ */
+const normalizeGender = v => {
+    const raw = normalizeText(v)
+    if (!raw) return 'other'
+    const g = raw.toLowerCase()
+    if (g === 'male' || g === 'female' || g === 'other') return g
+    return null
+};
 
-const normalizeAge = (v) => {
-	if (v == null || v === '') return { ok: true, age: undefined }
-	const n = Number(v)
-	if (!Number.isFinite(n)) return { ok: false, message: 'Age must be a number' }
-	if (n < 1 || n > 120) return { ok: false, message: 'Age must be between 1 and 120' }
-	return { ok: true, age: Math.floor(n) }
-}
+/**
+ * Purpose: Do Normalize Age
+ * Plain English: What this function is used for.
+ */
+const normalizeAge = v => {
+    if (v == null || v === '') return { ok: true, age: undefined }
+    const n = Number(v)
+    if (!Number.isFinite(n)) return { ok: false, message: 'Age must be a number' }
+    if (n < 1 || n > 120) return { ok: false, message: 'Age must be between 1 and 120' }
+    return { ok: true, age: Math.floor(n) }
+};
 
-const paymentTypeLabel = (provider) => {
-	const p = String(provider || '').toLowerCase()
-	if (p === 'razorpay') return 'Online (Razorpay)'
-	if (p === 'cash' || p === 'mock') return 'Cash (Offline)'
-	if (!p) return '—'
-	return p
-}
+/**
+ * Purpose: Do Payment Type Label
+ * Plain English: What this function is used for.
+ */
+const paymentTypeLabel = provider => {
+    const p = String(provider || '').toLowerCase()
+    if (p === 'razorpay') return 'Online (Razorpay)'
+    if (p === 'cash' || p === 'mock') return 'Cash (Offline)'
+    if (!p) return '—'
+    return p
+};
 
-const safeReadJson = async (res) => {
-	const contentType = res.headers.get('content-type') || ''
-	const raw = await res.text()
-	if (!raw) return { ok: true, data: null }
-	if (!contentType.includes('application/json')) {
+/**
+ * Purpose: Do Safe Read Json
+ * Plain English: What this function is used for.
+ */
+const safeReadJson = async res => {
+    const contentType = res.headers.get('content-type') || ''
+    const raw = await res.text()
+    if (!raw) return { ok: true, data: null }
+    if (!contentType.includes('application/json')) {
 		return { ok: false, error: `Non-JSON response (${res.status}). Is the backend running?` }
 	}
-	try {
+    try {
 		return { ok: true, data: JSON.parse(raw) }
 	} catch {
 		return { ok: false, error: 'Failed to parse JSON response. Is the backend running?' }
 	}
-}
+};
 
 const STEP = {
 	PLAN: 1,
@@ -79,93 +116,146 @@ const STEP = {
 	DONE: 3,
 }
 
+/**
+ * Purpose: Do Offline Membership
+ * Plain English: What this function is used for.
+ */
 const OfflineMembership = () => {
-	const navigate = useNavigate()
-	const [step, setStep] = useState(STEP.PLAN)
-	const [plans, setPlans] = useState([])
-	const [loadingPlans, setLoadingPlans] = useState(false)
-	const [testAmountInr, setTestAmountInr] = useState(null)
-	const [selectedPlanId, setSelectedPlanId] = useState('')
-	const [member, setMember] = useState(emptyMember)
-	const [selection, setSelection] = useState({
+    const navigate = useNavigate()
+    const [step, setStep] = useState(STEP.PLAN)
+    const [plans, setPlans] = useState([])
+    const [loadingPlans, setLoadingPlans] = useState(false)
+    const [testAmountInr, setTestAmountInr] = useState(null)
+    const [selectedPlanId, setSelectedPlanId] = useState('')
+    const [member, setMember] = useState(emptyMember)
+    const [selection, setSelection] = useState({
 		category: 'kids',
 		coachingAddOn: false,
 		quantity: 1,
 		publicSlot: { date: '', startTime: '10:00', endTime: '' },
 	})
-	const [familyMembers, setFamilyMembers] = useState([emptyFamilyMember])
-	const [collectedBy, setCollectedBy] = useState(() => {
-		try {
+    const [familyMembers, setFamilyMembers] = useState([emptyFamilyMember])
+    const [collectedBy, setCollectedBy] = useState(/**
+     * Purpose: Helper callback used inside a larger operation
+     * Plain English: What this function is used for.
+     */
+    () => {
+        try {
 			return localStorage.getItem('offlineCollectedBy') || ''
 		} catch {
 			return ''
 		}
-	})
-	const [busy, setBusy] = useState(false)
-	const [error, setError] = useState('')
-	const [result, setResult] = useState(null)
+    })
+    const [busy, setBusy] = useState(false)
+    const [error, setError] = useState('')
+    const [result, setResult] = useState(null)
 
-	useEffect(() => {
-		if (!isAdminAuthenticated()) navigate('/admin')
-	}, [navigate])
+    useEffect(/**
+     * Purpose: React effect callback (runs after render based on dependencies)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        if (!isAdminAuthenticated()) navigate('/admin')
+    }, [navigate])
 
-	const selectedPlan = useMemo(() => plans.find((p) => p._id === selectedPlanId) || null, [plans, selectedPlanId])
+    const selectedPlan = useMemo(/**
+     * Purpose: React memo callback (computes a value and caches it)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        return plans.find(/**
+         * Purpose: Array search callback (finds the first matching item)
+         * Plain English: What this function is used for.
+         */
+        p => {
+            return p._id === selectedPlanId;
+        }) || null;
+    }, [plans, selectedPlanId])
 
-	const formatInr = (value) => {
-		const n = Number(value)
-		if (!Number.isFinite(n)) return '—'
-		return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n)
-	}
+    /**
+     * Purpose: Format Inr
+     * Plain English: What this function is used for.
+     */
+    const formatInr = value => {
+        const n = Number(value)
+        if (!Number.isFinite(n)) return '—'
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n)
+    };
 
-	const computedSubtotal = useMemo(() => {
-		if (testAmountInr != null) return Number(testAmountInr)
-		if (!selectedPlan) return null
+    const computedSubtotal = useMemo(/**
+     * Purpose: React memo callback (computes a value and caches it)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        if (testAmountInr != null) return Number(testAmountInr)
+        if (!selectedPlan) return null
 
-		if (selectedPlan.type === 'public') {
+        if (selectedPlan.type === 'public') {
 			const qty = Number(selection.quantity || 1)
 			const safeQty = Number.isFinite(qty) && qty > 0 ? qty : 1
 			return (selectedPlan.basePrice || 0) * safeQty
 		}
 
-		if (selectedPlan.categoryRequired) {
+        if (selectedPlan.categoryRequired) {
 			const category = selection.category
-			const row = (selectedPlan.categoryPrices || []).find((x) => x.category === category)
+			const row = (selectedPlan.categoryPrices || []).find(/**
+             * Purpose: Array search callback (finds the first matching item)
+             * Plain English: What this function is used for.
+             */
+            x => {
+                return x.category === category;
+            })
 			return row ? row.price : null
 		}
 
-		let base = selectedPlan.basePrice || 0
-		if (selectedPlan.type === 'yearly' && selection.coachingAddOn) {
+        let base = selectedPlan.basePrice || 0
+        if (selectedPlan.type === 'yearly' && selection.coachingAddOn) {
 			base += selectedPlan.addOns?.coachingAddOnMonthly || 0
 		}
 
-		return base
-	}, [selectedPlan, selection, testAmountInr])
+        return base
+    }, [selectedPlan, selection, testAmountInr])
 
-	const computedTotal = useMemo(() => {
-		if (testAmountInr != null) return Number(testAmountInr)
-		// Offline cash registrations do not add Razorpay fee/GST.
-		return computedSubtotal
-	}, [computedSubtotal, testAmountInr])
+    const computedTotal = useMemo(/**
+     * Purpose: React memo callback (computes a value and caches it)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        if (testAmountInr != null) return Number(testAmountInr)
+        // Offline cash registrations do not add Razorpay fee/GST.
+        return computedSubtotal
+    }, [computedSubtotal, testAmountInr])
 
-	const peopleCount = useMemo(() => {
-		if (!selectedPlan) return null
-		if (selectedPlan.type === 'family') return (familyMembers || []).length
-		if (selectedPlan.type === 'public') {
+    const peopleCount = useMemo(/**
+     * Purpose: React memo callback (computes a value and caches it)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        if (!selectedPlan) return null
+        if (selectedPlan.type === 'family') return (familyMembers || []).length
+        if (selectedPlan.type === 'public') {
 			const qty = Number(selection.quantity || 1)
 			return Number.isFinite(qty) && qty > 0 ? qty : 1
 		}
-		return 1
-	}, [selectedPlan, familyMembers, selection.quantity])
+        return 1
+    }, [selectedPlan, familyMembers, selection.quantity])
 
-	useEffect(() => {
-		if (selectedPlan?.type !== 'family') setFamilyMembers([emptyFamilyMember])
-		 
-	}, [selectedPlan?.type])
+    useEffect(/**
+     * Purpose: React effect callback (runs after render based on dependencies)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        if (selectedPlan?.type !== 'family') setFamilyMembers([emptyFamilyMember])
+    }, [selectedPlan?.type])
 
-	const fetchPlans = async () => {
-		setError('')
-		setLoadingPlans(true)
-		try {
+    /**
+     * Purpose: Fetch Plans from server
+     * Plain English: What this function is used for.
+     */
+    const fetchPlans = async () => {
+        setError('')
+        setLoadingPlans(true)
+        try {
 			const res = await fetch(`${apiBase}/membership/plans?isActive=true`)
 			const parsed = await safeReadJson(res)
 			if (!parsed.ok) throw new Error(parsed.error)
@@ -178,19 +268,29 @@ const OfflineMembership = () => {
 			}
 			const list = data?.data || []
 			const typeOrder = ['public', 'monthly', 'summer', 'yearly', 'family']
-			const sorted = [...list].sort((a, b) => {
-				const ai = typeOrder.indexOf(a?.type)
-				const bi = typeOrder.indexOf(b?.type)
-				const ao = ai === -1 ? typeOrder.length : ai
-				const bo = bi === -1 ? typeOrder.length : bi
-				if (ao !== bo) return ao - bo
-				const ap = Number(a?.basePrice ?? a?.price ?? 0)
-				const bp = Number(b?.basePrice ?? b?.price ?? 0)
-				if (ap !== bp) return ap - bp
-				return String(a?.planName ?? a?.name ?? '').localeCompare(String(b?.planName ?? b?.name ?? ''))
-			})
+			const sorted = [...list].sort(/**
+             * Purpose: Sort comparator callback (decides item ordering)
+             * Plain English: What this function is used for.
+             */
+            (a, b) => {
+                const ai = typeOrder.indexOf(a?.type)
+                const bi = typeOrder.indexOf(b?.type)
+                const ao = ai === -1 ? typeOrder.length : ai
+                const bo = bi === -1 ? typeOrder.length : bi
+                if (ao !== bo) return ao - bo
+                const ap = Number(a?.basePrice ?? a?.price ?? 0)
+                const bp = Number(b?.basePrice ?? b?.price ?? 0)
+                if (ap !== bp) return ap - bp
+                return String(a?.planName ?? a?.name ?? '').localeCompare(String(b?.planName ?? b?.name ?? ''))
+            })
 			setPlans(sorted)
-			if (sorted.length && (!selectedPlanId || !sorted.some((p) => p._id === selectedPlanId))) {
+			if (sorted.length && (!selectedPlanId || !sorted.some(/**
+             * Purpose: Array check callback (true if any item matches)
+             * Plain English: What this function is used for.
+             */
+            p => {
+                return p._id === selectedPlanId;
+            }))) {
 				setSelectedPlanId(sorted[0]._id)
 			}
 		} catch (e) {
@@ -198,32 +298,46 @@ const OfflineMembership = () => {
 		} finally {
 			setLoadingPlans(false)
 		}
-	}
+    };
 
-	useEffect(() => {
-		fetchPlans()
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [])
+    useEffect(/**
+     * Purpose: React effect callback (runs after render based on dependencies)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        fetchPlans()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
-	const validate = () => {
-		if (!selectedPlan) return 'Please select a plan'
-		if (!normalizeText(collectedBy)) return 'Collected by (admin name) is required'
+    /**
+     * Purpose: Validate
+     * Plain English: What this function is used for.
+     */
+    const validate = () => {
+        if (!selectedPlan) return 'Please select a plan'
+        if (!normalizeText(collectedBy)) return 'Collected by (admin name) is required'
 
-		// Shared validations
-		if (selectedPlan.categoryRequired) {
+        // Shared validations
+        if (selectedPlan.categoryRequired) {
 			if (!selection.category) return 'Select a category'
-			const allowed = (selectedPlan.categoryPrices || []).map((x) => String(x?.category || '').toLowerCase())
+			const allowed = (selectedPlan.categoryPrices || []).map(/**
+             * Purpose: Array mapping callback (converts each item to a new value)
+             * Plain English: What this function is used for.
+             */
+            x => {
+                return String(x?.category || '').toLowerCase();
+            })
 			if (allowed.length && !allowed.includes(String(selection.category).toLowerCase())) return 'Select a valid category'
 		}
 
-		if (selectedPlan.type === 'public') {
+        if (selectedPlan.type === 'public') {
 			if (!selection.publicSlot?.date) return 'Select a date'
 			if (!selection.publicSlot?.startTime) return 'Select a start time'
 			const qty = Number(selection.quantity)
 			if (!Number.isFinite(qty) || qty < 1) return 'People must be at least 1'
 		}
 
-		if (selectedPlan.type === 'family') {
+        if (selectedPlan.type === 'family') {
 			const contactName = normalizeText(member.name)
 			const contactPhone = normalizePhone10(member.phone)
 			if (!contactName) return 'Contact name is required'
@@ -247,28 +361,32 @@ const OfflineMembership = () => {
 			return ''
 		}
 
-		const name = normalizeText(member.name)
-		const phone = normalizePhone10(member.phone)
-		if (!name) return 'Name is required'
-		if (!phone) return 'WhatsApp number is required'
-		if (!isValidPhone10(phone)) return 'WhatsApp number must be a valid 10-digit number'
-		const g = normalizeGender(member.gender)
-		if (g === null) return 'Gender must be Male/Female/Other'
-		const a = normalizeAge(member.age)
-		if (!a.ok) return a.message
-		return ''
-	}
+        const name = normalizeText(member.name)
+        const phone = normalizePhone10(member.phone)
+        if (!name) return 'Name is required'
+        if (!phone) return 'WhatsApp number is required'
+        if (!isValidPhone10(phone)) return 'WhatsApp number must be a valid 10-digit number'
+        const g = normalizeGender(member.gender)
+        if (g === null) return 'Gender must be Male/Female/Other'
+        const a = normalizeAge(member.age)
+        if (!a.ok) return a.message
+        return ''
+    };
 
-	const submitOffline = async () => {
-		const err = validate()
-		if (err) {
+    /**
+     * Purpose: Do Submit Offline
+     * Plain English: What this function is used for.
+     */
+    const submitOffline = async () => {
+        const err = validate()
+        if (err) {
 			setError(err)
 			return
 		}
 
-		setBusy(true)
-		setError('')
-		try {
+        setBusy(true)
+        setError('')
+        try {
 			const normalizedMember = {
 				...member,
 				name: normalizeText(member?.name),
@@ -288,12 +406,18 @@ const OfflineMembership = () => {
 				},
 				selection,
 				familyMembers: selectedPlan?.type === 'family'
-					? familyMembers.map((m) => ({
-						name: normalizeText(m?.name),
-						phone: normalizePhone10(m?.phone),
-						age: m?.age ? Number(m.age) : undefined,
-						gender: (normalizeGender(m?.gender) || 'other'),
-					}))
+					? familyMembers.map(/**
+                 * Purpose: Array mapping callback (converts each item to a new value)
+                 * Plain English: What this function is used for.
+                 */
+                m => {
+                    return ({
+                        name: normalizeText(m?.name),
+                        phone: normalizePhone10(m?.phone),
+                        age: m?.age ? Number(m.age) : undefined,
+                        gender: (normalizeGender(m?.gender) || 'other')
+                    });
+                })
 					: undefined,
 			}
 
@@ -322,39 +446,58 @@ const OfflineMembership = () => {
 		} finally {
 			setBusy(false)
 		}
-	}
+    };
 
-	const resetAll = () => {
-		setResult(null)
-		setError('')
-		setMember(emptyMember)
-		setSelection({ category: 'kids', coachingAddOn: false, quantity: 1, publicSlot: { date: '', startTime: '10:00', endTime: '' } })
-		setFamilyMembers([emptyFamilyMember])
-		setStep(STEP.PLAN)
-	}
+    /**
+     * Purpose: Do Reset All
+     * Plain English: What this function is used for.
+     */
+    const resetAll = () => {
+        setResult(null)
+        setError('')
+        setMember(emptyMember)
+        setSelection({ category: 'kids', coachingAddOn: false, quantity: 1, publicSlot: { date: '', startTime: '10:00', endTime: '' } })
+        setFamilyMembers([emptyFamilyMember])
+        setStep(STEP.PLAN)
+    };
 
-	const planCardPrice = (p) => {
-		if (!p) return '—'
-		if (p.categoryRequired) {
+    /**
+     * Purpose: Do Plan Card Price
+     * Plain English: What this function is used for.
+     */
+    const planCardPrice = p => {
+        if (!p) return '—'
+        if (p.categoryRequired) {
 			const prices = (p.categoryPrices || [])
-				.map((x) => Number(x?.price))
-				.filter((x) => Number.isFinite(x) && x > 0)
+				.map(/**
+             * Purpose: Array mapping callback (converts each item to a new value)
+             * Plain English: What this function is used for.
+             */
+            x => {
+                return Number(x?.price);
+            })
+				.filter(/**
+             * Purpose: Array filter callback (keeps items that match a condition)
+             * Plain English: What this function is used for.
+             */
+            x => {
+                return Number.isFinite(x) && x > 0;
+            })
 			const min = prices.length ? Math.min(...prices) : null
 			return min == null ? '—' : `From ₹${min}`
 		}
-		if (p.type === 'public') {
+        if (p.type === 'public') {
 			const base = Number(p.basePrice || 0)
 			return Number.isFinite(base) ? `₹${base} / person` : '—'
 		}
-		const base = Number(p.basePrice || 0)
-		return Number.isFinite(base) ? `₹${base}` : '—'
-	}
+        const base = Number(p.basePrice || 0)
+        return Number.isFinite(base) ? `₹${base}` : '—'
+    };
 
-	return (
-		<div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1629 100%)' }}>
-			<AdminNavbar />
-
-			<div className="container-fluid" style={{ padding: '28px 28px 60px 28px', maxWidth: 1600 }}>
+    return (
+        <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1629 100%)' }}>
+            <AdminNavbar />
+            <div className="container-fluid" style={{ padding: '28px 28px 60px 28px', maxWidth: 1600 }}>
 				<div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
 					<div>
 						<h2 style={{ color: '#00FFD4', margin: 0, fontWeight: 900 }}>Offline Membership Registration</h2>
@@ -362,7 +505,13 @@ const OfflineMembership = () => {
 							Register customers who pay cash/in-hand (no Razorpay). Generates ID cards immediately.
 						</div>
 					</div>
-					<button className="btn btn-outline-light btn-sm" onClick={() => navigate('/admin/dashboard')}>
+					<button className="btn btn-outline-light btn-sm" onClick={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    () => {
+                        return navigate('/admin/dashboard');
+                    }}>
 						Back to Dashboard
 					</button>
 				</div>
@@ -396,7 +545,13 @@ const OfflineMembership = () => {
 												className="form-control form-control-sm"
 												placeholder="Enter admin/staff name"
 												value={collectedBy}
-												onChange={(e) => setCollectedBy(e.target.value)}
+												onChange={/**
+                                                 * Purpose: Helper callback used inside a larger operation
+                                                 * Plain English: What this function is used for.
+                                                 */
+                                                e => {
+                                                    return setCollectedBy(e.target.value);
+                                                }}
 											/>
 											<div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12, marginTop: 6 }}>
 												This name is saved with the cash registration.
@@ -412,13 +567,25 @@ const OfflineMembership = () => {
 												<select
 													className="form-select form-select-sm"
 													value={selectedPlanId}
-													onChange={(e) => setSelectedPlanId(e.target.value)}
+													onChange={/**
+                                                     * Purpose: Helper callback used inside a larger operation
+                                                     * Plain English: What this function is used for.
+                                                     */
+                                                    e => {
+                                                        return setSelectedPlanId(e.target.value);
+                                                    }}
 												>
-													{plans.map((p) => (
-														<option key={p._id} value={p._id}>
-															{p.planName || p.name || 'Membership Plan'} ({PLAN_TYPE_LABEL[p.type] || p.type})
-														</option>
-													))}
+													{plans.map(/**
+                                                     * Purpose: Array mapping callback (converts each item to a new value)
+                                                     * Plain English: What this function is used for.
+                                                     */
+                                                    p => {
+                                                        return (
+                                                            <option key={p._id} value={p._id}>
+                                                                {p.planName || p.name || 'Membership Plan'}({PLAN_TYPE_LABEL[p.type] || p.type})
+                                                                                                                        </option>
+                                                        );
+                                                    })}
 												</select>
 											)}
 										</div>
@@ -426,35 +593,49 @@ const OfflineMembership = () => {
 
 									{plans.length ? (
 										<div className="membership-plan-grid mt-3">
-											{plans.map((p) => {
-												const isSelected = p._id === selectedPlanId
-												return (
-													<button
+											{plans.map(/**
+                                             * Purpose: Array mapping callback (converts each item to a new value)
+                                             * Plain English: What this function is used for.
+                                             */
+                                            p => {
+                                                const isSelected = p._id === selectedPlanId
+                                                return (
+                                                    <button
 														key={p._id}
 														type="button"
 														className={`membership-plan-card ${isSelected ? 'membership-plan-card--active' : ''}`}
-														onClick={() => setSelectedPlanId(p._id)}
+														onClick={/**
+                                                         * Purpose: Helper callback used inside a larger operation
+                                                         * Plain English: What this function is used for.
+                                                         */
+                                                        () => {
+                                                            return setSelectedPlanId(p._id);
+                                                        }}
 													>
-														<div className="membership-plan-top">
+                                                        <div className="membership-plan-top">
 															<div>
 																<div className="membership-plan-name">{p.planName || p.name || 'Membership Plan'}</div>
 																<div className="membership-plan-sub">{PLAN_TYPE_LABEL[p.type] || p.type}</div>
 															</div>
 															<div className="membership-plan-price">{planCardPrice(p)}</div>
 														</div>
-													</button>
-												)
-											})}
+                                                    </button>
+                                                );
+                                            })}
 										</div>
 									) : null}
 
 									<div className="d-flex justify-content-end mt-3">
 										<button
 											className="btn btn-success btn-sm"
-											onClick={() => {
-												setError('')
-												setStep(STEP.DETAILS)
-											}}
+											onClick={/**
+                                             * Purpose: Helper callback used inside a larger operation
+                                             * Plain English: What this function is used for.
+                                             */
+                                            () => {
+                                                setError('')
+                                                setStep(STEP.DETAILS)
+                                            }}
 											disabled={!selectedPlan}
 										>
 											Continue
@@ -474,7 +655,13 @@ const OfflineMembership = () => {
 												<input
 													className="form-control form-control-sm"
 													value={member.name}
-													onChange={(e) => setMember({ ...member, name: e.target.value })}
+													onChange={/**
+                                                     * Purpose: Helper callback used inside a larger operation
+                                                     * Plain English: What this function is used for.
+                                                     */
+                                                    e => {
+                                                        return setMember({ ...member, name: e.target.value });
+                                                    }}
 												/>
 											</div>
 											<div className="col-12 col-md-6">
@@ -482,7 +669,13 @@ const OfflineMembership = () => {
 												<input
 													className="form-control form-control-sm"
 													value={member.phone}
-													onChange={(e) => setMember({ ...member, phone: e.target.value })}
+													onChange={/**
+                                                     * Purpose: Helper callback used inside a larger operation
+                                                     * Plain English: What this function is used for.
+                                                     */
+                                                    e => {
+                                                        return setMember({ ...member, phone: e.target.value });
+                                                    }}
 												/>
 											</div>
 										</div>
@@ -490,11 +683,23 @@ const OfflineMembership = () => {
 										<div className="row g-2">
 											<div className="col-12 col-md-6">
 												<label className="form-label" style={{ color: '#fff' }}>Name</label>
-												<input className="form-control form-control-sm" value={member.name} onChange={(e) => setMember({ ...member, name: e.target.value })} />
+												<input className="form-control form-control-sm" value={member.name} onChange={/**
+                                                 * Purpose: Helper callback used inside a larger operation
+                                                 * Plain English: What this function is used for.
+                                                 */
+                                                e => {
+                                                    return setMember({ ...member, name: e.target.value });
+                                                }} />
 											</div>
 											<div className="col-12 col-md-6">
 												<label className="form-label" style={{ color: '#fff' }}>WhatsApp Number</label>
-												<input className="form-control form-control-sm" value={member.phone} onChange={(e) => setMember({ ...member, phone: e.target.value })} />
+												<input className="form-control form-control-sm" value={member.phone} onChange={/**
+                                                 * Purpose: Helper callback used inside a larger operation
+                                                 * Plain English: What this function is used for.
+                                                 */
+                                                e => {
+                                                    return setMember({ ...member, phone: e.target.value });
+                                                }} />
 											</div>
 										</div>
 									)}
@@ -506,82 +711,134 @@ const OfflineMembership = () => {
 												<button
 													type="button"
 													className="btn btn-outline-light btn-sm"
-													onClick={() => setFamilyMembers((prev) => [...prev, emptyFamilyMember])}
+													onClick={/**
+                                                     * Purpose: Helper callback used inside a larger operation
+                                                     * Plain English: What this function is used for.
+                                                     */
+                                                    () => {
+                                                        return setFamilyMembers(/**
+                                                         * Purpose: Helper callback used inside a larger operation
+                                                         * Plain English: What this function is used for.
+                                                         */
+                                                        prev => {
+                                                            return [...prev, emptyFamilyMember];
+                                                        });
+                                                    }}
 												>
 													Add Member
 												</button>
 											</div>
 
 											<div className="mt-2" style={{ display: 'grid', gap: 10 }}>
-												{familyMembers.map((fm, idx) => (
-													<div key={idx} className="p-2" style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.05)' }}>
-														<div className="row g-2 align-items-end">
-															<div className="col-12 col-md-4">
-																<label className="form-label" style={{ color: '#fff' }}>Name</label>
-																<input
-																	className="form-control form-control-sm"
-																	value={fm.name}
-																	onChange={(e) => {
-																		const next = [...familyMembers]
-																		next[idx] = { ...next[idx], name: e.target.value }
-																		setFamilyMembers(next)
-																	}}
-																/>
-															</div>
-															<div className="col-12 col-md-3">
-																<label className="form-label" style={{ color: '#fff' }}>WhatsApp Number (optional)</label>
-																<input
-																	className="form-control form-control-sm"
-																	value={fm.phone}
-																	onChange={(e) => {
-																		const next = [...familyMembers]
-																		next[idx] = { ...next[idx], phone: e.target.value }
-																		setFamilyMembers(next)
-																	}}
-																/>
-															</div>
-															<div className="col-6 col-md-2">
-																<label className="form-label" style={{ color: '#fff' }}>Age</label>
-																<input
-																	type="number"
-																	className="form-control form-control-sm"
-																	value={fm.age}
-																	onChange={(e) => {
-																		const next = [...familyMembers]
-																		next[idx] = { ...next[idx], age: e.target.value }
-																		setFamilyMembers(next)
-																	}}
-																/>
-															</div>
-															<div className="col-6 col-md-2">
-																<label className="form-label" style={{ color: '#fff' }}>Gender</label>
-																<select
-																	className="form-select form-select-sm"
-																	value={fm.gender}
-																	onChange={(e) => {
-																		const next = [...familyMembers]
-																		next[idx] = { ...next[idx], gender: e.target.value }
-																		setFamilyMembers(next)
-																	}}
-																>
-																	<option value="male">Male</option>
-																	<option value="female">Female</option>
-																	<option value="other">Other</option>
-																</select>
-															</div>
-															<div className="col-12 col-md-1 d-flex justify-content-end">
-																<button
-																	type="button"
-																	className="btn btn-outline-danger btn-sm"
-																	onClick={() => setFamilyMembers((prev) => prev.filter((_, i) => i !== idx))}
-																	disabled={familyMembers.length <= 1}
-																>
-																	Remove
-																</button>
-															</div>
-														</div>
-													</div>
-												))}
+												{familyMembers.map(/**
+                                                 * Purpose: Array mapping callback (converts each item to a new value)
+                                                 * Plain English: What this function is used for.
+                                                 */
+                                                (fm, idx) => {
+                                                    return (
+                                                        <div key={idx} className="p-2" style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.05)' }}>
+                                                            <div className="row g-2 align-items-end">
+                                                                <div className="col-12 col-md-4">
+                                                                    <label className="form-label" style={{ color: '#fff' }}>Name</label>
+                                                                    <input
+                                                                        className="form-control form-control-sm"
+                                                                        value={fm.name}
+                                                                        onChange={/**
+                                                                         * Purpose: Helper callback used inside a larger operation
+                                                                         * Plain English: What this function is used for.
+                                                                         */
+                                                                        e => {
+                                                                            const next = [...familyMembers]
+                                                                            next[idx] = { ...next[idx], name: e.target.value }
+                                                                            setFamilyMembers(next)
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                <div className="col-12 col-md-3">
+                                                                    <label className="form-label" style={{ color: '#fff' }}>WhatsApp Number (optional)</label>
+                                                                    <input
+                                                                        className="form-control form-control-sm"
+                                                                        value={fm.phone}
+                                                                        onChange={/**
+                                                                         * Purpose: Helper callback used inside a larger operation
+                                                                         * Plain English: What this function is used for.
+                                                                         */
+                                                                        e => {
+                                                                            const next = [...familyMembers]
+                                                                            next[idx] = { ...next[idx], phone: e.target.value }
+                                                                            setFamilyMembers(next)
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                <div className="col-6 col-md-2">
+                                                                    <label className="form-label" style={{ color: '#fff' }}>Age</label>
+                                                                    <input
+                                                                        type="number"
+                                                                        className="form-control form-control-sm"
+                                                                        value={fm.age}
+                                                                        onChange={/**
+                                                                         * Purpose: Helper callback used inside a larger operation
+                                                                         * Plain English: What this function is used for.
+                                                                         */
+                                                                        e => {
+                                                                            const next = [...familyMembers]
+                                                                            next[idx] = { ...next[idx], age: e.target.value }
+                                                                            setFamilyMembers(next)
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                <div className="col-6 col-md-2">
+                                                                    <label className="form-label" style={{ color: '#fff' }}>Gender</label>
+                                                                    <select
+                                                                        className="form-select form-select-sm"
+                                                                        value={fm.gender}
+                                                                        onChange={/**
+                                                                         * Purpose: Helper callback used inside a larger operation
+                                                                         * Plain English: What this function is used for.
+                                                                         */
+                                                                        e => {
+                                                                            const next = [...familyMembers]
+                                                                            next[idx] = { ...next[idx], gender: e.target.value }
+                                                                            setFamilyMembers(next)
+                                                                        }}
+                                                                    >
+                                                                        <option value="male">Male</option>
+                                                                        <option value="female">Female</option>
+                                                                        <option value="other">Other</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div className="col-12 col-md-1 d-flex justify-content-end">
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-outline-danger btn-sm"
+                                                                        onClick={/**
+                                                                         * Purpose: Helper callback used inside a larger operation
+                                                                         * Plain English: What this function is used for.
+                                                                         */
+                                                                        () => {
+                                                                            return setFamilyMembers(/**
+                                                                             * Purpose: Helper callback used inside a larger operation
+                                                                             * Plain English: What this function is used for.
+                                                                             */
+                                                                            prev => {
+                                                                                return prev.filter(/**
+                                                                                 * Purpose: Array filter callback (keeps items that match a condition)
+                                                                                 * Plain English: What this function is used for.
+                                                                                 */
+                                                                                (_, i) => {
+                                                                                    return i !== idx;
+                                                                                });
+                                                                            });
+                                                                        }}
+                                                                        disabled={familyMembers.length <= 1}
+                                                                    >
+                                                                        Remove
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
 											</div>
 										</div>
 									) : null}
@@ -592,7 +849,13 @@ const OfflineMembership = () => {
 											<select
 												className="form-select form-select-sm"
 												value={selection.category}
-												onChange={(e) => setSelection({ ...selection, category: e.target.value })}
+												onChange={/**
+                                                 * Purpose: Helper callback used inside a larger operation
+                                                 * Plain English: What this function is used for.
+                                                 */
+                                                e => {
+                                                    return setSelection({ ...selection, category: e.target.value });
+                                                }}
 											>
 												<option value="infant">{CATEGORY_LABEL.infant}</option>
 												<option value="kids">{CATEGORY_LABEL.kids}</option>
@@ -610,7 +873,13 @@ const OfflineMembership = () => {
 														type="date"
 														className="form-control form-control-sm"
 														value={selection.publicSlot.date}
-														onChange={(e) => setSelection({ ...selection, publicSlot: { ...selection.publicSlot, date: e.target.value } })}
+														onChange={/**
+                                                         * Purpose: Helper callback used inside a larger operation
+                                                         * Plain English: What this function is used for.
+                                                         */
+                                                        e => {
+                                                            return setSelection({ ...selection, publicSlot: { ...selection.publicSlot, date: e.target.value } });
+                                                        }}
 													/>
 												</div>
 												<div className="col-6">
@@ -620,7 +889,13 @@ const OfflineMembership = () => {
 														min={1}
 														className="form-control form-control-sm"
 														value={selection.quantity}
-														onChange={(e) => setSelection({ ...selection, quantity: e.target.value })}
+														onChange={/**
+                                                         * Purpose: Helper callback used inside a larger operation
+                                                         * Plain English: What this function is used for.
+                                                         */
+                                                        e => {
+                                                            return setSelection({ ...selection, quantity: e.target.value });
+                                                        }}
 													/>
 												</div>
 												<div className="col-6">
@@ -629,7 +904,13 @@ const OfflineMembership = () => {
 														type="time"
 														className="form-control form-control-sm"
 														value={selection.publicSlot.startTime}
-														onChange={(e) => setSelection({ ...selection, publicSlot: { ...selection.publicSlot, startTime: e.target.value } })}
+														onChange={/**
+                                                         * Purpose: Helper callback used inside a larger operation
+                                                         * Plain English: What this function is used for.
+                                                         */
+                                                        e => {
+                                                            return setSelection({ ...selection, publicSlot: { ...selection.publicSlot, startTime: e.target.value } });
+                                                        }}
 													/>
 												</div>
 												<div className="col-6">
@@ -638,7 +919,13 @@ const OfflineMembership = () => {
 														type="time"
 														className="form-control form-control-sm"
 														value={selection.publicSlot.endTime}
-														onChange={(e) => setSelection({ ...selection, publicSlot: { ...selection.publicSlot, endTime: e.target.value } })}
+														onChange={/**
+                                                         * Purpose: Helper callback used inside a larger operation
+                                                         * Plain English: What this function is used for.
+                                                         */
+                                                        e => {
+                                                            return setSelection({ ...selection, publicSlot: { ...selection.publicSlot, endTime: e.target.value } });
+                                                        }}
 													/>
 												</div>
 											</div>
@@ -646,7 +933,13 @@ const OfflineMembership = () => {
 									) : null}
 
 									<div className="d-flex justify-content-between mt-4">
-										<button className="btn btn-outline-light btn-sm" onClick={() => setStep(STEP.PLAN)} disabled={busy}>
+										<button className="btn btn-outline-light btn-sm" onClick={/**
+                                         * Purpose: Helper callback used inside a larger operation
+                                         * Plain English: What this function is used for.
+                                         */
+                                        () => {
+                                            return setStep(STEP.PLAN);
+                                        }} disabled={busy}>
 											Back
 										</button>
 										<button className="btn btn-success btn-sm" onClick={submitOffline} disabled={busy}>
@@ -683,35 +976,46 @@ const OfflineMembership = () => {
 									</div>
 
 									<div className="mt-3" style={{ display: 'grid', gap: 10 }}>
-										{(result?.members || []).map((m) => (
-											<div
-												key={m._id}
-												className="p-2"
-												style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.06)' }}
-											>
-												<div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-													<div>
-														<div style={{ color: '#fff', fontWeight: 900 }}>{m.name}</div>
-														<div style={{ color: 'rgba(255,255,255,0.70)', fontSize: 12 }}>ID: {m._id}</div>
-													</div>
-													<button
-														className="btn btn-outline-light btn-sm"
-														onClick={() =>
-															downloadMemberIdCard({
-																name: m.name,
-																memberId: m._id,
-																qrDataUrl: m.qrCode,
-																planName: result?.plan?.planName || selectedPlan?.planName || 'Membership',
-																	joinDate: m.joinDate,
-																expiryDate: m.expiryDate,
-															})
-														}
-													>
-														Download ID Card
-													</button>
-												</div>
-											</div>
-										))}
+										{(result?.members || []).map(/**
+                                         * Purpose: Array mapping callback (converts each item to a new value)
+                                         * Plain English: What this function is used for.
+                                         */
+                                        m => {
+                                            return (
+                                                <div
+                                                    key={m._id}
+                                                    className="p-2"
+                                                    style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.06)' }}
+                                                >
+                                                    <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                                                        <div>
+                                                            <div style={{ color: '#fff', fontWeight: 900 }}>{m.name}</div>
+                                                            <div style={{ color: 'rgba(255,255,255,0.70)', fontSize: 12 }}>ID: {m._id}</div>
+                                                        </div>
+                                                        <button
+                                                            className="btn btn-outline-light btn-sm"
+                                                            onClick={/**
+                                                             * Purpose: Helper callback used inside a larger operation
+                                                             * Plain English: What this function is used for.
+                                                             */
+                                                            () => {
+                                                                return downloadMemberIdCard({
+                                                                    name: m.name,
+                                                                    memberId: m._id,
+                                                                    qrDataUrl: m.qrCode,
+                                                                    planName: result?.plan?.planName || selectedPlan?.planName || 'Membership',
+                                                                        joinDate: m.joinDate,
+                                                                    expiryDate: m.expiryDate,
+                                                                });
+                                                            }
+                                                            }
+                                                        >
+                                                            Download ID Card
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
 									</div>
 
 									<div className="d-flex justify-content-end mt-4">
@@ -776,8 +1080,8 @@ const OfflineMembership = () => {
 					</div>
 				</div>
 			</div>
-		</div>
-	)
-}
+        </div>
+    );
+};
 
 export default OfflineMembership

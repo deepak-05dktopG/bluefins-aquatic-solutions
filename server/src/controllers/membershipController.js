@@ -1,3 +1,8 @@
+/**
+ * What it is: Membership + payments controller.
+ * Non-tech note: Handles memberships, renewals, and payment-related actions.
+ */
+
 import crypto from 'crypto'
 import qrcode from 'qrcode'
 import asyncHandler from 'express-async-handler'
@@ -9,248 +14,372 @@ import Attendance from '../models/Attendance.js'
 
 const BUSINESS_TZ_OFFSET_MINUTES = Number.parseInt(process.env.BUSINESS_TZ_OFFSET_MINUTES || '330', 10)
 
+/**
+ * Purpose: Get Forced Test Amount Inr
+ * Plain English: What this function is used for.
+ */
 const getForcedTestAmountInr = () => {
-	const enabledRaw = process.env.ENABLE_TEST_MODE
-	const enabled = String(enabledRaw || '').trim().toLowerCase()
-	if (!(enabled === 'true' || enabled === '1' || enabled === 'yes')) return null
+    const enabledRaw = process.env.ENABLE_TEST_MODE
+    const enabled = String(enabledRaw || '').trim().toLowerCase()
+    if (!(enabled === 'true' || enabled === '1' || enabled === 'yes')) return null
 
-	const raw = process.env.FORCE_TEST_AMOUNT_INR
-	if (raw == null || String(raw).trim() === '') return null
-	const n = Number(raw)
-	if (!Number.isFinite(n) || n <= 0) return null
-	return Math.round((n + Number.EPSILON) * 100) / 100
-}
+    const raw = process.env.FORCE_TEST_AMOUNT_INR
+    if (raw == null || String(raw).trim() === '') return null
+    const n = Number(raw)
+    if (!Number.isFinite(n) || n <= 0) return null
+    return Math.round((n + Number.EPSILON) * 100) / 100
+};
 
-const applyForcedPricing = (pricing) => {
-	const forced = getForcedTestAmountInr()
-	if (forced == null) return pricing
-	return {
+/**
+ * Purpose: Do Apply Forced Pricing
+ * Plain English: What this function is used for.
+ */
+const applyForcedPricing = pricing => {
+    const forced = getForcedTestAmountInr()
+    if (forced == null) return pricing
+    return {
 		subtotal: forced,
 		commission: 0,
 		gst: 0,
 		total: forced,
 		config: { commissionPct: 0, commissionFlatInr: 0, gstPct: 0 },
 	}
-}
+};
 
+/**
+ * Purpose: Do To Number Or
+ * Plain English: What this function is used for.
+ */
 const toNumberOr = (value, fallback) => {
-	const n = Number(value)
-	return Number.isFinite(n) ? n : fallback
-}
+    const n = Number(value)
+    return Number.isFinite(n) ? n : fallback
+};
 
-const round2 = (value) => {
-	const n = Number(value)
-	if (!Number.isFinite(n)) return 0
-	return Math.round((n + Number.EPSILON) * 100) / 100
-}
+/**
+ * Purpose: Do Round2
+ * Plain English: What this function is used for.
+ */
+const round2 = value => {
+    const n = Number(value)
+    if (!Number.isFinite(n)) return 0
+    return Math.round((n + Number.EPSILON) * 100) / 100
+};
 
+/**
+ * Purpose: Get Payment Charges Config
+ * Plain English: What this function is used for.
+ */
 const getPaymentChargesConfig = () => {
-	// NOTE: keep these configurable from env; default 0 so existing installs are not broken.
-	// Defaults align with common Razorpay card/UPI blended fee assumptions:
-	// - 2% gateway fee
-	// - GST applied on the gateway fee (typically 18%)
-	// You can override any of these via env.
-	const commissionPct = Math.max(0, toNumberOr(process.env.PAYMENT_COMMISSION_PCT, 2))
-	const commissionFlatInr = Math.max(0, toNumberOr(process.env.PAYMENT_COMMISSION_FLAT_INR, 0))
-	// GST is typically applied on the payment gateway service fee.
-	const gstPct = Math.max(0, toNumberOr(process.env.PAYMENT_GST_PCT, 18))
-	return { commissionPct, commissionFlatInr, gstPct }
-}
+    // NOTE: keep these configurable from env; default 0 so existing installs are not broken.
+    // Defaults align with common Razorpay card/UPI blended fee assumptions:
+    // - 2% gateway fee
+    // - GST applied on the gateway fee (typically 18%)
+    // You can override any of these via env.
+    const commissionPct = Math.max(0, toNumberOr(process.env.PAYMENT_COMMISSION_PCT, 2))
+    const commissionFlatInr = Math.max(0, toNumberOr(process.env.PAYMENT_COMMISSION_FLAT_INR, 0))
+    // GST is typically applied on the payment gateway service fee.
+    const gstPct = Math.max(0, toNumberOr(process.env.PAYMENT_GST_PCT, 18))
+    return { commissionPct, commissionFlatInr, gstPct }
+};
 
-const computePayablePricing = (subtotalInr) => {
-	const subtotal = round2(subtotalInr)
-	const { commissionPct, commissionFlatInr, gstPct } = getPaymentChargesConfig()
+/**
+ * Purpose: Do Compute Payable Pricing
+ * Plain English: What this function is used for.
+ */
+const computePayablePricing = subtotalInr => {
+    const subtotal = round2(subtotalInr)
+    const { commissionPct, commissionFlatInr, gstPct } = getPaymentChargesConfig()
 
-	const commission = round2(subtotal * (commissionPct / 100) + commissionFlatInr)
-	const gst = round2(commission * (gstPct / 100))
-	const total = round2(subtotal + commission + gst)
+    const commission = round2(subtotal * (commissionPct / 100) + commissionFlatInr)
+    const gst = round2(commission * (gstPct / 100))
+    const total = round2(subtotal + commission + gst)
 
-	return applyForcedPricing({
+    return applyForcedPricing({
 		subtotal,
 		commission,
 		gst,
 		total,
 		config: { commissionPct, commissionFlatInr, gstPct },
 	})
-}
+};
 
-const computeOfflinePricing = (subtotalInr) => {
-	const subtotal = round2(subtotalInr)
-	return {
+/**
+ * Purpose: Do Compute Offline Pricing
+ * Plain English: What this function is used for.
+ */
+const computeOfflinePricing = subtotalInr => {
+    const subtotal = round2(subtotalInr)
+    return {
 		subtotal,
 		commission: 0,
 		gst: 0,
 		total: subtotal,
 		config: { commissionPct: 0, commissionFlatInr: 0, gstPct: 0 },
 	}
-}
+};
 
+/**
+ * Purpose: Do Require Razorpay Config
+ * Plain English: What this function is used for.
+ */
 const requireRazorpayConfig = () => {
-	// IMPORTANT: do not initialize Razorpay client at import-time.
-	// In ESM, controllers can be evaluated before dotenv.config() runs.
-	if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    // IMPORTANT: do not initialize Razorpay client at import-time.
+    // In ESM, controllers can be evaluated before dotenv.config() runs.
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
 		const err = new Error('Razorpay is not configured (missing RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET)')
 		err.statusCode = 500
 		throw err
 	}
-}
+};
 
+/**
+ * Purpose: Get Razorpay Client
+ * Plain English: What this function is used for.
+ */
 const getRazorpayClient = () => {
-	requireRazorpayConfig()
-	return new Razorpay({
+    requireRazorpayConfig()
+    return new Razorpay({
 		key_id: process.env.RAZORPAY_KEY_ID,
 		key_secret: process.env.RAZORPAY_KEY_SECRET,
 	})
-}
+};
 
-const toPaise = (amountInInr) => {
-	const n = Number(amountInInr)
-	if (!Number.isFinite(n)) return null
-	const paise = Math.round(n * 100)
-	return Number.isFinite(paise) && paise > 0 ? paise : null
-}
+/**
+ * Purpose: Do To Paise
+ * Plain English: What this function is used for.
+ */
+const toPaise = amountInInr => {
+    const n = Number(amountInInr)
+    if (!Number.isFinite(n)) return null
+    const paise = Math.round(n * 100)
+    return Number.isFinite(paise) && paise > 0 ? paise : null
+};
 
-const mongoTzFromOffsetMinutes = (minutes) => {
-	const sign = minutes >= 0 ? '+' : '-'
-	const abs = Math.abs(minutes)
-	const hh = String(Math.floor(abs / 60)).padStart(2, '0')
-	const mm = String(abs % 60).padStart(2, '0')
-	return `${sign}${hh}:${mm}`
-}
+/**
+ * Purpose: Do Mongo Tz From Offset Minutes
+ * Plain English: What this function is used for.
+ */
+const mongoTzFromOffsetMinutes = minutes => {
+    const sign = minutes >= 0 ? '+' : '-'
+    const abs = Math.abs(minutes)
+    const hh = String(Math.floor(abs / 60)).padStart(2, '0')
+    const mm = String(abs % 60).padStart(2, '0')
+    return `${sign}${hh}:${mm}`
+};
 
-const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+/**
+ * Purpose: Do Escape Reg Exp
+ * Plain English: What this function is used for.
+ */
+const escapeRegExp = value => {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
 
+/**
+ * Purpose: Do Clamp Int
+ * Plain English: What this function is used for.
+ */
 const clampInt = (value, { min, max, fallback }) => {
-	const n = Number.parseInt(value, 10)
-	if (!Number.isFinite(n)) return fallback
-	return Math.max(min, Math.min(max, n))
-}
+    const n = Number.parseInt(value, 10)
+    if (!Number.isFinite(n)) return fallback
+    return Math.max(min, Math.min(max, n))
+};
 
-const parseDateOnlyParts = (value) => {
-	const s = value == null ? '' : String(value).trim()
-	if (!s) return null
+/**
+ * Purpose: Parse Date Only Parts
+ * Plain English: What this function is used for.
+ */
+const parseDateOnlyParts = value => {
+    const s = value == null ? '' : String(value).trim()
+    if (!s) return null
 
-	// YYYY-MM-DD
-	if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-		const [yy, mm, dd] = s.split('-').map((x) => Number(x))
+    // YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+		const [yy, mm, dd] = s.split('-').map(/**
+         * Purpose: Array mapping callback (converts each item to a new value)
+         * Plain English: What this function is used for.
+         */
+        x => {
+            return Number(x);
+        })
 		if (!Number.isFinite(yy) || !Number.isFinite(mm) || !Number.isFinite(dd)) return null
 		return { y: yy, m: mm, d: dd }
 	}
 
-	// DD/MM/YYYY
-	if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
-		const [dd, mm, yy] = s.split('/').map((x) => Number(x))
+    // DD/MM/YYYY
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+		const [dd, mm, yy] = s.split('/').map(/**
+         * Purpose: Array mapping callback (converts each item to a new value)
+         * Plain English: What this function is used for.
+         */
+        x => {
+            return Number(x);
+        })
 		if (!Number.isFinite(yy) || !Number.isFinite(mm) || !Number.isFinite(dd)) return null
 		return { y: yy, m: mm, d: dd }
 	}
 
-	return null
-}
+    return null
+};
 
-const endOfUtcDayFromParts = (parts) => {
-	if (!parts) return null
-	const { y, m, d } = parts
-	const dt = new Date(Date.UTC(y, (m || 1) - 1, d || 1, 23, 59, 59, 999))
-	return Number.isNaN(dt.getTime()) ? null : dt
-}
+/**
+ * Purpose: Do End Of Utc Day From Parts
+ * Plain English: What this function is used for.
+ */
+const endOfUtcDayFromParts = parts => {
+    if (!parts) return null
+    const { y, m, d } = parts
+    const dt = new Date(Date.UTC(y, (m || 1) - 1, d || 1, 23, 59, 59, 999))
+    return Number.isNaN(dt.getTime()) ? null : dt
+};
 
-const endOfUtcDayFromValue = (value) => {
-	const parts = parseDateOnlyParts(value)
-	if (parts) return endOfUtcDayFromParts(parts)
-	const d = value instanceof Date ? value : new Date(value)
-	if (Number.isNaN(d.getTime())) return null
-	return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 23, 59, 59, 999))
-}
+/**
+ * Purpose: Do End Of Utc Day From Value
+ * Plain English: What this function is used for.
+ */
+const endOfUtcDayFromValue = value => {
+    const parts = parseDateOnlyParts(value)
+    if (parts) return endOfUtcDayFromParts(parts)
+    const d = value instanceof Date ? value : new Date(value)
+    if (Number.isNaN(d.getTime())) return null
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 23, 59, 59, 999))
+};
 
+/**
+ * Purpose: Do Compute Member Status
+ * Plain English: What this function is used for.
+ */
 const computeMemberStatus = ({ expiryDate, planType, publicSlot }) => {
-	const now = Date.now()
+    const now = Date.now()
 
-	// Business rule: if expiry date is today, member can enter until 11:59pm.
-	// For public plans, prefer the selected slot date (calendar date) if present.
-	const isPublic = String(planType || '').toLowerCase() === 'public'
-	const expirySource = isPublic && publicSlot?.date ? publicSlot.date : expiryDate
-	if (!expirySource) return 'expired'
+    // Business rule: if expiry date is today, member can enter until 11:59pm.
+    // For public plans, prefer the selected slot date (calendar date) if present.
+    const isPublic = String(planType || '').toLowerCase() === 'public'
+    const expirySource = isPublic && publicSlot?.date ? publicSlot.date : expiryDate
+    if (!expirySource) return 'expired'
 
-	const eod = endOfUtcDayFromValue(expirySource)
-	if (!eod) return 'expired'
-	return eod.getTime() >= now ? 'active' : 'expired'
-}
+    const eod = endOfUtcDayFromValue(expirySource)
+    if (!eod) return 'expired'
+    return eod.getTime() >= now ? 'active' : 'expired'
+};
  
+/**
+ * Purpose: Get Category Price
+ * Plain English: What this function is used for.
+ */
 const getCategoryPrice = (plan, category) => {
-	const normalized = category ? String(category).toLowerCase() : ''
-	const match = (plan.categoryPrices || []).find((p) => p.category === normalized)
-	return match ? match.price : null
-}
+    const normalized = category ? String(category).toLowerCase() : ''
+    const match = (plan.categoryPrices || []).find(/**
+     * Purpose: Array search callback (finds the first matching item)
+     * Plain English: What this function is used for.
+     */
+    p => {
+        return p.category === normalized;
+    })
+    return match ? match.price : null
+};
 
+/**
+ * Purpose: Do Compute Amount
+ * Plain English: What this function is used for.
+ */
 const computeAmount = ({ plan, selection }) => {
-	const type = plan.type
-	const normalizedCategory = selection?.category ? String(selection.category).toLowerCase() : undefined
-	const quantity = selection?.quantity ? Number(selection.quantity) : 1
+    const type = plan.type
+    const normalizedCategory = selection?.category ? String(selection.category).toLowerCase() : undefined
+    const quantity = selection?.quantity ? Number(selection.quantity) : 1
 
-	if (type === 'public') {
+    if (type === 'public') {
 		if (!Number.isFinite(quantity) || quantity < 1) return { ok: false, message: 'quantity must be >= 1' }
 		return { ok: true, amount: plan.basePrice * quantity, computed: { quantity } }
 	}
 
-	if (plan.categoryRequired) {
+    if (plan.categoryRequired) {
 		if (!normalizedCategory) return { ok: false, message: 'category is required for this plan' }
 		const categoryPrice = getCategoryPrice(plan, normalizedCategory)
 		if (categoryPrice == null) return { ok: false, message: 'Invalid category for this plan' }
 		return { ok: true, amount: categoryPrice, computed: { category: normalizedCategory } }
 	}
 
-	let amount = plan.basePrice
-	if (type === 'yearly' && selection?.coachingAddOn) {
+    let amount = plan.basePrice
+    if (type === 'yearly' && selection?.coachingAddOn) {
 		amount += plan.addOns?.coachingAddOnMonthly || 0
 	}
 
-	return { ok: true, amount, computed: { coachingAddOn: Boolean(selection?.coachingAddOn) } }
-}
+    return { ok: true, amount, computed: { coachingAddOn: Boolean(selection?.coachingAddOn) } }
+};
 
 const ALLOWED_GENDERS = new Set(['male', 'female', 'other'])
 
-const normalizeText = (value) => (value == null ? '' : String(value)).trim()
+/**
+ * Purpose: Do Normalize Text
+ * Plain English: What this function is used for.
+ */
+const normalizeText = value => {
+    return (value == null ? '' : String(value)).trim();
+};
 
-const normalizePhone10 = (value) => {
-	const raw = normalizeText(value)
-	if (!raw) return ''
-	const digits = raw.replace(/\D/g, '')
-	if (!digits) return ''
-	if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2)
-	if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1)
-	return digits
-}
+/**
+ * Purpose: Do Normalize Phone10
+ * Plain English: What this function is used for.
+ */
+const normalizePhone10 = value => {
+    const raw = normalizeText(value)
+    if (!raw) return ''
+    const digits = raw.replace(/\D/g, '')
+    if (!digits) return ''
+    if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2)
+    if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1)
+    return digits
+};
 
-const validatePhone10 = (value) => /^\d{10}$/.test(String(value || ''))
+/**
+ * Purpose: Validate Phone10
+ * Plain English: What this function is used for.
+ */
+const validatePhone10 = value => {
+    return /^\d{10}$/.test(String(value || ''));
+};
 
-const normalizeGender = (value) => {
-	const raw = normalizeText(value)
-	if (!raw) return 'other'
-	const g = raw.toLowerCase()
-	return ALLOWED_GENDERS.has(g) ? g : null
-}
+/**
+ * Purpose: Do Normalize Gender
+ * Plain English: What this function is used for.
+ */
+const normalizeGender = value => {
+    const raw = normalizeText(value)
+    if (!raw) return 'other'
+    const g = raw.toLowerCase()
+    return ALLOWED_GENDERS.has(g) ? g : null
+};
 
-const normalizeAge = (value) => {
-	if (value == null || value === '') return { ok: true, age: undefined }
-	const n = Number(value)
-	if (!Number.isFinite(n)) return { ok: false, message: 'Age must be a number' }
-	if (n < 1 || n > 120) return { ok: false, message: 'Age must be between 1 and 120' }
-	return { ok: true, age: Math.floor(n) }
-}
+/**
+ * Purpose: Do Normalize Age
+ * Plain English: What this function is used for.
+ */
+const normalizeAge = value => {
+    if (value == null || value === '') return { ok: true, age: undefined }
+    const n = Number(value)
+    if (!Number.isFinite(n)) return { ok: false, message: 'Age must be a number' }
+    if (n < 1 || n > 120) return { ok: false, message: 'Age must be between 1 and 120' }
+    return { ok: true, age: Math.floor(n) }
+};
 
+/**
+ * Purpose: Do Normalize Member Input
+ * Plain English: What this function is used for.
+ */
 const normalizeMemberInput = ({ member, label, requireName, requirePhone }) => {
-	const name = normalizeText(member?.name)
-	const phone = normalizePhone10(member?.phone)
-	const gender = normalizeGender(member?.gender)
-	const ageRes = normalizeAge(member?.age)
+    const name = normalizeText(member?.name)
+    const phone = normalizePhone10(member?.phone)
+    const gender = normalizeGender(member?.gender)
+    const ageRes = normalizeAge(member?.age)
 
-	if (requireName && !name) return { ok: false, message: `${label} name is required` }
-	if (requirePhone && !phone) return { ok: false, message: `${label} phone is required` }
-	if (phone && !validatePhone10(phone)) return { ok: false, message: `${label} phone must be a valid 10-digit number` }
-	if (gender === null) return { ok: false, message: `${label} gender must be one of: male, female, other` }
-	if (!ageRes.ok) return { ok: false, message: `${label} ${ageRes.message}` }
+    if (requireName && !name) return { ok: false, message: `${label} name is required` }
+    if (requirePhone && !phone) return { ok: false, message: `${label} phone is required` }
+    if (phone && !validatePhone10(phone)) return { ok: false, message: `${label} phone must be a valid 10-digit number` }
+    if (gender === null) return { ok: false, message: `${label} gender must be one of: male, female, other` }
+    if (!ageRes.ok) return { ok: false, message: `${label} ${ageRes.message}` }
 
-	return {
+    return {
 		ok: true,
 		member: {
 			name,
@@ -259,23 +388,37 @@ const normalizeMemberInput = ({ member, label, requireName, requirePhone }) => {
 			gender: gender || 'other',
 		},
 	}
-}
+};
 
-const isValidTimeHHMM = (value) => {
-	const raw = normalizeText(value)
-	if (!/^\d{2}:\d{2}$/.test(raw)) return false
-	const [h, m] = raw.split(':').map((v) => Number(v))
-	return Number.isFinite(h) && Number.isFinite(m) && h >= 0 && h <= 23 && m >= 0 && m <= 59
-}
+/**
+ * Purpose: Check whether Valid Time HHMM
+ * Plain English: What this function is used for.
+ */
+const isValidTimeHHMM = value => {
+    const raw = normalizeText(value)
+    if (!/^\d{2}:\d{2}$/.test(raw)) return false
+    const [h, m] = raw.split(':').map(/**
+     * Purpose: Array mapping callback (converts each item to a new value)
+     * Plain English: What this function is used for.
+     */
+    v => {
+        return Number(v);
+    })
+    return Number.isFinite(h) && Number.isFinite(m) && h >= 0 && h <= 23 && m >= 0 && m <= 59
+};
 
+/**
+ * Purpose: Do Prepare Offline Membership Draft
+ * Plain English: What this function is used for.
+ */
 const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers }) => {
-	const normalizedSelection = selection || {}
+    const normalizedSelection = selection || {}
 
-	const baseAmountRes = computeAmount({ plan, selection: normalizedSelection })
-	if (!baseAmountRes.ok) return { ok: false, message: baseAmountRes.message }
+    const baseAmountRes = computeAmount({ plan, selection: normalizedSelection })
+    if (!baseAmountRes.ok) return { ok: false, message: baseAmountRes.message }
 
-	const pricing = computeOfflinePricing(baseAmountRes.amount)
-	const amountRes = {
+    const pricing = computeOfflinePricing(baseAmountRes.amount)
+    const amountRes = {
 		...baseAmountRes,
 		amount: pricing.total,
 		computed: {
@@ -284,10 +427,10 @@ const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers 
 		},
 	}
 
-	const membershipGroupId = `grp_${crypto.randomUUID().replaceAll('-', '')}`
-	const membersToCreate = []
+    const membershipGroupId = `grp_${crypto.randomUUID().replaceAll('-', '')}`
+    const membersToCreate = []
 
-	if (plan.type === 'family') {
+    if (plan.type === 'family') {
 		const list = Array.isArray(familyMembers) ? familyMembers : []
 		if (!list.length) return { ok: false, message: 'familyMembers is required for family plan' }
 		if (plan.maxMembers && list.length > plan.maxMembers) {
@@ -324,11 +467,11 @@ const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers 
 		})
 	}
 
-	let joinDate = new Date()
-	let expiryDate = new Date(joinDate)
-	let publicSlot = undefined
+    let joinDate = new Date()
+    let expiryDate = new Date(joinDate)
+    let publicSlot = undefined
 
-	if (plan.type === 'public') {
+    if (plan.type === 'public') {
 		if (!isValidTimeHHMM(normalizedSelection?.publicSlot?.startTime)) {
 			return { ok: false, message: 'Invalid publicSlot.startTime (use HH:MM)' }
 		}
@@ -348,7 +491,7 @@ const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers 
 		expiryDate.setDate(expiryDate.getDate() + days)
 	}
 
-	return {
+    return {
 		ok: true,
 		amountRes,
 		normalizedSelection,
@@ -358,16 +501,20 @@ const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers 
 		expiryDate,
 		publicSlot,
 	}
-}
+};
 
+/**
+ * Purpose: Do Prepare Membership Draft
+ * Plain English: What this function is used for.
+ */
 const prepareMembershipDraft = ({ plan, member, selection, familyMembers }) => {
-	const normalizedSelection = selection || {}
+    const normalizedSelection = selection || {}
 
-	const baseAmountRes = computeAmount({ plan, selection: normalizedSelection })
-	if (!baseAmountRes.ok) return { ok: false, message: baseAmountRes.message }
+    const baseAmountRes = computeAmount({ plan, selection: normalizedSelection })
+    if (!baseAmountRes.ok) return { ok: false, message: baseAmountRes.message }
 
-	const pricing = computePayablePricing(baseAmountRes.amount)
-	const amountRes = {
+    const pricing = computePayablePricing(baseAmountRes.amount)
+    const amountRes = {
 		...baseAmountRes,
 		amount: pricing.total,
 		computed: {
@@ -375,12 +522,12 @@ const prepareMembershipDraft = ({ plan, member, selection, familyMembers }) => {
 			pricing,
 		},
 	}
-	if (!amountRes.ok) return { ok: false, message: amountRes.message }
+    if (!amountRes.ok) return { ok: false, message: amountRes.message }
 
-	const membershipGroupId = `grp_${crypto.randomUUID().replaceAll('-', '')}`
-	const membersToCreate = []
+    const membershipGroupId = `grp_${crypto.randomUUID().replaceAll('-', '')}`
+    const membersToCreate = []
 
-	if (plan.type === 'family') {
+    if (plan.type === 'family') {
 		const list = Array.isArray(familyMembers) ? familyMembers : []
 		if (!list.length) return { ok: false, message: 'familyMembers is required for family plan' }
 		if (plan.maxMembers && list.length > plan.maxMembers) {
@@ -416,11 +563,11 @@ const prepareMembershipDraft = ({ plan, member, selection, familyMembers }) => {
 		})
 	}
 
-	let joinDate = new Date()
-	let expiryDate = new Date(joinDate)
-	let publicSlot = undefined
+    let joinDate = new Date()
+    let expiryDate = new Date(joinDate)
+    let publicSlot = undefined
 
-	if (plan.type === 'public') {
+    if (plan.type === 'public') {
 		if (!isValidTimeHHMM(normalizedSelection?.publicSlot?.startTime)) {
 			return { ok: false, message: 'Invalid publicSlot.startTime (use HH:MM)' }
 		}
@@ -440,7 +587,7 @@ const prepareMembershipDraft = ({ plan, member, selection, familyMembers }) => {
 		expiryDate.setDate(expiryDate.getDate() + days)
 	}
 
-	return {
+    return {
 		ok: true,
 		amountRes,
 		normalizedSelection,
@@ -450,11 +597,17 @@ const prepareMembershipDraft = ({ plan, member, selection, familyMembers }) => {
 		expiryDate,
 		publicSlot,
 	}
-}
+};
 
-const createMembersForDraft = async ({ plan, amountRes, membersToCreate, joinDate, expiryDate, publicSlot, membershipGroupId }) => {
-	const createdMembers = []
-	for (const m of membersToCreate) {
+/**
+ * Purpose: Create Members For Draft
+ * Plain English: What this function is used for.
+ */
+const createMembersForDraft = async (
+    { plan, amountRes, membersToCreate, joinDate, expiryDate, publicSlot, membershipGroupId }
+) => {
+    const createdMembers = []
+    for (const m of membersToCreate) {
 		const doc = await Member.create({
 			name: m.name,
 			phone: m.phone,
@@ -478,35 +631,39 @@ const createMembersForDraft = async ({ plan, amountRes, membersToCreate, joinDat
 
 		createdMembers.push(doc)
 	}
-	return createdMembers
-}
+    return createdMembers
+};
 
+/**
+ * Purpose: Do Finalize Payment And Create Members
+ * Plain English: What this function is used for.
+ */
 const finalizePaymentAndCreateMembers = async ({ paymentDoc, providerPaymentId, providerSignature }) => {
-	if (!paymentDoc) throw new Error('Payment not found')
-	if (paymentDoc.status === 'paid' && Array.isArray(paymentDoc.memberIds) && paymentDoc.memberIds.length) {
+    if (!paymentDoc) throw new Error('Payment not found')
+    if (paymentDoc.status === 'paid' && Array.isArray(paymentDoc.memberIds) && paymentDoc.memberIds.length) {
 		const plan = await MembershipPlan.findById(paymentDoc.planId)
 		const members = await Member.find({ _id: { $in: paymentDoc.memberIds } })
 		return { plan, payment: paymentDoc, members, member: members[0] || null }
 	}
 
-	const plan = await MembershipPlan.findById(paymentDoc.planId)
-	if (!plan || plan.isActive === false) throw new Error('Plan not found')
+    const plan = await MembershipPlan.findById(paymentDoc.planId)
+    if (!plan || plan.isActive === false) throw new Error('Plan not found')
 
-	const membersToCreate = plan.type === 'family'
+    const membersToCreate = plan.type === 'family'
 		? (Array.isArray(paymentDoc.familyMembersDraft) ? paymentDoc.familyMembersDraft : [])
 		: [paymentDoc.memberDraft].filter(Boolean)
 
-	if (!membersToCreate.length) throw new Error('No member details found for this payment')
+    if (!membersToCreate.length) throw new Error('No member details found for this payment')
 
-	const draftRes = prepareMembershipDraft({
+    const draftRes = prepareMembershipDraft({
 		plan,
 		member: paymentDoc.memberDraft,
 		selection: paymentDoc.selection,
 		familyMembers: paymentDoc.familyMembersDraft,
 	})
-	if (!draftRes.ok) throw new Error(draftRes.message)
+    if (!draftRes.ok) throw new Error(draftRes.message)
 
-	const createdMembers = await createMembersForDraft({
+    const createdMembers = await createMembersForDraft({
 		plan,
 		amountRes: draftRes.amountRes,
 		membersToCreate: draftRes.membersToCreate,
@@ -516,57 +673,81 @@ const finalizePaymentAndCreateMembers = async ({ paymentDoc, providerPaymentId, 
 		membershipGroupId: paymentDoc.membershipGroupId || draftRes.membershipGroupId,
 	})
 
-	paymentDoc.status = 'paid'
-	paymentDoc.provider = 'razorpay'
-	if (providerPaymentId) paymentDoc.paymentId = providerPaymentId
-	if (providerSignature) paymentDoc.providerSignature = providerSignature
-	paymentDoc.memberId = createdMembers[0]?._id
-	paymentDoc.memberIds = createdMembers.map((x) => x._id)
-	await paymentDoc.save()
+    paymentDoc.status = 'paid'
+    paymentDoc.provider = 'razorpay'
+    if (providerPaymentId) paymentDoc.paymentId = providerPaymentId
+    if (providerSignature) paymentDoc.providerSignature = providerSignature
+    paymentDoc.memberId = createdMembers[0]?._id
+    paymentDoc.memberIds = createdMembers.map(/**
+     * Purpose: Array mapping callback (converts each item to a new value)
+     * Plain English: What this function is used for.
+     */
+    x => {
+        return x._id;
+    })
+    await paymentDoc.save()
 
-	return { plan, payment: paymentDoc, members: createdMembers, member: createdMembers[0] || null }
-}
+    return { plan, payment: paymentDoc, members: createdMembers, member: createdMembers[0] || null }
+};
 
-const resolvePublicSlot = (selection) => {
-	const slot = selection?.publicSlot
-	if (!slot?.date || !slot?.startTime) {
+/**
+ * Purpose: Do Resolve Public Slot
+ * Plain English: What this function is used for.
+ */
+const resolvePublicSlot = selection => {
+    const slot = selection?.publicSlot
+    if (!slot?.date || !slot?.startTime) {
 		return { ok: false, message: 'publicSlot.date and publicSlot.startTime are required' }
 	}
 
-	const parts = parseDateOnlyParts(slot.date)
-	if (!parts) {
+    const parts = parseDateOnlyParts(slot.date)
+    if (!parts) {
 		return { ok: false, message: 'Invalid publicSlot.date (use YYYY-MM-DD)' }
 	}
-	const normalizedDate = `${String(parts.y).padStart(4, '0')}-${String(parts.m).padStart(2, '0')}-${String(parts.d).padStart(2, '0')}`
+    const normalizedDate = `${String(parts.y).padStart(4, '0')}-${String(parts.m).padStart(2, '0')}-${String(parts.d).padStart(2, '0')}`
 
-	const startTime = String(slot.startTime)
-	const endTime = slot.endTime ? String(slot.endTime) : null
+    const startTime = String(slot.startTime)
+    const endTime = slot.endTime ? String(slot.endTime) : null
 
-	if (!endTime) {
-		const [h, m] = startTime.split(':').map((v) => Number(v))
+    if (!endTime) {
+		const [h, m] = startTime.split(':').map(/**
+         * Purpose: Array mapping callback (converts each item to a new value)
+         * Plain English: What this function is used for.
+         */
+        v => {
+            return Number(v);
+        })
 		if (!Number.isFinite(h) || !Number.isFinite(m)) return { ok: false, message: 'Invalid startTime format' }
 		const endH = (h + 1) % 24
 		const computedEnd = `${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 		return { ok: true, slot: { date: normalizedDate, startTime, endTime: computedEnd } }
 	}
 
-	return { ok: true, slot: { date: normalizedDate, startTime, endTime } }
-}
+    return { ok: true, slot: { date: normalizedDate, startTime, endTime } }
+};
 
-const inferLegacyType = (doc) => {
-	// Best-effort inference for older documents that may not have `type`.
-	if (doc?.durationInMinutes || doc?.publicEntryWindow) return 'public'
-	if (doc?.maxMembers && (doc?.durationInDays || 0) >= 300) return 'family'
-	if ((doc?.durationInDays || 0) >= 300) return 'yearly'
-	if ((doc?.durationInDays || 0) >= 28 && (doc?.durationInDays || 0) <= 31) return 'monthly'
-	if ((doc?.durationInDays || 0) === 15) return 'summer'
-	return 'monthly'
-}
+/**
+ * Purpose: Do Infer Legacy Type
+ * Plain English: What this function is used for.
+ */
+const inferLegacyType = doc => {
+    // Best-effort inference for older documents that may not have `type`.
+    if (doc?.durationInMinutes || doc?.publicEntryWindow) return 'public'
+    if (doc?.maxMembers && (doc?.durationInDays || 0) >= 300) return 'family'
+    if ((doc?.durationInDays || 0) >= 300) return 'yearly'
+    if ((doc?.durationInDays || 0) >= 28 && (doc?.durationInDays || 0) <= 31) return 'monthly'
+    if ((doc?.durationInDays || 0) === 15) return 'summer'
+    return 'monthly'
+};
 
-const normalizePlanForClient = (planDoc) => {
-	const raw = planDoc?.toObject ? planDoc.toObject({ virtuals: false }) : planDoc
-	const type = raw?.type || inferLegacyType(raw)
-	return {
+/**
+ * Purpose: Do Normalize Plan For Client
+ * Plain English: What this function is used for.
+ */
+const normalizePlanForClient = planDoc => {
+    const raw = planDoc?.toObject ? planDoc.toObject({ virtuals: false }) : planDoc
+    const type = raw?.type || inferLegacyType(raw)
+    return {
 		...raw,
 		planName: raw?.planName || raw?.name || 'Membership Plan',
 		type,
@@ -575,16 +756,20 @@ const normalizePlanForClient = (planDoc) => {
 		categoryPrices: Array.isArray(raw?.categoryPrices) ? raw.categoryPrices : [],
 		isActive: typeof raw?.isActive === 'boolean' ? raw.isActive : true,
 	}
-}
+};
 
-export const listPlans = asyncHandler(async (req, res) => {
-	const { isActive } = req.query
-	const query = {}
-	if (typeof isActive !== 'undefined') query.isActive = isActive === 'true'
-	const plans = await MembershipPlan.find(query).sort({ basePrice: 1, price: 1 })
-	const charges = getPaymentChargesConfig()
-	const testAmountInr = getForcedTestAmountInr()
-	res.json({
+export const listPlans = asyncHandler(/**
+ * Purpose: Helper callback used inside a larger operation
+ * Plain English: What this function is used for.
+ */
+async (req, res) => {
+    const { isActive } = req.query
+    const query = {}
+    if (typeof isActive !== 'undefined') query.isActive = isActive === 'true'
+    const plans = await MembershipPlan.find(query).sort({ basePrice: 1, price: 1 })
+    const charges = getPaymentChargesConfig()
+    const testAmountInr = getForcedTestAmountInr()
+    res.json({
 		success: true,
 		data: plans.map(normalizePlanForClient),
 		meta: {
@@ -599,26 +784,30 @@ export const listPlans = asyncHandler(async (req, res) => {
 	})
 })
 
-export const seedOfficialPlans = asyncHandler(async (req, res) => {
-	const existing = await MembershipPlan.countDocuments()
-	const validExisting = await MembershipPlan.countDocuments({
+export const seedOfficialPlans = asyncHandler(/**
+ * Purpose: Helper callback used inside a larger operation
+ * Plain English: What this function is used for.
+ */
+async (req, res) => {
+    const existing = await MembershipPlan.countDocuments()
+    const validExisting = await MembershipPlan.countDocuments({
 		planName: { $exists: true, $type: 'string', $ne: '' },
 		type: { $exists: true, $type: 'string', $ne: '' },
 		basePrice: { $exists: true, $type: 'number' },
 	})
 
-	// If legacy plans exist (older fields like `name`/`price`), replace them with the official structure.
-	if (existing > 0 && validExisting === 0) {
+    // If legacy plans exist (older fields like `name`/`price`), replace them with the official structure.
+    if (existing > 0 && validExisting === 0) {
 		await MembershipPlan.deleteMany({})
 	}
 
-	// Poster update rule: keep historical records, but ensure only the new poster plans are active.
-	// This avoids breaking old payments/members while "completely updating" what users can buy now.
-	if (existing > 0 && validExisting > 0) {
+    // Poster update rule: keep historical records, but ensure only the new poster plans are active.
+    // This avoids breaking old payments/members while "completely updating" what users can buy now.
+    if (existing > 0 && validExisting > 0) {
 		await MembershipPlan.updateMany({}, { $set: { isActive: false } })
 	}
 
-	const officialPlans = [
+    const officialPlans = [
 		{
 			planName: 'Public Batch (Per Session)',
 			type: 'public',
@@ -732,8 +921,8 @@ export const seedOfficialPlans = asyncHandler(async (req, res) => {
 		},
 	]
 
-	const upserted = []
-	for (const plan of officialPlans) {
+    const upserted = []
+    for (const plan of officialPlans) {
 		const resUpsert = await MembershipPlan.updateOne(
 			{ type: plan.type, planName: plan.planName },
 			{ $set: plan },
@@ -742,25 +931,29 @@ export const seedOfficialPlans = asyncHandler(async (req, res) => {
 		upserted.push({ planName: plan.planName, type: plan.type, inserted: Boolean(resUpsert.upsertedId) })
 	}
 
-	const plans = await MembershipPlan.find({}).sort({ basePrice: 1, price: 1, planName: 1 })
-	res.status(201).json({ success: true, message: 'Seed complete', data: plans.map(normalizePlanForClient), meta: { upserted } })
+    const plans = await MembershipPlan.find({}).sort({ basePrice: 1, price: 1, planName: 1 })
+    res.status(201).json({ success: true, message: 'Seed complete', data: plans.map(normalizePlanForClient), meta: { upserted } })
 })
 
-export const registerPaidMembership = asyncHandler(async (req, res) => {
-	const { planId, member, selection, familyMembers } = req.body
-	if (!planId) return res.status(400).json({ success: false, message: 'planId is required' })
+export const registerPaidMembership = asyncHandler(/**
+ * Purpose: Helper callback used inside a larger operation
+ * Plain English: What this function is used for.
+ */
+async (req, res) => {
+    const { planId, member, selection, familyMembers } = req.body
+    if (!planId) return res.status(400).json({ success: false, message: 'planId is required' })
 
-	const plan = await MembershipPlan.findById(planId)
-	if (!plan || plan.isActive === false) {
+    const plan = await MembershipPlan.findById(planId)
+    if (!plan || plan.isActive === false) {
 		return res.status(404).json({ success: false, message: 'Plan not found' })
 	}
-	const draftRes = prepareMembershipDraft({ plan, member, selection, familyMembers })
-	if (!draftRes.ok) return res.status(400).json({ success: false, message: draftRes.message })
+    const draftRes = prepareMembershipDraft({ plan, member, selection, familyMembers })
+    if (!draftRes.ok) return res.status(400).json({ success: false, message: draftRes.message })
 
-	const orderId = `local_${crypto.randomUUID().replaceAll('-', '')}`
-	const paymentId = `paid_${Date.now()}`
+    const orderId = `local_${crypto.randomUUID().replaceAll('-', '')}`
+    const paymentId = `paid_${Date.now()}`
 
-	const createdMembers = await createMembersForDraft({
+    const createdMembers = await createMembersForDraft({
 		plan,
 		amountRes: draftRes.amountRes,
 		membersToCreate: draftRes.membersToCreate,
@@ -770,7 +963,7 @@ export const registerPaidMembership = asyncHandler(async (req, res) => {
 		membershipGroupId: draftRes.membershipGroupId,
 	})
 
-	const payment = await Payment.create({
+    const payment = await Payment.create({
 		planId: plan._id,
 		orderId,
 		paymentId,
@@ -793,10 +986,16 @@ export const registerPaidMembership = asyncHandler(async (req, res) => {
 		},
 		familyMembersDraft: plan.type === 'family' ? draftRes.membersToCreate : [],
 		memberId: createdMembers[0]?._id,
-		memberIds: createdMembers.map((x) => x._id),
+		memberIds: createdMembers.map(/**
+         * Purpose: Array mapping callback (converts each item to a new value)
+         * Plain English: What this function is used for.
+         */
+        x => {
+            return x._id;
+        }),
 	})
 
-	res.status(201).json({
+    res.status(201).json({
 		success: true,
 		data: {
 			plan,
@@ -807,25 +1006,29 @@ export const registerPaidMembership = asyncHandler(async (req, res) => {
 	})
 })
 
-export const registerOfflineMembership = asyncHandler(async (req, res) => {
-	const { planId, member, selection, familyMembers, collectedBy } = req.body
-	if (!planId) return res.status(400).json({ success: false, message: 'planId is required' })
-	if (!collectedBy || !String(collectedBy).trim()) {
+export const registerOfflineMembership = asyncHandler(/**
+ * Purpose: Helper callback used inside a larger operation
+ * Plain English: What this function is used for.
+ */
+async (req, res) => {
+    const { planId, member, selection, familyMembers, collectedBy } = req.body
+    if (!planId) return res.status(400).json({ success: false, message: 'planId is required' })
+    if (!collectedBy || !String(collectedBy).trim()) {
 		return res.status(400).json({ success: false, message: 'collectedBy (admin name) is required' })
 	}
 
-	const plan = await MembershipPlan.findById(planId)
-	if (!plan || plan.isActive === false) {
+    const plan = await MembershipPlan.findById(planId)
+    if (!plan || plan.isActive === false) {
 		return res.status(404).json({ success: false, message: 'Plan not found' })
 	}
 
-	const draftRes = prepareOfflineMembershipDraft({ plan, member, selection, familyMembers })
-	if (!draftRes.ok) return res.status(400).json({ success: false, message: draftRes.message })
+    const draftRes = prepareOfflineMembershipDraft({ plan, member, selection, familyMembers })
+    if (!draftRes.ok) return res.status(400).json({ success: false, message: draftRes.message })
 
-	const orderId = `cash_${crypto.randomUUID().replaceAll('-', '')}`
-	const paymentId = `cash_${Date.now()}`
+    const orderId = `cash_${crypto.randomUUID().replaceAll('-', '')}`
+    const paymentId = `cash_${Date.now()}`
 
-	const createdMembers = await createMembersForDraft({
+    const createdMembers = await createMembersForDraft({
 		plan,
 		amountRes: draftRes.amountRes,
 		membersToCreate: draftRes.membersToCreate,
@@ -835,7 +1038,7 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 		membershipGroupId: draftRes.membershipGroupId,
 	})
 
-	const payment = await Payment.create({
+    const payment = await Payment.create({
 		planId: plan._id,
 		orderId,
 		paymentId,
@@ -859,10 +1062,16 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 		},
 		familyMembersDraft: plan.type === 'family' ? draftRes.membersToCreate : [],
 		memberId: createdMembers[0]?._id,
-		memberIds: createdMembers.map((x) => x._id),
+		memberIds: createdMembers.map(/**
+         * Purpose: Array mapping callback (converts each item to a new value)
+         * Plain English: What this function is used for.
+         */
+        x => {
+            return x._id;
+        }),
 	})
 
-	res.status(201).json({
+    res.status(201).json({
 		success: true,
 		data: {
 			plan,
@@ -873,27 +1082,31 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 	})
 })
 
-export const createRazorpayOrder = asyncHandler(async (req, res) => {
-	const razorpay = getRazorpayClient()
+export const createRazorpayOrder = asyncHandler(/**
+ * Purpose: Helper callback used inside a larger operation
+ * Plain English: What this function is used for.
+ */
+async (req, res) => {
+    const razorpay = getRazorpayClient()
 
-	const { planId, member, selection, familyMembers } = req.body
-	if (!planId) return res.status(400).json({ success: false, message: 'planId is required' })
+    const { planId, member, selection, familyMembers } = req.body
+    if (!planId) return res.status(400).json({ success: false, message: 'planId is required' })
 
-	const plan = await MembershipPlan.findById(planId)
-	if (!plan || plan.isActive === false) {
+    const plan = await MembershipPlan.findById(planId)
+    if (!plan || plan.isActive === false) {
 		return res.status(404).json({ success: false, message: 'Plan not found' })
 	}
 
-	const draftRes = prepareMembershipDraft({ plan, member, selection, familyMembers })
-	if (!draftRes.ok) return res.status(400).json({ success: false, message: draftRes.message })
+    const draftRes = prepareMembershipDraft({ plan, member, selection, familyMembers })
+    if (!draftRes.ok) return res.status(400).json({ success: false, message: draftRes.message })
 
-	const amountPaise = toPaise(draftRes.amountRes.amount)
-	if (!amountPaise) return res.status(400).json({ success: false, message: 'Invalid amount' })
+    const amountPaise = toPaise(draftRes.amountRes.amount)
+    if (!amountPaise) return res.status(400).json({ success: false, message: 'Invalid amount' })
 
-	const orderId = `local_${crypto.randomUUID().replaceAll('-', '')}`
-	const membershipGroupId = plan.type === 'family' ? draftRes.membershipGroupId : undefined
+    const orderId = `local_${crypto.randomUUID().replaceAll('-', '')}`
+    const membershipGroupId = plan.type === 'family' ? draftRes.membershipGroupId : undefined
 
-	const paymentDoc = await Payment.create({
+    const paymentDoc = await Payment.create({
 		planId: plan._id,
 		orderId,
 		amount: draftRes.amountRes.amount,
@@ -916,8 +1129,8 @@ export const createRazorpayOrder = asyncHandler(async (req, res) => {
 		familyMembersDraft: plan.type === 'family' ? draftRes.membersToCreate : [],
 	})
 
-	const receipt = `bf_${paymentDoc._id.toString()}`
-	const order = await razorpay.orders.create({
+    const receipt = `bf_${paymentDoc._id.toString()}`
+    const order = await razorpay.orders.create({
 		amount: amountPaise,
 		currency: 'INR',
 		receipt,
@@ -928,10 +1141,10 @@ export const createRazorpayOrder = asyncHandler(async (req, res) => {
 		},
 	})
 
-	paymentDoc.providerOrderId = order.id
-	await paymentDoc.save()
+    paymentDoc.providerOrderId = order.id
+    await paymentDoc.save()
 
-	res.status(201).json({
+    res.status(201).json({
 		success: true,
 		data: {
 			keyId: process.env.RAZORPAY_KEY_ID,
@@ -944,72 +1157,80 @@ export const createRazorpayOrder = asyncHandler(async (req, res) => {
 	})
 })
 
-export const verifyRazorpayPayment = asyncHandler(async (req, res) => {
-	const razorpay = getRazorpayClient()
+export const verifyRazorpayPayment = asyncHandler(/**
+ * Purpose: Helper callback used inside a larger operation
+ * Plain English: What this function is used for.
+ */
+async (req, res) => {
+    const razorpay = getRazorpayClient()
 
-	const {
+    const {
 		razorpay_order_id: providerOrderId,
 		razorpay_payment_id: providerPaymentId,
 		razorpay_signature: providerSignature,
 	} = req.body
 
-	if (!providerOrderId || !providerPaymentId || !providerSignature) {
+    if (!providerOrderId || !providerPaymentId || !providerSignature) {
 		return res.status(400).json({ success: false, message: 'Missing Razorpay verification fields' })
 	}
 
-	const signBody = `${providerOrderId}|${providerPaymentId}`
-	const expectedSignature = crypto
+    const signBody = `${providerOrderId}|${providerPaymentId}`
+    const expectedSignature = crypto
 		.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
 		.update(signBody)
 		.digest('hex')
 
-	if (expectedSignature !== providerSignature) {
+    if (expectedSignature !== providerSignature) {
 		return res.status(400).json({ success: false, message: 'Invalid payment signature' })
 	}
 
-	const paymentInfo = await razorpay.payments.fetch(providerPaymentId)
-	if (!paymentInfo) return res.status(400).json({ success: false, message: 'Payment not found on Razorpay' })
-	if (paymentInfo.order_id !== providerOrderId) {
+    const paymentInfo = await razorpay.payments.fetch(providerPaymentId)
+    if (!paymentInfo) return res.status(400).json({ success: false, message: 'Payment not found on Razorpay' })
+    if (paymentInfo.order_id !== providerOrderId) {
 		return res.status(400).json({ success: false, message: 'Order mismatch' })
 	}
-	if (paymentInfo.status !== 'captured') {
+    if (paymentInfo.status !== 'captured') {
 		return res.status(409).json({ success: false, message: `Payment not captured yet (${paymentInfo.status})` })
 	}
 
-	const paymentDoc = await Payment.findOne({ providerOrderId })
-	if (!paymentDoc) return res.status(404).json({ success: false, message: 'Local payment not found' })
+    const paymentDoc = await Payment.findOne({ providerOrderId })
+    if (!paymentDoc) return res.status(404).json({ success: false, message: 'Local payment not found' })
 
-	const expectedPaise = toPaise(paymentDoc.amount)
-	if (!expectedPaise || Number(paymentInfo.amount) !== expectedPaise) {
+    const expectedPaise = toPaise(paymentDoc.amount)
+    if (!expectedPaise || Number(paymentInfo.amount) !== expectedPaise) {
 		return res.status(400).json({ success: false, message: 'Amount mismatch' })
 	}
 
-	const out = await finalizePaymentAndCreateMembers({
+    const out = await finalizePaymentAndCreateMembers({
 		paymentDoc,
 		providerPaymentId,
 		providerSignature,
 	})
 
-	res.json({ success: true, data: out })
+    res.json({ success: true, data: out })
 })
 
-export const razorpayWebhook = asyncHandler(async (req, res) => {
-	const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET
-	if (!webhookSecret) return res.status(500).send('Webhook secret not configured')
-	const signature = req.headers['x-razorpay-signature']
-	if (!signature) return res.status(400).send('Missing signature')
-	if (!req.rawBody) return res.status(400).send('Missing rawBody (server misconfigured)')
+export const razorpayWebhook = asyncHandler(/**
+ * Purpose: Helper callback used inside a larger operation
+ * Plain English: What this function is used for.
+ */
+async (req, res) => {
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET
+    if (!webhookSecret) return res.status(500).send('Webhook secret not configured')
+    const signature = req.headers['x-razorpay-signature']
+    if (!signature) return res.status(400).send('Missing signature')
+    if (!req.rawBody) return res.status(400).send('Missing rawBody (server misconfigured)')
 
-	const expected = crypto
+    const expected = crypto
 		.createHmac('sha256', webhookSecret)
 		.update(req.rawBody)
 		.digest('hex')
 
-	if (expected !== signature) return res.status(400).send('Invalid signature')
+    if (expected !== signature) return res.status(400).send('Invalid signature')
 
-	const event = req.body
-	const eventType = String(event?.event || '')
-	if (eventType === 'payment.captured') {
+    const event = req.body
+    const eventType = String(event?.event || '')
+    if (eventType === 'payment.captured') {
 		const entity = event?.payload?.payment?.entity
 		const providerOrderId = entity?.order_id
 		const providerPaymentId = entity?.id
@@ -1028,36 +1249,40 @@ export const razorpayWebhook = asyncHandler(async (req, res) => {
 		}
 	}
 
-	res.status(200).send('ok')
+    res.status(200).send('ok')
 })
 
-export const listMembers = asyncHandler(async (req, res) => {
-	const { q, status, planType, page, limit, sort, order } = req.query
+export const listMembers = asyncHandler(/**
+ * Purpose: Helper callback used inside a larger operation
+ * Plain English: What this function is used for.
+ */
+async (req, res) => {
+    const { q, status, planType, page, limit, sort, order } = req.query
 
-	const filter = {}
-	if (status && ['active', 'expired'].includes(String(status))) {
+    const filter = {}
+    if (status && ['active', 'expired'].includes(String(status))) {
 		filter.status = String(status)
 	}
-	if (planType && String(planType).trim()) {
+    if (planType && String(planType).trim()) {
 		filter.planType = String(planType).trim()
 	}
 
-	if (q && String(q).trim()) {
+    if (q && String(q).trim()) {
 		const rx = new RegExp(escapeRegExp(String(q).trim()), 'i')
 		filter.$or = [{ name: rx }, { phone: rx }, { membershipGroupId: rx }]
 	}
 
-	const pageNum = clampInt(page, { min: 1, max: 100000, fallback: 1 })
-	const limitNum = clampInt(limit, { min: 1, max: 100, fallback: 25 })
-	const skip = (pageNum - 1) * limitNum
+    const pageNum = clampInt(page, { min: 1, max: 100000, fallback: 1 })
+    const limitNum = clampInt(limit, { min: 1, max: 100, fallback: 25 })
+    const skip = (pageNum - 1) * limitNum
 
-	const sortField = ['createdAt', 'expiryDate', 'joinDate', 'name'].includes(String(sort))
+    const sortField = ['createdAt', 'expiryDate', 'joinDate', 'name'].includes(String(sort))
 		? String(sort)
 		: 'createdAt'
-	const sortDir = String(order).toLowerCase() === 'asc' ? 1 : -1
-	const sortObj = { [sortField]: sortDir }
+    const sortDir = String(order).toLowerCase() === 'asc' ? 1 : -1
+    const sortObj = { [sortField]: sortDir }
 
-	const [total, members] = await Promise.all([
+    const [total, members] = await Promise.all([
 		Member.countDocuments(filter),
 		Member.find(filter)
 			.populate('planId', 'planName type basePrice')
@@ -1066,12 +1291,18 @@ export const listMembers = asyncHandler(async (req, res) => {
 			.limit(limitNum),
 	])
 
-	// Compute visit counts (unique attendance days) for the current page.
-	// IMPORTANT: This is used only as an upward backfill. We never decrease the stored
-	// attendanceDaysCount, so purging attendance history does not reduce member counts.
-	const memberIds = members.map((m) => m._id)
-	const tz = mongoTzFromOffsetMinutes(BUSINESS_TZ_OFFSET_MINUTES)
-	const countsAgg = memberIds.length
+    // Compute visit counts (unique attendance days) for the current page.
+    // IMPORTANT: This is used only as an upward backfill. We never decrease the stored
+    // attendanceDaysCount, so purging attendance history does not reduce member counts.
+    const memberIds = members.map(/**
+     * Purpose: Array mapping callback (converts each item to a new value)
+     * Plain English: What this function is used for.
+     */
+    m => {
+        return m._id;
+    })
+    const tz = mongoTzFromOffsetMinutes(BUSINESS_TZ_OFFSET_MINUTES)
+    const countsAgg = memberIds.length
 		? await Attendance.aggregate([
 			{ $match: { memberId: { $in: memberIds }, result: 'accepted' } },
 			{
@@ -1090,11 +1321,17 @@ export const listMembers = asyncHandler(async (req, res) => {
 		])
 		: []
 
-	const countMap = new Map(countsAgg.map((r) => [String(r._id), Number(r.count || 0)]))
+    const countMap = new Map(countsAgg.map(/**
+     * Purpose: Array mapping callback (converts each item to a new value)
+     * Plain English: What this function is used for.
+     */
+    r => {
+        return [String(r._id), Number(r.count || 0)];
+    }))
 
-	// Upward-only sync stored counts (best effort) so it's available as a persistent field.
-	const bulk = []
-	for (const m of members) {
+    // Upward-only sync stored counts (best effort) so it's available as a persistent field.
+    const bulk = []
+    for (const m of members) {
 		const computed = countMap.get(String(m._id)) || 0
 		const stored = Math.max(0, Number(m.attendanceDaysCount || 0))
 		const next = Math.max(stored, computed)
@@ -1107,7 +1344,7 @@ export const listMembers = asyncHandler(async (req, res) => {
 			})
 		}
 	}
-	if (bulk.length) {
+    if (bulk.length) {
 		try {
 			await Member.bulkWrite(bulk, { ordered: false })
 		} catch {
@@ -1115,13 +1352,17 @@ export const listMembers = asyncHandler(async (req, res) => {
 		}
 	}
 
-	const items = members.map((m) => {
-		const plan = m.planId && typeof m.planId === 'object' ? m.planId : null
-		const computedStatus = computeMemberStatus({ expiryDate: m.expiryDate, planType: m.planType, publicSlot: m.publicSlot })
-		const computed = countMap.get(String(m._id)) || 0
-		const stored = Math.max(0, Number(m.attendanceDaysCount || 0))
-		const computedVisits = Math.max(stored, computed)
-		return {
+    const items = members.map(/**
+     * Purpose: Array mapping callback (converts each item to a new value)
+     * Plain English: What this function is used for.
+     */
+    m => {
+        const plan = m.planId && typeof m.planId === 'object' ? m.planId : null
+        const computedStatus = computeMemberStatus({ expiryDate: m.expiryDate, planType: m.planType, publicSlot: m.publicSlot })
+        const computed = countMap.get(String(m._id)) || 0
+        const stored = Math.max(0, Number(m.attendanceDaysCount || 0))
+        const computedVisits = Math.max(stored, computed)
+        return {
 			_id: m._id,
 			name: m.name,
 			phone: m.phone,
@@ -1148,9 +1389,9 @@ export const listMembers = asyncHandler(async (req, res) => {
 			createdAt: m.createdAt,
 			updatedAt: m.updatedAt,
 		}
-	})
+    })
 
-	res.json({
+    res.json({
 		success: true,
 		data: {
 			items,
@@ -1161,35 +1402,49 @@ export const listMembers = asyncHandler(async (req, res) => {
 	})
 })
 
-export const deleteMember = asyncHandler(async (req, res) => {
-	const { id } = req.params
-	if (!id) return res.status(400).json({ success: false, message: 'id is required' })
+export const deleteMember = asyncHandler(/**
+ * Purpose: Helper callback used inside a larger operation
+ * Plain English: What this function is used for.
+ */
+async (req, res) => {
+    const { id } = req.params
+    if (!id) return res.status(400).json({ success: false, message: 'id is required' })
 
-	const deleted = await Member.findByIdAndDelete(id)
-	if (!deleted) {
+    const deleted = await Member.findByIdAndDelete(id)
+    if (!deleted) {
 		return res.status(404).json({ success: false, message: 'Member not found' })
 	}
 
-	res.json({ success: true, message: 'Member deleted' })
+    res.json({ success: true, message: 'Member deleted' })
 })
 
-export const bulkDeleteMembersByIds = asyncHandler(async (req, res) => {
-	const ids = req.body?.ids
-	if (!Array.isArray(ids) || ids.length === 0) {
+export const bulkDeleteMembersByIds = asyncHandler(/**
+ * Purpose: Helper callback used inside a larger operation
+ * Plain English: What this function is used for.
+ */
+async (req, res) => {
+    const ids = req.body?.ids
+    if (!Array.isArray(ids) || ids.length === 0) {
 		return res.status(400).json({ success: false, message: 'ids (array) is required' })
 	}
-	if (ids.length > 500) {
+    if (ids.length > 500) {
 		return res.status(400).json({ success: false, message: 'Too many ids (max 500 per request)' })
 	}
 
-	const normalizedIds = ids
-		.map((x) => (x == null ? '' : String(x).trim()))
+    const normalizedIds = ids
+		.map(/**
+     * Purpose: Array mapping callback (converts each item to a new value)
+     * Plain English: What this function is used for.
+     */
+    x => {
+        return (x == null ? '' : String(x).trim());
+    })
 		.filter(Boolean)
 
-	if (!normalizedIds.length) {
+    if (!normalizedIds.length) {
 		return res.status(400).json({ success: false, message: 'No valid ids provided' })
 	}
 
-	const out = await Member.deleteMany({ _id: { $in: normalizedIds } })
-	res.json({ success: true, message: 'Members deleted', data: { deletedCount: Number(out?.deletedCount || 0) } })
+    const out = await Member.deleteMany({ _id: { $in: normalizedIds } })
+    res.json({ success: true, message: 'Members deleted', data: { deletedCount: Number(out?.deletedCount || 0) } })
 })

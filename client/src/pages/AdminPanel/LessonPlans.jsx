@@ -1,13 +1,26 @@
+/**
+ * What it is: Admin panel page (Lesson plans screen).
+ * Non-tech note: Admins can view/download lesson plan documents here.
+ */
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { isAdminAuthenticated } from "../../utils/adminAuth";
 import AdminNavbar from "../../components/adminPanel/AdminNavbar";
 import { FaDownload, FaEye, FaTimes } from "react-icons/fa";
 
+/**
+ * Purpose: Do Lesson Plans
+ * Plain English: What this function is used for.
+ */
 const LessonPlans = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
     if (!isAdminAuthenticated()) {
       navigate("/admin");
     }
@@ -29,7 +42,6 @@ const LessonPlans = () => {
       }}
     >
       <AdminNavbar />
-
       <div style={{ padding: "40px", maxWidth: "1400px", margin: "0 auto" }}>
         {/* Page Header */}
         <div style={{ marginBottom: "40px" }}>
@@ -48,87 +60,130 @@ const LessonPlans = () => {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "20px", marginBottom: "30px" }}>
-            {yearlyPlans.map((plan) => (
-              <div
-                key={plan.id}
-                style={{
-                  background: selectedYearlyPlan?.id === plan.id ? "rgba(0, 255, 212, 0.15)" : "rgba(0, 255, 212, 0.08)",
-                  border: selectedYearlyPlan?.id === plan.id ? "2px solid #00FFD4" : "1px solid rgba(0, 255, 212, 0.3)",
-                  borderRadius: "12px",
-                  padding: "25px",
-                  transition: "all 0.3s ease",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-5px)";
-                  e.currentTarget.style.boxShadow = "0 10px 30px rgba(0, 255, 212, 0.2)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              >
-                <div style={{ marginBottom: "15px" }}>
-                  <h3 style={{ color: "#00FFD4", margin: "0 0 10px 0", fontSize: "1.5rem", fontWeight: 700 }}>
-                    Year {plan.year}
-                  </h3>
-                  <p style={{ color: "rgba(255, 255, 255, 0.7)", margin: "5px 0", fontSize: "0.95rem" }}>
-                    {plan.title}
-                  </p>
-                  <p style={{ color: "rgba(255, 255, 255, 0.5)", margin: "10px 0 0 0", fontSize: "0.85rem" }}>
-                    📅 Uploaded: {plan.uploadDate}
-                  </p>
+            {yearlyPlans.map(/**
+             * Purpose: Array mapping callback (converts each item to a new value)
+             * Plain English: What this function is used for.
+             */
+            plan => {
+              return (
+                <div
+                  key={plan.id}
+                  style={{
+                    background: selectedYearlyPlan?.id === plan.id ? "rgba(0, 255, 212, 0.15)" : "rgba(0, 255, 212, 0.08)",
+                    border: selectedYearlyPlan?.id === plan.id ? "2px solid #00FFD4" : "1px solid rgba(0, 255, 212, 0.3)",
+                    borderRadius: "12px",
+                    padding: "25px",
+                    transition: "all 0.3s ease",
+                    cursor: "pointer",
+                  }}
+                  onMouseEnter={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    e.currentTarget.style.transform = "translateY(-5px)";
+                    e.currentTarget.style.boxShadow = "0 10px 30px rgba(0, 255, 212, 0.2)";
+                  }}
+                  onMouseLeave={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  <div style={{ marginBottom: "15px" }}>
+                    <h3 style={{ color: "#00FFD4", margin: "0 0 10px 0", fontSize: "1.5rem", fontWeight: 700 }}>
+                      Year {plan.year}
+                    </h3>
+                    <p style={{ color: "rgba(255, 255, 255, 0.7)", margin: "5px 0", fontSize: "0.95rem" }}>
+                      {plan.title}
+                    </p>
+                    <p style={{ color: "rgba(255, 255, 255, 0.5)", margin: "10px 0 0 0", fontSize: "0.85rem" }}>
+                      📅 Uploaded: {plan.uploadDate}
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+                    <button
+                      onClick={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      () => {
+                        return setSelectedYearlyPlan(selectedYearlyPlan?.id === plan.id ? null : plan);
+                      }}
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        padding: "10px",
+                        background: "rgba(0, 255, 212, 0.2)",
+                        color: "#00FFD4",
+                        border: "1px solid rgba(0, 255, 212, 0.4)",
+                        borderRadius: "8px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        transition: "all 0.3s ease",
+                      }}
+                      onMouseEnter={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
+                        return e.currentTarget.style.background = "rgba(0, 255, 212, 0.3)";
+                      }}
+                      onMouseLeave={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
+                        return e.currentTarget.style.background = "rgba(0, 255, 212, 0.2)";
+                      }}
+                    >
+                      <FaEye /> {selectedYearlyPlan?.id === plan.id ? "Hide" : "View"}
+                    </button>
+                    <a
+                      href={plan.pdfUrl}
+                      download={`Bluefins_${plan.year}_Plan.pdf`}
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        padding: "10px",
+                        background: "rgba(0, 153, 255, 0.2)",
+                        color: "#0099FF",
+                        border: "1px solid rgba(0, 153, 255, 0.4)",
+                        borderRadius: "8px",
+                        fontWeight: 600,
+                        textDecoration: "none",
+                        transition: "all 0.3s ease",
+                      }}
+                      onMouseEnter={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
+                        return e.currentTarget.style.background = "rgba(0, 153, 255, 0.3)";
+                      }}
+                      onMouseLeave={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
+                        return e.currentTarget.style.background = "rgba(0, 153, 255, 0.2)";
+                      }}
+                    >
+                      <FaDownload /> Download
+                    </a>
+                  </div>
                 </div>
-
-                <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-                  <button
-                    onClick={() => setSelectedYearlyPlan(selectedYearlyPlan?.id === plan.id ? null : plan)}
-                    style={{
-                      flex: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "8px",
-                      padding: "10px",
-                      background: "rgba(0, 255, 212, 0.2)",
-                      color: "#00FFD4",
-                      border: "1px solid rgba(0, 255, 212, 0.4)",
-                      borderRadius: "8px",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      transition: "all 0.3s ease",
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = "rgba(0, 255, 212, 0.3)"}
-                    onMouseLeave={(e) => e.currentTarget.style.background = "rgba(0, 255, 212, 0.2)"}
-                  >
-                    <FaEye /> {selectedYearlyPlan?.id === plan.id ? "Hide" : "View"}
-                  </button>
-                  <a
-                    href={plan.pdfUrl}
-                    download={`Bluefins_${plan.year}_Plan.pdf`}
-                    style={{
-                      flex: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "8px",
-                      padding: "10px",
-                      background: "rgba(0, 153, 255, 0.2)",
-                      color: "#0099FF",
-                      border: "1px solid rgba(0, 153, 255, 0.4)",
-                      borderRadius: "8px",
-                      fontWeight: 600,
-                      textDecoration: "none",
-                      transition: "all 0.3s ease",
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = "rgba(0, 153, 255, 0.3)"}
-                    onMouseLeave={(e) => e.currentTarget.style.background = "rgba(0, 153, 255, 0.2)"}
-                  >
-                    <FaDownload /> Download
-                  </a>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* PDF Viewer Modal */}
@@ -145,7 +200,13 @@ const LessonPlans = () => {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
                 <h3 style={{ color: "#00FFD4", margin: 0 }}>📄 {selectedYearlyPlan.title}</h3>
                 <button
-                  onClick={() => setSelectedYearlyPlan(null)}
+                  onClick={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  () => {
+                    return setSelectedYearlyPlan(null);
+                  }}
                   style={{
                     background: "rgba(255, 50, 100, 0.2)",
                     color: "#FF6B9D",
@@ -204,7 +265,6 @@ const LessonPlans = () => {
 
         
       </div>
-
       {/* Responsive Styles */}
       <style>{`
         .pdf-viewer-container {

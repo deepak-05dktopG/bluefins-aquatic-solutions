@@ -1,9 +1,18 @@
+/**
+ * What it is: Posts/announcements API controller.
+ * Non-tech note: Manages updates/news items shown on the website.
+ */
+
 import Post from '../models/Post.js';
 
 // @desc    Create new post
 // @route   POST /api/posts
 // @access  Private/Admin
-export const createPost = async (req, res) => {
+export /**
+ * Purpose: Create Post
+ * Plain English: What this function is used for.
+ */
+const createPost = async (req, res) => {
   try {
     const { title, caption, content, imageUrl, cloudinaryPublicId } = req.body;
 
@@ -33,7 +42,13 @@ export const createPost = async (req, res) => {
     console.error('Error creating post:', error);
     
     if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(err => err.message);
+      const messages = Object.values(error.errors).map(/**
+       * Purpose: Array mapping callback (converts each item to a new value)
+       * Plain English: What this function is used for.
+       */
+      err => {
+        return err.message;
+      });
       return res.status(400).json({
         success: false,
         message: messages.join(', ')
@@ -50,7 +65,11 @@ export const createPost = async (req, res) => {
 // @desc    Get all active posts
 // @route   GET /api/posts
 // @access  Public
-export const getAllPosts = async (req, res) => {
+export /**
+ * Purpose: Get All Posts
+ * Plain English: What this function is used for.
+ */
+const getAllPosts = async (req, res) => {
   try {
     const { limit = 50, page = 1, isActive = true } = req.query;
 
@@ -89,7 +108,11 @@ export const getAllPosts = async (req, res) => {
 // @desc    Get single post by ID
 // @route   GET /api/posts/:id
 // @access  Public
-export const getPostById = async (req, res) => {
+export /**
+ * Purpose: Get Post By Id
+ * Plain English: What this function is used for.
+ */
+const getPostById = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
 
@@ -116,7 +139,11 @@ export const getPostById = async (req, res) => {
 // @desc    Update post
 // @route   PATCH /api/posts/:id
 // @access  Private/Admin
-export const updatePost = async (req, res) => {
+export /**
+ * Purpose: Do Update Post
+ * Plain English: What this function is used for.
+ */
+const updatePost = async (req, res) => {
   try {
     const { title, caption, content, imageUrl, cloudinaryPublicId, isActive } = req.body;
 
@@ -150,7 +177,11 @@ export const updatePost = async (req, res) => {
 // @desc    Delete post
 // @route   DELETE /api/posts/:id
 // @access  Private/Admin
-export const deletePost = async (req, res) => {
+export /**
+ * Purpose: Do Delete Post
+ * Plain English: What this function is used for.
+ */
+const deletePost = async (req, res) => {
   try {
     const post = await Post.findByIdAndDelete(req.params.id);
 
@@ -177,7 +208,11 @@ export const deletePost = async (req, res) => {
 // @desc    Get posts statistics
 // @route   GET /api/posts/stats
 // @access  Private/Admin
-export const getPostStats = async (req, res) => {
+export /**
+ * Purpose: Get Post Stats
+ * Plain English: What this function is used for.
+ */
+const getPostStats = async (req, res) => {
   try {
     const totalPosts = await Post.countDocuments();
     const activePosts = await Post.countDocuments({ isActive: true });

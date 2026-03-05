@@ -1,3 +1,8 @@
+/**
+ * What it is: Database model for a member (MongoDB/Mongoose schema).
+ * Non-tech note: Defines what information we store for each member.
+ */
+
 import mongoose from 'mongoose'
 
 const memberSchema = new mongoose.Schema(

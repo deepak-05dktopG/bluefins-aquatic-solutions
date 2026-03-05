@@ -1,12 +1,27 @@
+/**
+ * What it is: Website page (Shop screen).
+ * Non-tech note: This is the product listing page.
+ */
+
 import { useEffect } from "react";
+import { NavLink } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Slider from "react-slick";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
+/**
+ * Purpose: Do Shop
+ * Plain English: What this function is used for.
+ */
 const Shop = () => {
-
-  useEffect(() => {
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
     AOS.init({
       duration: 1000,
       easing: "ease-in-out-cubic",
@@ -392,7 +407,6 @@ const Shop = () => {
         }
       `}</style>
       <Navbar />
-
       {/* ===================== HERO ===================== */}
       <section
         style={{
@@ -440,10 +454,18 @@ const Shop = () => {
                       transition: "all 0.3s ease",
                       boxShadow: "0 8px 25px rgba(255,255,255,0.4)",
                     }}
-                    onMouseEnter={(e) => {
+                    onMouseEnter={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
                       e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
                     }}
-                    onMouseLeave={(e) => {
+                    onMouseLeave={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
                       e.currentTarget.style.transform = "translateY(0) scale(1)";
                     }}
                   >
@@ -501,79 +523,88 @@ const Shop = () => {
           <path fill="url(#shopHeroWave)" d="M0,100 Q180,50 360,100 T720,100 T1080,100 T1440,100 L1440,200 L0,200 Z"></path>
         </svg>
       </section>
-
       {/* ===================== PRODUCTS CAROUSELS BY CATEGORY ===================== */}
       <section className="py-5" style={{ background: "linear-gradient(180deg, #f5f3ff 0%, #fff5f0 50%, #f0f9ff 100%)" }}>
         <div className="container">
-          {Object.entries(productCategories).map(([key, category], categoryIndex) => (
-            <div key={key} className="category-section" data-aos="fade-up" data-aos-delay={categoryIndex * 200}>
-              {/* Category Header */}
-              <div className="category-header">
-                <div className="category-icon" style={{ fontSize: "3rem", marginBottom: "15px" }}>{category.icon}</div>
-                <h2 style={{ 
-                  color: category.color, 
-                  fontSize: "2.5rem", 
-                  fontWeight: "800", 
-                  marginBottom: "10px",
-                  textShadow: `2px 2px 4px ${category.color}40`
-                }}>
-                  {category.title}
-                </h2>
-                <p style={{ color: "#666", fontSize: "1.1rem", fontWeight: "500", margin: 0 }}>
-                  {category.description}
-                </p>
-              </div>
-
-              {/* Products Carousel */}
-              <Slider {...carouselSettings}>
-                {category.images.map((imagePath, i) => (
-                  <div key={i}>
-                    <div 
-                      className="product-card h-100"
-                      style={{
-                        "--color": category.color,
-                        "--color-light": category.color + "dd",
-                        margin: "10px",
-                      }}
-                    >
-                      <img
-                        src={imagePath}
-                        alt={`${category.title} - ${i + 1}`}
-                        className="product-image"
-                        style={{
-                          width: "100%",
-                          height: "300px",
-                          objectFit: "contain",
-                          background: "#f8f9fa",
-                        }}
-                      />
-                      <div className="product-info" style={{ textAlign: "center", padding: "20px" }}>
-                        <h5 style={{ 
-                          color: category.color, 
-                          fontWeight: "700", 
-                          marginBottom: "0.5rem", 
-                          fontSize: "1.1rem",
-                        }}>
-                          {category.title}
-                        </h5>
-                        <p style={{ 
-                          color: "#666", 
-                          fontSize: "0.85rem", 
-                          margin: 0,
-                          lineHeight: 1.4
-                        }}>
-                          View {i + 1} of {category.images.length}
-                        </p>
+          {Object.entries(productCategories).map(/**
+           * Purpose: Array mapping callback (converts each item to a new value)
+           * Plain English: What this function is used for.
+           */
+          ([key, category], categoryIndex) => {
+            return (
+              <div key={key} className="category-section" data-aos="fade-up" data-aos-delay={categoryIndex * 200}>
+                {/* Category Header */}
+                <div className="category-header">
+                  <div className="category-icon" style={{ fontSize: "3rem", marginBottom: "15px" }}>{category.icon}</div>
+                  <h2 style={{ 
+                    color: category.color, 
+                    fontSize: "2.5rem", 
+                    fontWeight: "800", 
+                    marginBottom: "10px",
+                    textShadow: `2px 2px 4px ${category.color}40`
+                  }}>
+                    {category.title}
+                  </h2>
+                  <p style={{ color: "#666", fontSize: "1.1rem", fontWeight: "500", margin: 0 }}>
+                    {category.description}
+                  </p>
+                </div>
+                {/* Products Carousel */}
+                <Slider {...carouselSettings}>
+                  {category.images.map(/**
+                   * Purpose: Array mapping callback (converts each item to a new value)
+                   * Plain English: What this function is used for.
+                   */
+                  (imagePath, i) => {
+                    return (
+                      <div key={i}>
+                        <div 
+                          className="product-card h-100"
+                          style={{
+                            "--color": category.color,
+                            "--color-light": category.color + "dd",
+                            margin: "10px",
+                          }}
+                        >
+                          <img
+                            src={imagePath}
+                            alt={`${category.title} - ${i + 1}`}
+                            className="product-image"
+                            style={{
+                              width: "100%",
+                              height: "300px",
+                              objectFit: "contain",
+                              background: "#f8f9fa",
+                            }}
+                          />
+                          <div className="product-info" style={{ textAlign: "center", padding: "20px" }}>
+                            <h5 style={{ 
+                              color: category.color, 
+                              fontWeight: "700", 
+                              marginBottom: "0.5rem", 
+                              fontSize: "1.1rem",
+                            }}>
+                              {category.title}
+                            </h5>
+                            <p style={{ 
+                              color: "#666", 
+                              fontSize: "0.85rem", 
+                              margin: 0,
+                              lineHeight: 1.4
+                            }}>
+                              View {i + 1} of {category.images.length}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </Slider>
-            </div>
-          ))}
+                    );
+                  })}
+                </Slider>
+              </div>
+            );
+          })}
         </div>
       </section>
-
       {/* ===================== WHY CHOOSE US ===================== */}
       <section
         className="py-5"
@@ -597,41 +628,55 @@ const Shop = () => {
               { icon: "💯", title: "Quality Assured", desc: "Premium brands and certified products" },
               { icon: "💰", title: "Best Prices", desc: "Competitive pricing for bulk orders" },
               { icon: "🔄", title: "Easy Returns", desc: "7-day return policy on all items" },
-            ].map((item, i) => (
-              <div className="col-md-6 col-lg-3" key={i} data-aos="zoom-in" data-aos-delay={i * 100}>
-                <div
-                  style={{
-                    background: "rgba(255,255,255,0.15)",
-                    padding: "30px",
-                    borderRadius: "18px",
-                    border: "2px solid rgba(255,255,255,0.3)",
-                    transition: "all 0.4s ease",
-                    cursor: "pointer",
-                    backdropFilter: "blur(10px)",
-                    textAlign: "center",
-                    color: "white",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)";
-                    e.currentTarget.style.transform = "translateY(-10px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
-                >
-                  <div style={{ fontSize: "2.5rem", marginBottom: "1rem", animation: "pulse 2.5s ease-in-out infinite" }}>
-                    {item.icon}
+            ].map(/**
+             * Purpose: Array mapping callback (converts each item to a new value)
+             * Plain English: What this function is used for.
+             */
+            (item, i) => {
+              return (
+                <div className="col-md-6 col-lg-3" key={i} data-aos="zoom-in" data-aos-delay={i * 100}>
+                  <div
+                    style={{
+                      background: "rgba(255,255,255,0.15)",
+                      padding: "30px",
+                      borderRadius: "18px",
+                      border: "2px solid rgba(255,255,255,0.3)",
+                      transition: "all 0.4s ease",
+                      cursor: "pointer",
+                      backdropFilter: "blur(10px)",
+                      textAlign: "center",
+                      color: "white",
+                    }}
+                    onMouseEnter={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)";
+                      e.currentTarget.style.transform = "translateY(-10px)";
+                    }}
+                    onMouseLeave={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
+                      e.currentTarget.style.transform = "translateY(0)";
+                    }}
+                  >
+                    <div style={{ fontSize: "2.5rem", marginBottom: "1rem", animation: "pulse 2.5s ease-in-out infinite" }}>
+                      {item.icon}
+                    </div>
+                    <h5 style={{ color: "#FFE66D", fontWeight: "700", marginBottom: "0.8rem", fontSize: "1.1rem" }}>
+                      {item.title}
+                    </h5>
+                    <p style={{ fontSize: "0.9rem", lineHeight: 1.6, margin: "0", fontWeight: "500", opacity: 0.9 }}>
+                      {item.desc}
+                    </p>
                   </div>
-                  <h5 style={{ color: "#FFE66D", fontWeight: "700", marginBottom: "0.8rem", fontSize: "1.1rem" }}>
-                    {item.title}
-                  </h5>
-                  <p style={{ fontSize: "0.9rem", lineHeight: 1.6, margin: "0", fontWeight: "500", opacity: 0.9 }}>
-                    {item.desc}
-                  </p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -644,7 +689,6 @@ const Shop = () => {
           <path fill="#fff5f0" d="M0,40 Q360,80 720,40 T1440,40 L1440,120 L0,120 Z"></path>
         </svg>
       </section>
-
       {/* ===================== CTA ===================== */}
       <section
         className="text-center position-relative overflow-hidden py-5"
@@ -674,10 +718,18 @@ const Shop = () => {
                 transition: "all 0.3s ease",
                 boxShadow: "0 8px 25px rgba(255,107,107,0.3)",
               }}
-              onMouseEnter={(e) => {
+              onMouseEnter={/**
+               * Purpose: Helper callback used inside a larger operation
+               * Plain English: What this function is used for.
+               */
+              e => {
                 e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={/**
+               * Purpose: Helper callback used inside a larger operation
+               * Plain English: What this function is used for.
+               */
+              e => {
                 e.currentTarget.style.transform = "translateY(0) scale(1)";
               }}
             >

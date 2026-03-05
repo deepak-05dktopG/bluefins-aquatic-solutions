@@ -1,13 +1,26 @@
+/**
+ * What it is: Admin panel page (Members feedback screen).
+ * Non-tech note: Admins can read and manage feedback submitted by users.
+ */
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from 'sweetalert2';
 import { adminFetch, isAdminAuthenticated } from "../../utils/adminAuth";
 import { formatDateTime } from "../../utils/dateTime";
 
+/**
+ * Purpose: Do Members Feedback
+ * Plain English: What this function is used for.
+ */
 const MembersFeedback = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
     if (!isAdminAuthenticated()) {
       navigate("/admin");
     }
@@ -19,10 +32,18 @@ const MembersFeedback = () => {
   const [error, setError] = useState(null);
 
   // Fetch feedbacks from backend
-  useEffect(() => {
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
     fetchFeedbacks();
   }, []);
 
+  /**
+   * Purpose: Fetch Feedbacks from server
+   * Plain English: What this function is used for.
+   */
   const fetchFeedbacks = async () => {
     try {
       setLoading(true);
@@ -42,7 +63,11 @@ const MembersFeedback = () => {
     }
   };
 
-  const deleteFeedback = async (id) => {
+  /**
+   * Purpose: Do Delete Feedback
+   * Plain English: What this function is used for.
+   */
+  const deleteFeedback = async id => {
     const result = await Swal.fire({
       title: 'Delete Feedback?',
       text: "This action cannot be undone!",
@@ -64,7 +89,13 @@ const MembersFeedback = () => {
         const data = await response.json();
         
         if (data.success) {
-          setFeedback(feedback.filter((fb) => fb._id !== id));
+          setFeedback(feedback.filter(/**
+           * Purpose: Array filter callback (keeps items that match a condition)
+           * Plain English: What this function is used for.
+           */
+          fb => {
+            return fb._id !== id;
+          }));
           Swal.fire({
             toast: true,
             position: 'top-end',
@@ -112,7 +143,11 @@ const MembersFeedback = () => {
     }
   };
 
-  const markAsRead = async (id) => {
+  /**
+   * Purpose: Do Mark As Read
+   * Plain English: What this function is used for.
+   */
+  const markAsRead = async id => {
     try {
         const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/feedback/${id}`, {
         method: 'PATCH',
@@ -125,7 +160,13 @@ const MembersFeedback = () => {
       
       if (data.success) {
         setFeedback(
-          feedback.map((fb) => (fb._id === id ? { ...fb, status: "read" } : fb))
+          feedback.map(/**
+           * Purpose: Array mapping callback (converts each item to a new value)
+           * Plain English: What this function is used for.
+           */
+          fb => {
+            return (fb._id === id ? { ...fb, status: "read" } : fb);
+          })
         );
       }
     } catch (err) {
@@ -134,15 +175,31 @@ const MembersFeedback = () => {
   };
 
   // Filter feedback
-  const filteredFeedback = feedback.filter((fb) => {
+  const filteredFeedback = feedback.filter(/**
+   * Purpose: Array filter callback (keeps items that match a condition)
+   * Plain English: What this function is used for.
+   */
+  fb => {
     const statusMatch = filterStatus === "all" || fb.status === filterStatus;
     return statusMatch;
   });
 
   // Statistics
   const totalCount = feedback.length;
-  const unreadCount = feedback.filter((fb) => fb.status === "unread").length;
-  const readCount = feedback.filter((fb) => fb.status === "read").length;
+  const unreadCount = feedback.filter(/**
+   * Purpose: Array filter callback (keeps items that match a condition)
+   * Plain English: What this function is used for.
+   */
+  fb => {
+    return fb.status === "unread";
+  }).length;
+  const readCount = feedback.filter(/**
+   * Purpose: Array filter callback (keeps items that match a condition)
+   * Plain English: What this function is used for.
+   */
+  fb => {
+    return fb.status === "read";
+  }).length;
 
   return (
     <div
@@ -153,7 +210,6 @@ const MembersFeedback = () => {
       }}
     >
       <AdminNavbar />
-
       <div style={{ padding: "50px 20px 40px", maxWidth: "1400px", margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: "30px" }}>
@@ -187,7 +243,13 @@ const MembersFeedback = () => {
           <label style={{ color: "#fff", fontSize: "0.95rem" }}>Filter by Status:</label>
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
+              return setFilterStatus(e.target.value);
+            }}
             style={{
               background: "rgba(255, 255, 255, 0.1)",
               border: "2px solid rgba(255, 255, 255, 0.2)",
@@ -226,88 +288,167 @@ const MembersFeedback = () => {
         )}
 
         <div style={{ display: "grid", gap: "20px" }}>
-          {filteredFeedback.map((fb) => (
-            <div
-              key={fb._id}
-              style={{
-                background: fb.status === "unread" ? "rgba(255, 107, 107, 0.1)" : "rgba(255, 255, 255, 0.05)",
-                border: `2px solid ${fb.status === "unread" ? "#FF6B6B" : "rgba(255, 255, 255, 0.1)"}`,
-                borderRadius: "15px",
-                padding: "25px",
-                transition: "all 0.3s ease",
-                position: "relative",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow = "0 8px 30px rgba(0, 0, 0, 0.3)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              {/* Status Badge */}
+          {filteredFeedback.map(/**
+           * Purpose: Array mapping callback (converts each item to a new value)
+           * Plain English: What this function is used for.
+           */
+          fb => {
+            return (
               <div
+                key={fb._id}
                 style={{
-                  position: "absolute",
-                  top: "15px",
-                  right: "15px",
-                  background: fb.status === "unread" ? "#FF6B6B" : fb.status === "read" ? "#4ECDC4" : "#667eea",
-                  color: "#fff",
-                  padding: "5px 12px",
-                  borderRadius: "20px",
-                  fontSize: "0.75rem",
-                  fontWeight: "600",
-                  textTransform: "uppercase",
+                  background: fb.status === "unread" ? "rgba(255, 107, 107, 0.1)" : "rgba(255, 255, 255, 0.05)",
+                  border: `2px solid ${fb.status === "unread" ? "#FF6B6B" : "rgba(255, 255, 255, 0.1)"}`,
+                  borderRadius: "15px",
+                  padding: "25px",
+                  transition: "all 0.3s ease",
+                  position: "relative",
+                }}
+                onMouseEnter={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 8px 30px rgba(0, 0, 0, 0.3)";
+                }}
+                onMouseLeave={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
                 }}
               >
-                {fb.status}
-              </div>
-
-              {/* User Info */}
-              <div style={{ display: "flex", alignItems: "center", gap: "15px", marginBottom: "15px" }}>
-                <div style={{ width: "50px", height: "50px", borderRadius: "50%", background: "linear-gradient(135deg, #667eea, #4ECDC4)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "1.3rem", fontWeight: "700" }}>
-                  {fb.name.charAt(0).toUpperCase()}
+                {/* Status Badge */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "15px",
+                    right: "15px",
+                    background: fb.status === "unread" ? "#FF6B6B" : fb.status === "read" ? "#4ECDC4" : "#667eea",
+                    color: "#fff",
+                    padding: "5px 12px",
+                    borderRadius: "20px",
+                    fontSize: "0.75rem",
+                    fontWeight: "600",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {fb.status}
                 </div>
-                <div>
-                  <div style={{ color: "#fff", fontSize: "1.1rem", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <FaUser style={{ color: "#4ECDC4", fontSize: "0.9rem" }} />
-                    {fb.name}
+                {/* User Info */}
+                <div style={{ display: "flex", alignItems: "center", gap: "15px", marginBottom: "15px" }}>
+                  <div style={{ width: "50px", height: "50px", borderRadius: "50%", background: "linear-gradient(135deg, #667eea, #4ECDC4)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "1.3rem", fontWeight: "700" }}>
+                    {fb.name.charAt(0).toUpperCase()}
                   </div>
-                  <div style={{ fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", marginTop: "5px" }}>
-                    <FaEnvelope style={{ color: "#FFD93D" }} />
-                    <a href={`mailto:${fb.email}`} style={{ color: "#b0b0b0", textDecoration: "none", transition: "color 0.3s ease" }} onMouseEnter={(e) => e.currentTarget.style.color = "#FFD93D"} onMouseLeave={(e) => e.currentTarget.style.color = "#b0b0b0"}>
-                      {fb.email}
-                    </a>
-                  </div>
-                  <div style={{ fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", marginTop: "5px" }}>
-                    <FaPhone style={{ color: "#FF6B6B" }} />
-                    <a href={`tel:${fb.phone}`} style={{ color: "#b0b0b0", textDecoration: "none", transition: "color 0.3s ease" }} onMouseEnter={(e) => e.currentTarget.style.color = "#FF6B6B"} onMouseLeave={(e) => e.currentTarget.style.color = "#b0b0b0"}>
-                      {fb.phone}
-                    </a>
+                  <div>
+                    <div style={{ color: "#fff", fontSize: "1.1rem", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <FaUser style={{ color: "#4ECDC4", fontSize: "0.9rem" }} />
+                      {fb.name}
+                    </div>
+                    <div style={{ fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", marginTop: "5px" }}>
+                      <FaEnvelope style={{ color: "#FFD93D" }} />
+                      <a href={`mailto:${fb.email}`} style={{ color: "#b0b0b0", textDecoration: "none", transition: "color 0.3s ease" }} onMouseEnter={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
+                        return e.currentTarget.style.color = "#FFD93D";
+                      }} onMouseLeave={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
+                        return e.currentTarget.style.color = "#b0b0b0";
+                      }}>
+                        {fb.email}
+                      </a>
+                    </div>
+                    <div style={{ fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", marginTop: "5px" }}>
+                      <FaPhone style={{ color: "#FF6B6B" }} />
+                      <a href={`tel:${fb.phone}`} style={{ color: "#b0b0b0", textDecoration: "none", transition: "color 0.3s ease" }} onMouseEnter={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
+                        return e.currentTarget.style.color = "#FF6B6B";
+                      }} onMouseLeave={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
+                        return e.currentTarget.style.color = "#b0b0b0";
+                      }}>
+                        {fb.phone}
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Message */}
-              <div style={{ background: "rgba(0, 0, 0, 0.2)", borderRadius: "10px", padding: "15px", marginBottom: "15px" }}>
-                <p style={{ color: "#e0e0e0", fontSize: "0.95rem", lineHeight: "1.6", margin: 0 }}>
-                  {fb.message}
-                </p>
-              </div>
-
-              {/* Footer */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#b0b0b0", fontSize: "0.85rem" }}>
-                  <FaClock />
-						{formatDateTime(fb.createdAt)}
+                {/* Message */}
+                <div style={{ background: "rgba(0, 0, 0, 0.2)", borderRadius: "10px", padding: "15px", marginBottom: "15px" }}>
+                  <p style={{ color: "#e0e0e0", fontSize: "0.95rem", lineHeight: "1.6", margin: 0 }}>
+                    {fb.message}
+                  </p>
                 </div>
-                <div style={{ display: "flex", gap: "10px" }}>
-                  {fb.status === "unread" && (
+                {/* Footer */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#b0b0b0", fontSize: "0.85rem" }}>
+                    <FaClock />
+                          {formatDateTime(fb.createdAt)}
+                  </div>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    {fb.status === "unread" && (
+                      <button
+                        onClick={/**
+                         * Purpose: Helper callback used inside a larger operation
+                         * Plain English: What this function is used for.
+                         */
+                        () => {
+                          return markAsRead(fb._id);
+                        }}
+                        style={{
+                          background: "linear-gradient(135deg, #4ECDC4, #54A0FF)",
+                          border: "none",
+                          color: "#fff",
+                          padding: "8px 16px",
+                          borderRadius: "8px",
+                          fontSize: "0.85rem",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          transition: "all 0.3s ease",
+                        }}
+                        onMouseEnter={/**
+                         * Purpose: Helper callback used inside a larger operation
+                         * Plain English: What this function is used for.
+                         */
+                        e => {
+                          e.currentTarget.style.transform = "translateY(-2px)";
+                          e.currentTarget.style.boxShadow = "0 4px 15px rgba(78, 205, 196, 0.4)";
+                        }}
+                        onMouseLeave={/**
+                         * Purpose: Helper callback used inside a larger operation
+                         * Plain English: What this function is used for.
+                         */
+                        e => {
+                          e.currentTarget.style.transform = "translateY(0)";
+                          e.currentTarget.style.boxShadow = "none";
+                        }}
+                      >
+                        Mark as Read
+                      </button>
+                    )}
                     <button
-                      onClick={() => markAsRead(fb._id)}
+                      onClick={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      () => {
+                        return deleteFeedback(fb._id);
+                      }}
                       style={{
-                        background: "linear-gradient(135deg, #4ECDC4, #54A0FF)",
+                        background: "linear-gradient(135deg, #FF6B6B, #FF9FF3)",
                         border: "none",
                         color: "#fff",
                         padding: "8px 16px",
@@ -316,50 +457,34 @@ const MembersFeedback = () => {
                         fontWeight: "600",
                         cursor: "pointer",
                         transition: "all 0.3s ease",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
                       }}
-                      onMouseEnter={(e) => {
+                      onMouseEnter={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
                         e.currentTarget.style.transform = "translateY(-2px)";
-                        e.currentTarget.style.boxShadow = "0 4px 15px rgba(78, 205, 196, 0.4)";
+                        e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 107, 107, 0.4)";
                       }}
-                      onMouseLeave={(e) => {
+                      onMouseLeave={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      e => {
                         e.currentTarget.style.transform = "translateY(0)";
                         e.currentTarget.style.boxShadow = "none";
                       }}
                     >
-                      Mark as Read
+                      <FaTrash /> Delete
                     </button>
-                  )}
-                  <button
-                    onClick={() => deleteFeedback(fb._id)}
-                    style={{
-                      background: "linear-gradient(135deg, #FF6B6B, #FF9FF3)",
-                      border: "none",
-                      color: "#fff",
-                      padding: "8px 16px",
-                      borderRadius: "8px",
-                      fontSize: "0.85rem",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      transition: "all 0.3s ease",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                      e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 107, 107, 0.4)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = "none";
-                    }}
-                  >
-                    <FaTrash /> Delete
-                  </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

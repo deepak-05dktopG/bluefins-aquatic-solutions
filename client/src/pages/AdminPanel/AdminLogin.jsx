@@ -1,8 +1,18 @@
+/**
+ * What it is: Admin panel page (Login screen).
+ * Non-tech note: This is the admin sign-in page.
+ */
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import { isAdminAuthenticated, setAdminToken } from "../../utils/adminAuth";
+import Navbar from "../../components/Navbar";
 
+/**
+ * Purpose: Do Admin Login
+ * Plain English: What this function is used for.
+ */
 const AdminLogin = () => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -11,14 +21,22 @@ const AdminLogin = () => {
   const navigate = useNavigate();
 
   // Check for existing authorization on component mount
-  useEffect(() => {
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
     if (isAdminAuthenticated()) {
       navigate("/admin/dashboard");
     }
   }, [navigate]);
 
+  /**
+   * Purpose: Handle Access Submit
+   * Plain English: What this function is used for.
+   */
   // Handle access key submission
-  const handleAccessSubmit = async (e) => {
+  const handleAccessSubmit = async e => {
     e.preventDefault();
     setVerifyLoading(true);
     setError("");
@@ -66,7 +84,6 @@ const AdminLogin = () => {
           animation: "float 8s ease-in-out infinite",
         }}
       />
-
       <div
         style={{
           position: "absolute",
@@ -80,7 +97,6 @@ const AdminLogin = () => {
           animation: "float 10s ease-in-out infinite",
         }}
       />
-
       {/* Grid Pattern */}
       <div
         style={{
@@ -94,7 +110,6 @@ const AdminLogin = () => {
           animation: "moveGrid 20s linear infinite",
         }}
       />
-
       {/* Login Card */}
       <div
         style={{
@@ -170,7 +185,13 @@ const AdminLogin = () => {
             type="text"
             placeholder="Admin ID or email"
             value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
+            onChange={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
+              return setIdentifier(e.target.value);
+            }}
             disabled={verifyLoading}
             autoComplete="username"
             style={{
@@ -186,11 +207,19 @@ const AdminLogin = () => {
               fontSize: "1rem",
               transition: "all 0.3s ease",
             }}
-            onFocus={(e) => {
+            onFocus={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
               e.currentTarget.style.border = "2px solid #00FFD4";
               e.currentTarget.style.boxShadow = "0 0 20px rgba(0, 255, 212, 0.2)";
             }}
-            onBlur={(e) => {
+            onBlur={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
               e.currentTarget.style.border = "2px solid rgba(0, 255, 200, 0.3)";
               e.currentTarget.style.boxShadow = "none";
             }}
@@ -200,7 +229,13 @@ const AdminLogin = () => {
             type="password"
             placeholder="Admin password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
+              return setPassword(e.target.value);
+            }}
             disabled={verifyLoading}
             autoComplete="current-password"
             style={{
@@ -216,11 +251,19 @@ const AdminLogin = () => {
               fontSize: "1rem",
               transition: "all 0.3s ease",
             }}
-            onFocus={(e) => {
+            onFocus={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
               e.currentTarget.style.border = "2px solid #00FFD4";
               e.currentTarget.style.boxShadow = "0 0 20px rgba(0, 255, 212, 0.2)";
             }}
-            onBlur={(e) => {
+            onBlur={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
               e.currentTarget.style.border = "2px solid rgba(0, 255, 200, 0.3)";
               e.currentTarget.style.boxShadow = "none";
             }}
@@ -265,13 +308,21 @@ const AdminLogin = () => {
               transition: "all 0.3s ease",
               fontFamily: "Poppins, system-ui",
             }}
-            onMouseEnter={(e) => {
+            onMouseEnter={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
               if (!verifyLoading && identifier.trim() && password.trim()) {
                 e.currentTarget.style.transform = "translateY(-2px)";
                 e.currentTarget.style.boxShadow = "0 8px 20px rgba(0, 255, 212, 0.4)";
               }
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
               e.currentTarget.style.transform = "translateY(0)";
               e.currentTarget.style.boxShadow = "none";
             }}
@@ -292,7 +343,6 @@ const AdminLogin = () => {
           🔒 Secure authentication required
         </p>
       </div>
-
       {/* CSS Animations */}
       <style>{`
         @keyframes floatCard {

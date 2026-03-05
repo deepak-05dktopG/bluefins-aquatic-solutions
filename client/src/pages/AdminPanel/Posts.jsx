@@ -1,13 +1,26 @@
+/**
+ * What it is: Admin panel page (Posts + Gallery management).
+ * Non-tech note: Admins can add/update announcements and gallery images.
+ */
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from 'sweetalert2';
 import { adminFetch, isAdminAuthenticated } from "../../utils/adminAuth";
 import { formatDateTime } from "../../utils/dateTime";
 
+/**
+ * Purpose: Do Posts
+ * Plain English: What this function is used for.
+ */
 const Posts = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
     if (!isAdminAuthenticated()) {
       navigate("/admin");
     }
@@ -21,7 +34,7 @@ const Posts = () => {
   const [showPostForm, setShowPostForm] = useState(false);
   const [showGalleryForm, setShowGalleryForm] = useState(false);
   const [uploading, setUploading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     title: "",
     caption: "",
@@ -42,11 +55,19 @@ const Posts = () => {
   const [galleryImagePreview, setGalleryImagePreview] = useState(null);
 
   // Fetch posts and gallery from backend
-  useEffect(() => {
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
     fetchPosts();
     fetchGallery();
   }, []);
 
+  /**
+   * Purpose: Fetch Posts from server
+   * Plain English: What this function is used for.
+   */
   const fetchPosts = async () => {
     try {
       setLoading(true);
@@ -66,6 +87,10 @@ const Posts = () => {
     }
   };
 
+  /**
+   * Purpose: Fetch Gallery from server
+   * Plain English: What this function is used for.
+   */
   const fetchGallery = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/gallery`);
@@ -79,7 +104,11 @@ const Posts = () => {
     }
   };
 
-  const handleImageChange = (e) => {
+  /**
+   * Purpose: Handle Image Change
+   * Plain English: What this function is used for.
+   */
+  const handleImageChange = e => {
     const file = e.target.files[0];
     if (file) {
       setImageFile(file);
@@ -87,6 +116,10 @@ const Posts = () => {
     }
   };
 
+  /**
+   * Purpose: Do Upload Image To Cloudinary
+   * Plain English: What this function is used for.
+   */
   const uploadImageToCloudinary = async () => {
     if (!imageFile) return null;
 
@@ -114,9 +147,13 @@ const Posts = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  /**
+   * Purpose: Handle Submit
+   * Plain English: What this function is used for.
+   */
+  const handleSubmit = async e => {
     e.preventDefault();
-    
+
     // Validate at least one field is filled
     if (!formData.title && !formData.caption && !formData.content && !imageFile) {
       Swal.fire({
@@ -212,7 +249,11 @@ const Posts = () => {
     }
   };
 
-  const deletePost = async (id) => {
+  /**
+   * Purpose: Do Delete Post
+   * Plain English: What this function is used for.
+   */
+  const deletePost = async id => {
     const result = await Swal.fire({
       title: 'Delete Post?',
       text: "This action cannot be undone!",
@@ -282,6 +323,10 @@ const Posts = () => {
     }
   };
 
+  /**
+   * Purpose: Do Reset Form
+   * Plain English: What this function is used for.
+   */
   const resetForm = () => {
     setFormData({
       title: "",
@@ -295,12 +340,20 @@ const Posts = () => {
     setShowPostForm(false);
   };
 
-  const handleChange = (e) => {
+  /**
+   * Purpose: Handle Change
+   * Plain English: What this function is used for.
+   */
+  const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  /**
+   * Purpose: Handle Gallery Image Change
+   * Plain English: What this function is used for.
+   */
   // Gallery handlers
-  const handleGalleryImageChange = (e) => {
+  const handleGalleryImageChange = e => {
     const file = e.target.files[0];
     if (file) {
       setGalleryImageFile(file);
@@ -308,9 +361,13 @@ const Posts = () => {
     }
   };
 
-  const handleGallerySubmit = async (e) => {
+  /**
+   * Purpose: Handle Gallery Submit
+   * Plain English: What this function is used for.
+   */
+  const handleGallerySubmit = async e => {
     e.preventDefault();
-    
+
     if (!galleryImageFile) {
       Swal.fire({
         toast: true,
@@ -404,7 +461,11 @@ const Posts = () => {
     }
   };
 
-  const deleteGalleryImage = async (id) => {
+  /**
+   * Purpose: Do Delete Gallery Image
+   * Plain English: What this function is used for.
+   */
+  const deleteGalleryImage = async id => {
     const result = await Swal.fire({
       title: 'Delete Gallery Image?',
       text: "This action cannot be undone!",
@@ -462,6 +523,10 @@ const Posts = () => {
     }
   };
 
+  /**
+   * Purpose: Do Reset Gallery Form
+   * Plain English: What this function is used for.
+   */
   const resetGalleryForm = () => {
     setGalleryFormData({
       title: "",
@@ -473,7 +538,11 @@ const Posts = () => {
     setShowGalleryForm(false);
   };
 
-  const handleGalleryChange = (e) => {
+  /**
+   * Purpose: Handle Gallery Change
+   * Plain English: What this function is used for.
+   */
+  const handleGalleryChange = e => {
     setGalleryFormData({ ...galleryFormData, [e.target.name]: e.target.value });
   };
 
@@ -486,7 +555,6 @@ const Posts = () => {
       }}
     >
       <AdminNavbar />
-
       <div style={{ padding: "50px 20px 40px", maxWidth: "1400px", margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: "30px" }}>
@@ -500,7 +568,11 @@ const Posts = () => {
           {/* Tab Navigation */}
           <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
             <button
-              onClick={() => {
+              onClick={/**
+               * Purpose: Helper callback used inside a larger operation
+               * Plain English: What this function is used for.
+               */
+              () => {
                 setActiveTab("posts");
                 setShowPostForm(false);
                 setShowGalleryForm(false);
@@ -520,7 +592,11 @@ const Posts = () => {
               📢 Announcements ({posts.length})
             </button>
             <button
-              onClick={() => {
+              onClick={/**
+               * Purpose: Helper callback used inside a larger operation
+               * Plain English: What this function is used for.
+               */
+              () => {
                 setActiveTab("gallery");
                 setShowPostForm(false);
                 setShowGalleryForm(false);
@@ -545,7 +621,13 @@ const Posts = () => {
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             {activeTab === "posts" ? (
               <button
-                onClick={() => setShowPostForm(!showPostForm)}
+                onClick={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                () => {
+                  return setShowPostForm(!showPostForm);
+                }}
                 style={{
                   background: "linear-gradient(135deg, #4ECDC4, #54A0FF)",
                   border: "none",
@@ -560,11 +642,19 @@ const Posts = () => {
                   gap: "8px",
                   transition: "all 0.3s ease",
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
                   e.currentTarget.style.transform = "translateY(-2px)";
                   e.currentTarget.style.boxShadow = "0 6px 20px rgba(78, 205, 196, 0.4)";
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
                   e.currentTarget.style.transform = "translateY(0)";
                   e.currentTarget.style.boxShadow = "none";
                 }}
@@ -573,7 +663,13 @@ const Posts = () => {
               </button>
             ) : (
               <button
-                onClick={() => setShowGalleryForm(!showGalleryForm)}
+                onClick={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                () => {
+                  return setShowGalleryForm(!showGalleryForm);
+                }}
                 style={{
                   background: "linear-gradient(135deg, #667eea, #764ba2)",
                   border: "none",
@@ -588,11 +684,19 @@ const Posts = () => {
                   gap: "8px",
                   transition: "all 0.3s ease",
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
                   e.currentTarget.style.transform = "translateY(-2px)";
                   e.currentTarget.style.boxShadow = "0 6px 20px rgba(102, 126, 234, 0.4)";
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
                   e.currentTarget.style.transform = "translateY(0)";
                   e.currentTarget.style.boxShadow = "none";
                 }}
@@ -611,7 +715,13 @@ const Posts = () => {
               <div style={{ color: "#b0b0b0", fontSize: "0.9rem" }}>Total Posts</div>
             </div>
             <div style={{ background: "rgba(102, 126, 234, 0.1)", border: "2px solid #667eea", borderRadius: "15px", padding: "20px", textAlign: "center" }}>
-              <div style={{ fontSize: "2rem", fontWeight: "700", color: "#667eea", marginBottom: "5px" }}>{posts.filter(p => p.imageUrl).length}</div>
+              <div style={{ fontSize: "2rem", fontWeight: "700", color: "#667eea", marginBottom: "5px" }}>{posts.filter(/**
+               * Purpose: Array filter callback (keeps items that match a condition)
+               * Plain English: What this function is used for.
+               */
+              p => {
+                return p.imageUrl;
+              }).length}</div>
               <div style={{ color: "#b0b0b0", fontSize: "0.9rem" }}>With Images</div>
             </div>
           </div>
@@ -624,7 +734,13 @@ const Posts = () => {
               <div style={{ color: "#b0b0b0", fontSize: "0.9rem" }}>Total Images</div>
             </div>
             <div style={{ background: "rgba(255, 215, 61, 0.1)", border: "2px solid #FFD93D", borderRadius: "15px", padding: "20px", textAlign: "center" }}>
-              <div style={{ fontSize: "2rem", fontWeight: "700", color: "#FFD93D", marginBottom: "5px" }}>{galleryImages.filter(img => img.isActive).length}</div>
+              <div style={{ fontSize: "2rem", fontWeight: "700", color: "#FFD93D", marginBottom: "5px" }}>{galleryImages.filter(/**
+               * Purpose: Array filter callback (keeps items that match a condition)
+               * Plain English: What this function is used for.
+               */
+              img => {
+                return img.isActive;
+              }).length}</div>
               <div style={{ color: "#b0b0b0", fontSize: "0.9rem" }}>Active</div>
             </div>
           </div>
@@ -725,8 +841,20 @@ const Posts = () => {
                     cursor: "pointer",
                     transition: "all 0.3s ease",
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)"}
-                  onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)"}
+                  onMouseEnter={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    return e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
+                  }}
+                  onMouseLeave={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    return e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+                  }}
                 >
                   <FaImage /> Choose Image
                 </label>
@@ -735,7 +863,13 @@ const Posts = () => {
                     <img src={galleryImagePreview} alt="Preview" style={{ maxWidth: "300px", maxHeight: "200px", borderRadius: "10px", border: "2px solid #667eea" }} />
                     <button
                       type="button"
-                      onClick={() => { setGalleryImageFile(null); setGalleryImagePreview(null); }}
+                      onClick={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      () => {
+                        setGalleryImageFile(null);setGalleryImagePreview(null);
+                      }}
                       style={{
                         position: "absolute",
                         top: "5px",
@@ -892,8 +1026,20 @@ const Posts = () => {
                     cursor: "pointer",
                     transition: "all 0.3s ease",
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)"}
-                  onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)"}
+                  onMouseEnter={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    return e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
+                  }}
+                  onMouseLeave={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    return e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
+                  }}
                 >
                   <FaImage /> Choose Image
                 </label>
@@ -902,7 +1048,13 @@ const Posts = () => {
                     <img src={imagePreview} alt="Preview" style={{ maxWidth: "300px", maxHeight: "200px", borderRadius: "10px", border: "2px solid #4ECDC4" }} />
                     <button
                       type="button"
-                      onClick={() => { setImageFile(null); setImagePreview(null); }}
+                      onClick={/**
+                       * Purpose: Helper callback used inside a larger operation
+                       * Plain English: What this function is used for.
+                       */
+                      () => {
+                        setImageFile(null);setImagePreview(null);
+                      }}
                       style={{
                         position: "absolute",
                         top: "5px",
@@ -990,91 +1142,119 @@ const Posts = () => {
 
         {activeTab === "posts" && (
           <div style={{ display: "grid", gap: "20px" }}>
-            {posts.map((post) => (
-            <div
-              key={post._id}
-              style={{
-                background: "rgba(255, 255, 255, 0.05)",
-                border: "2px solid rgba(255, 255, 255, 0.1)",
-                borderRadius: "15px",
-                padding: "25px",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow = "0 8px 30px rgba(0, 0, 0, 0.3)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-                {post.imageUrl && (
-                  <img
-                    src={post.imageUrl}
-                    alt={post.title || 'Post image'}
-                    style={{
-                      width: "200px",
-                      height: "150px",
-                      objectFit: "cover",
-                      borderRadius: "10px",
-                      border: "2px solid #4ECDC4"
-                    }}
-                  />
-                )}
-                <div style={{ flex: 1 }}>
-                  {post.title && (
-                    <h3 style={{ color: "#4ECDC4", fontSize: "1.3rem", fontWeight: "700", marginBottom: "10px" }}>
-                      {post.title}
-                    </h3>
-                  )}
-                  {post.caption && (
-                    <p style={{ color: "#FFD93D", fontSize: "1rem", fontWeight: "600", marginBottom: "10px" }}>
-                      {post.caption}
-                    </p>
-                  )}
-                  {post.content && (
-                    <p style={{ color: "#e0e0e0", fontSize: "0.95rem", lineHeight: "1.6", marginBottom: "15px" }}>
-                      {post.content}
-                    </p>
-                  )}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "15px" }}>
-                    <span style={{ color: "#b0b0b0", fontSize: "0.85rem" }}>
-							{formatDateTime(post.createdAt)}
-                    </span>
-                    <button
-                      onClick={() => deletePost(post._id)}
-                      style={{
-                        background: "linear-gradient(135deg, #FF6B6B, #FF9FF3)",
-                        border: "none",
-                        color: "#fff",
-                        padding: "8px 16px",
-                        borderRadius: "8px",
-                        fontSize: "0.85rem",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        transition: "all 0.3s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translateY(-2px)";
-                        e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 107, 107, 0.4)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow = "none";
-                      }}
-                    >
-                      <FaTrash /> Delete
-                    </button>
+            {posts.map(/**
+             * Purpose: Array mapping callback (converts each item to a new value)
+             * Plain English: What this function is used for.
+             */
+            post => {
+              return (
+                <div
+                  key={post._id}
+                  style={{
+                    background: "rgba(255, 255, 255, 0.05)",
+                    border: "2px solid rgba(255, 255, 255, 0.1)",
+                    borderRadius: "15px",
+                    padding: "25px",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 8px 30px rgba(0, 0, 0, 0.3)";
+                  }}
+                  onMouseLeave={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+                    {post.imageUrl && (
+                      <img
+                        src={post.imageUrl}
+                        alt={post.title || 'Post image'}
+                        style={{
+                          width: "200px",
+                          height: "150px",
+                          objectFit: "cover",
+                          borderRadius: "10px",
+                          border: "2px solid #4ECDC4"
+                        }}
+                      />
+                    )}
+                    <div style={{ flex: 1 }}>
+                      {post.title && (
+                        <h3 style={{ color: "#4ECDC4", fontSize: "1.3rem", fontWeight: "700", marginBottom: "10px" }}>
+                          {post.title}
+                        </h3>
+                      )}
+                      {post.caption && (
+                        <p style={{ color: "#FFD93D", fontSize: "1rem", fontWeight: "600", marginBottom: "10px" }}>
+                          {post.caption}
+                        </p>
+                      )}
+                      {post.content && (
+                        <p style={{ color: "#e0e0e0", fontSize: "0.95rem", lineHeight: "1.6", marginBottom: "15px" }}>
+                          {post.content}
+                        </p>
+                      )}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "15px" }}>
+                        <span style={{ color: "#b0b0b0", fontSize: "0.85rem" }}>
+                                {formatDateTime(post.createdAt)}
+                        </span>
+                        <button
+                          onClick={/**
+                           * Purpose: Helper callback used inside a larger operation
+                           * Plain English: What this function is used for.
+                           */
+                          () => {
+                            return deletePost(post._id);
+                          }}
+                          style={{
+                            background: "linear-gradient(135deg, #FF6B6B, #FF9FF3)",
+                            border: "none",
+                            color: "#fff",
+                            padding: "8px 16px",
+                            borderRadius: "8px",
+                            fontSize: "0.85rem",
+                            fontWeight: "600",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            transition: "all 0.3s ease",
+                          }}
+                          onMouseEnter={/**
+                           * Purpose: Helper callback used inside a larger operation
+                           * Plain English: What this function is used for.
+                           */
+                          e => {
+                            e.currentTarget.style.transform = "translateY(-2px)";
+                            e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 107, 107, 0.4)";
+                          }}
+                          onMouseLeave={/**
+                           * Purpose: Helper callback used inside a larger operation
+                           * Plain English: What this function is used for.
+                           */
+                          e => {
+                            e.currentTarget.style.transform = "translateY(0)";
+                            e.currentTarget.style.boxShadow = "none";
+                          }}
+                        >
+                          <FaTrash /> Delete
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              );
+            })}
           </div>
         )}
 
@@ -1087,98 +1267,126 @@ const Posts = () => {
 
         {activeTab === "gallery" && galleryImages.length > 0 && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-            {galleryImages.map((image) => (
-              <div
-                key={image._id}
-                style={{
-                  background: "rgba(255, 255, 255, 0.05)",
-                  border: "2px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "15px",
-                  overflow: "hidden",
-                  transition: "all 0.3s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow = "0 8px 30px rgba(102, 126, 234, 0.3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              >
-                <div style={{ position: "relative", width: "100%", height: "200px", overflow: "hidden" }}>
-                  <img
-                    src={image.imageUrl}
-                    alt={image.title || 'Gallery image'}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                  {image.category && (
-                    <span style={{
-                      position: "absolute",
-                      top: "10px",
-                      right: "10px",
-                      background: "rgba(102, 126, 234, 0.9)",
-                      color: "#fff",
-                      padding: "4px 12px",
-                      borderRadius: "20px",
-                      fontSize: "0.75rem",
-                      fontWeight: "600",
-                      textTransform: "capitalize"
-                    }}>
-                      {image.category}
-                    </span>
-                  )}
-                </div>
-                <div style={{ padding: "15px" }}>
-                  {image.title && (
-                    <h4 style={{ color: "#667eea", fontSize: "1.1rem", fontWeight: "700", marginBottom: "8px" }}>
-                      {image.title}
-                    </h4>
-                  )}
-                  {image.description && (
-                    <p style={{ color: "#e0e0e0", fontSize: "0.85rem", marginBottom: "10px", lineHeight: "1.5" }}>
-                      {image.description}
-                    </p>
-                  )}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px" }}>
-                    <span style={{ color: "#b0b0b0", fontSize: "0.75rem" }}>
-                      {new Date(image.createdAt).toLocaleDateString()}
-                    </span>
-                    <button
-                      onClick={() => deleteGalleryImage(image._id)}
+            {galleryImages.map(/**
+             * Purpose: Array mapping callback (converts each item to a new value)
+             * Plain English: What this function is used for.
+             */
+            image => {
+              return (
+                <div
+                  key={image._id}
+                  style={{
+                    background: "rgba(255, 255, 255, 0.05)",
+                    border: "2px solid rgba(255, 255, 255, 0.1)",
+                    borderRadius: "15px",
+                    overflow: "hidden",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    e.currentTarget.style.transform = "translateY(-4px)";
+                    e.currentTarget.style.boxShadow = "0 8px 30px rgba(102, 126, 234, 0.3)";
+                  }}
+                  onMouseLeave={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  <div style={{ position: "relative", width: "100%", height: "200px", overflow: "hidden" }}>
+                    <img
+                      src={image.imageUrl}
+                      alt={image.title || 'Gallery image'}
                       style={{
-                        background: "linear-gradient(135deg, #FF6B6B, #FF9FF3)",
-                        border: "none",
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                    {image.category && (
+                      <span style={{
+                        position: "absolute",
+                        top: "10px",
+                        right: "10px",
+                        background: "rgba(102, 126, 234, 0.9)",
                         color: "#fff",
-                        padding: "6px 12px",
-                        borderRadius: "8px",
-                        fontSize: "0.8rem",
+                        padding: "4px 12px",
+                        borderRadius: "20px",
+                        fontSize: "0.75rem",
                         fontWeight: "600",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                        transition: "all 0.3s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translateY(-2px)";
-                        e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 107, 107, 0.4)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow = "none";
-                      }}
-                    >
-                      <FaTrash /> Delete
-                    </button>
+                        textTransform: "capitalize"
+                      }}>
+                        {image.category}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ padding: "15px" }}>
+                    {image.title && (
+                      <h4 style={{ color: "#667eea", fontSize: "1.1rem", fontWeight: "700", marginBottom: "8px" }}>
+                        {image.title}
+                      </h4>
+                    )}
+                    {image.description && (
+                      <p style={{ color: "#e0e0e0", fontSize: "0.85rem", marginBottom: "10px", lineHeight: "1.5" }}>
+                        {image.description}
+                      </p>
+                    )}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px" }}>
+                      <span style={{ color: "#b0b0b0", fontSize: "0.75rem" }}>
+                        {new Date(image.createdAt).toLocaleDateString()}
+                      </span>
+                      <button
+                        onClick={/**
+                         * Purpose: Helper callback used inside a larger operation
+                         * Plain English: What this function is used for.
+                         */
+                        () => {
+                          return deleteGalleryImage(image._id);
+                        }}
+                        style={{
+                          background: "linear-gradient(135deg, #FF6B6B, #FF9FF3)",
+                          border: "none",
+                          color: "#fff",
+                          padding: "6px 12px",
+                          borderRadius: "8px",
+                          fontSize: "0.8rem",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          transition: "all 0.3s ease",
+                        }}
+                        onMouseEnter={/**
+                         * Purpose: Helper callback used inside a larger operation
+                         * Plain English: What this function is used for.
+                         */
+                        e => {
+                          e.currentTarget.style.transform = "translateY(-2px)";
+                          e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 107, 107, 0.4)";
+                        }}
+                        onMouseLeave={/**
+                         * Purpose: Helper callback used inside a larger operation
+                         * Plain English: What this function is used for.
+                         */
+                        e => {
+                          e.currentTarget.style.transform = "translateY(0)";
+                          e.currentTarget.style.boxShadow = "none";
+                        }}
+                      >
+                        <FaTrash /> Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

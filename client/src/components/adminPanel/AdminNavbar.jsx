@@ -1,34 +1,53 @@
+/**
+ * What it is: Admin panel navigation bar.
+ * Non-tech note: This is the menu inside the admin area.
+ */
+
 import { useLocation, useNavigate } from 'react-router-dom'
 import { clearAdminToken } from '../../utils/adminAuth'
 
+/**
+ * Purpose: Do Admin Navbar
+ * Plain English: What this function is used for.
+ */
 const AdminNavbar = () => {
-	const location = useLocation()
-	const navigate = useNavigate()
+    const location = useLocation()
+    const navigate = useNavigate()
 
-	const handleLogout = () => {
-		clearAdminToken()
-		navigate('/', { replace: true })
-	}
+    /**
+     * Purpose: Handle Logout
+     * Plain English: What this function is used for.
+     */
+    const handleLogout = () => {
+        clearAdminToken()
+        navigate('/', { replace: true })
+    };
 
-	const isDashboard = location.pathname === '/admin/dashboard'
-	const isOfflineMembership = location.pathname === '/admin/offline-membership'
+    const isDashboard = location.pathname === '/admin/dashboard'
+    const isOfflineMembership = location.pathname === '/admin/offline-membership'
 
-	const linkStyle = (active) => ({
-		display: 'flex',
-		alignItems: 'center',
-		gap: '8px',
-		padding: '10px 18px',
-		background: active ? 'rgba(0, 255, 212, 0.15)' : 'transparent',
-		color: active ? '#00FFD4' : 'rgba(255, 255, 255, 0.7)',
-		border: active ? '1px solid #00FFD4' : '1px solid transparent',
-		borderRadius: '8px',
-		textDecoration: 'none',
-		fontWeight: 500,
-		fontSize: '0.9rem',
-		transition: 'all 0.3s ease',
-	})
+    /**
+     * Purpose: Do Link Style
+     * Plain English: What this function is used for.
+     */
+    const linkStyle = active => {
+        return ({
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 18px',
+            background: active ? 'rgba(0, 255, 212, 0.15)' : 'transparent',
+            color: active ? '#00FFD4' : 'rgba(255, 255, 255, 0.7)',
+            border: active ? '1px solid #00FFD4' : '1px solid transparent',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            fontWeight: 500,
+            fontSize: '0.9rem',
+            transition: 'all 0.3s ease'
+        });
+    };
 
-	return (
+    return (
 		<nav
 			className="admin-navbar"
 			style={{
@@ -116,6 +135,6 @@ const AdminNavbar = () => {
 			</div>
 		</nav>
 	)
-}
+};
 
 export default AdminNavbar

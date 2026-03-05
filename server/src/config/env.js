@@ -1,3 +1,8 @@
+/**
+ * What it is: Environment loader (reads settings from `server/.env`).
+ * Non-tech note: This is where passwords/keys/URLs are loaded (not hard-coded).
+ */
+
 import path from 'path'
 import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'

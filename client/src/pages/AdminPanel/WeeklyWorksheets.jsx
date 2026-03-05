@@ -1,12 +1,25 @@
+/**
+ * What it is: Admin panel page (Weekly worksheets management).
+ * Non-tech note: Admins can add and manage weekly worksheet links/files.
+ */
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from 'sweetalert2';
 import { adminFetch, isAdminAuthenticated } from "../../utils/adminAuth";
 
+/**
+ * Purpose: Do Weekly Worksheets
+ * Plain English: What this function is used for.
+ */
 const WeeklyWorksheets = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
     if (!isAdminAuthenticated()) {
       navigate("/admin");
     }
@@ -17,7 +30,7 @@ const WeeklyWorksheets = () => {
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [filterType, setFilterType] = useState("all");
-  
+
   const [formData, setFormData] = useState({
     title: "",
     caption: "",
@@ -28,10 +41,18 @@ const WeeklyWorksheets = () => {
   });
 
   // Fetch worksheets from backend
-  useEffect(() => {
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
     fetchWorksheets();
   }, []);
 
+  /**
+   * Purpose: Fetch Worksheets from server
+   * Plain English: What this function is used for.
+   */
   const fetchWorksheets = async () => {
     try {
       setLoading(true);
@@ -51,11 +72,19 @@ const WeeklyWorksheets = () => {
     }
   };
 
-  const handleChange = (e) => {
+  /**
+   * Purpose: Handle Change
+   * Plain English: What this function is used for.
+   */
+  const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  /**
+   * Purpose: Handle Submit
+   * Plain English: What this function is used for.
+   */
+  const handleSubmit = async e => {
     e.preventDefault();
 
     if (!formData.title || !formData.link) {
@@ -135,7 +164,11 @@ const WeeklyWorksheets = () => {
     }
   };
 
-  const deleteWorksheet = async (id) => {
+  /**
+   * Purpose: Do Delete Worksheet
+   * Plain English: What this function is used for.
+   */
+  const deleteWorksheet = async id => {
     const result = await Swal.fire({
       title: 'Delete Link?',
       text: "This action cannot be undone!",
@@ -205,6 +238,10 @@ const WeeklyWorksheets = () => {
     }
   };
 
+  /**
+   * Purpose: Handle Link Click
+   * Plain English: What this function is used for.
+   */
   const handleLinkClick = async (id, link) => {
     // Track click
     try {
@@ -214,11 +251,15 @@ const WeeklyWorksheets = () => {
     } catch (err) {
       console.error("Error tracking click:", err);
     }
-    
+
     // Open link
     window.open(link, '_blank');
   };
 
+  /**
+   * Purpose: Do Reset Form
+   * Plain English: What this function is used for.
+   */
   const resetForm = () => {
     setFormData({
       title: "",
@@ -232,15 +273,31 @@ const WeeklyWorksheets = () => {
   };
 
   // Filter worksheets
-  const filteredWorksheets = worksheets.filter((ws) => {
+  const filteredWorksheets = worksheets.filter(/**
+   * Purpose: Array filter callback (keeps items that match a condition)
+   * Plain English: What this function is used for.
+   */
+  ws => {
     if (filterType === "all") return true;
     return ws.linkType === filterType;
   });
 
   // Statistics
   const totalWorksheets = worksheets.length;
-  const googleForms = worksheets.filter((ws) => ws.linkType === "google-form").length;
-  const googleDrive = worksheets.filter((ws) => ws.linkType === "google-drive").length;
+  const googleForms = worksheets.filter(/**
+   * Purpose: Array filter callback (keeps items that match a condition)
+   * Plain English: What this function is used for.
+   */
+  ws => {
+    return ws.linkType === "google-form";
+  }).length;
+  const googleDrive = worksheets.filter(/**
+   * Purpose: Array filter callback (keeps items that match a condition)
+   * Plain English: What this function is used for.
+   */
+  ws => {
+    return ws.linkType === "google-drive";
+  }).length;
 
   return (
     <div
@@ -251,7 +308,6 @@ const WeeklyWorksheets = () => {
       }}
     >
       <AdminNavbar />
-
       <div style={{ padding: "50px 20px 40px", maxWidth: "1400px", margin: "0 auto" }}>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px", flexWrap: "wrap", gap: "15px" }}>
@@ -264,7 +320,13 @@ const WeeklyWorksheets = () => {
             </p>
           </div>
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            () => {
+              return setShowForm(!showForm);
+            }}
             style={{
               background: "linear-gradient(135deg, #4ECDC4, #54A0FF)",
               border: "none",
@@ -279,11 +341,19 @@ const WeeklyWorksheets = () => {
               gap: "8px",
               transition: "all 0.3s ease",
             }}
-            onMouseEnter={(e) => {
+            onMouseEnter={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
               e.currentTarget.style.transform = "translateY(-2px)";
               e.currentTarget.style.boxShadow = "0 6px 20px rgba(78, 205, 196, 0.4)";
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
               e.currentTarget.style.transform = "translateY(0)";
               e.currentTarget.style.boxShadow = "none";
             }}
@@ -487,7 +557,13 @@ const WeeklyWorksheets = () => {
           <label style={{ color: "#fff", fontSize: "0.95rem" }}>Filter by Type:</label>
           <select
             value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
+            onChange={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            e => {
+              return setFilterType(e.target.value);
+            }}
             style={{
               background: "rgba(255, 255, 255, 0.1)",
               border: "2px solid rgba(255, 255, 255, 0.2)",
@@ -528,115 +604,156 @@ const WeeklyWorksheets = () => {
 
         {/* Links List */}
         <div style={{ display: "grid", gap: "20px" }}>
-          {filteredWorksheets.map((worksheet) => (
-            <div
-              key={worksheet._id}
-              style={{
-                background: "rgba(255, 255, 255, 0.05)",
-                border: "2px solid rgba(255, 255, 255, 0.1)",
-                borderRadius: "15px",
-                padding: "25px",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow = "0 8px 30px rgba(0, 0, 0, 0.3)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "15px" }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-                    {worksheet.linkType === 'google-form' && <FaGoogle style={{ color: "#4285F4", fontSize: "1.5rem" }} />}
-                    {worksheet.linkType === 'google-drive' && <FaGoogleDrive style={{ color: "#FFD700", fontSize: "1.5rem" }} />}
-                    {worksheet.linkType === 'other' && <FaLink style={{ color: "#4ECDC4", fontSize: "1.5rem" }} />}
-                    <h3 style={{ color: "#4ECDC4", fontSize: "1.3rem", fontWeight: "700", margin: 0 }}>
-                      {worksheet.title}
-                    </h3>
+          {filteredWorksheets.map(/**
+           * Purpose: Array mapping callback (converts each item to a new value)
+           * Plain English: What this function is used for.
+           */
+          worksheet => {
+            return (
+              <div
+                key={worksheet._id}
+                style={{
+                  background: "rgba(255, 255, 255, 0.05)",
+                  border: "2px solid rgba(255, 255, 255, 0.1)",
+                  borderRadius: "15px",
+                  padding: "25px",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 8px 30px rgba(0, 0, 0, 0.3)";
+                }}
+                onMouseLeave={/**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                e => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "15px" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                      {worksheet.linkType === 'google-form' && <FaGoogle style={{ color: "#4285F4", fontSize: "1.5rem" }} />}
+                      {worksheet.linkType === 'google-drive' && <FaGoogleDrive style={{ color: "#FFD700", fontSize: "1.5rem" }} />}
+                      {worksheet.linkType === 'other' && <FaLink style={{ color: "#4ECDC4", fontSize: "1.5rem" }} />}
+                      <h3 style={{ color: "#4ECDC4", fontSize: "1.3rem", fontWeight: "700", margin: 0 }}>
+                        {worksheet.title}
+                      </h3>
+                    </div>
+                    
+                    {worksheet.caption && (
+                      <p style={{ color: "#FFD93D", fontSize: "1rem", fontWeight: "600", marginBottom: "10px" }}>
+                        {worksheet.caption}
+                      </p>
+                    )}
+                    
+                    {worksheet.message && (
+                      <p style={{ color: "#e0e0e0", fontSize: "0.95rem", lineHeight: "1.6", marginBottom: "15px" }}>
+                        {worksheet.message}
+                      </p>
+                    )}
+                    
+                    <div style={{ display: "flex", gap: "20px", fontSize: "0.85rem", color: "#b0b0b0", marginBottom: "15px" }}>
+                      <span>👤 Shared by: <strong style={{ color: "#fff" }}>{worksheet.createdBy}</strong></span>
+                      <span>📅 {new Date(worksheet.createdAt).toLocaleDateString()}</span>
+                      <span><FaEye style={{ marginRight: "5px" }} />{worksheet.clicks} views</span>
+                    </div>
                   </div>
                   
-                  {worksheet.caption && (
-                    <p style={{ color: "#FFD93D", fontSize: "1rem", fontWeight: "600", marginBottom: "10px" }}>
-                      {worksheet.caption}
-                    </p>
-                  )}
-                  
-                  {worksheet.message && (
-                    <p style={{ color: "#e0e0e0", fontSize: "0.95rem", lineHeight: "1.6", marginBottom: "15px" }}>
-                      {worksheet.message}
-                    </p>
-                  )}
-                  
-                  <div style={{ display: "flex", gap: "20px", fontSize: "0.85rem", color: "#b0b0b0", marginBottom: "15px" }}>
-                    <span>👤 Shared by: <strong style={{ color: "#fff" }}>{worksheet.createdBy}</strong></span>
-                    <span>📅 {new Date(worksheet.createdAt).toLocaleDateString()}</span>
-                    <span><FaEye style={{ marginRight: "5px" }} />{worksheet.clicks} views</span>
-                  </div>
+                  <button
+                    onClick={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    () => {
+                      return deleteWorksheet(worksheet._id);
+                    }}
+                    style={{
+                      background: "linear-gradient(135deg, #FF6B6B, #FF9FF3)",
+                      border: "none",
+                      color: "#fff",
+                      padding: "8px 16px",
+                      borderRadius: "8px",
+                      fontSize: "0.85rem",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      transition: "all 0.3s ease",
+                    }}
+                    onMouseEnter={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                      e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 107, 107, 0.4)";
+                    }}
+                    onMouseLeave={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
+                  >
+                    <FaTrash /> Delete
+                  </button>
                 </div>
-                
                 <button
-                  onClick={() => deleteWorksheet(worksheet._id)}
+                  onClick={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  () => {
+                    return handleLinkClick(worksheet._id, worksheet.link);
+                  }}
                   style={{
-                    background: "linear-gradient(135deg, #FF6B6B, #FF9FF3)",
+                    background: "linear-gradient(135deg, #667eea, #764ba2)",
                     border: "none",
                     color: "#fff",
-                    padding: "8px 16px",
-                    borderRadius: "8px",
-                    fontSize: "0.85rem",
+                    padding: "12px 24px",
+                    borderRadius: "10px",
+                    fontSize: "1rem",
                     fontWeight: "600",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
-                    gap: "6px",
+                    gap: "8px",
+                    width: "100%",
+                    justifyContent: "center",
                     transition: "all 0.3s ease",
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 107, 107, 0.4)";
+                  onMouseEnter={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    e.currentTarget.style.transform = "scale(1.02)";
+                    e.currentTarget.style.boxShadow = "0 6px 20px rgba(102, 126, 234, 0.4)";
                   }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
+                  onMouseLeave={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    e.currentTarget.style.transform = "scale(1)";
                     e.currentTarget.style.boxShadow = "none";
                   }}
                 >
-                  <FaTrash /> Delete
+                  <FaExternalLinkAlt /> Open Link
                 </button>
               </div>
-              
-              <button
-                onClick={() => handleLinkClick(worksheet._id, worksheet.link)}
-                style={{
-                  background: "linear-gradient(135deg, #667eea, #764ba2)",
-                  border: "none",
-                  color: "#fff",
-                  padding: "12px 24px",
-                  borderRadius: "10px",
-                  fontSize: "1rem",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  width: "100%",
-                  justifyContent: "center",
-                  transition: "all 0.3s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "scale(1.02)";
-                  e.currentTarget.style.boxShadow = "0 6px 20px rgba(102, 126, 234, 0.4)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "scale(1)";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              >
-                <FaExternalLinkAlt /> Open Link
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

@@ -1,9 +1,18 @@
+/**
+ * What it is: Gallery API controller.
+ * Non-tech note: Manages gallery images shown on the website.
+ */
+
 import Gallery from '../models/Gallery.js';
 
 // @desc    Create new gallery image
 // @route   POST /api/gallery
 // @access  Admin
-export const createGalleryImage = async (req, res) => {
+export /**
+ * Purpose: Create Gallery Image
+ * Plain English: What this function is used for.
+ */
+const createGalleryImage = async (req, res) => {
   try {
     const { title, description, imageUrl, cloudinaryPublicId, category, displayOrder } = req.body;
 
@@ -42,7 +51,11 @@ export const createGalleryImage = async (req, res) => {
 // @desc    Get all gallery images
 // @route   GET /api/gallery
 // @access  Public
-export const getAllGalleryImages = async (req, res) => {
+export /**
+ * Purpose: Get All Gallery Images
+ * Plain English: What this function is used for.
+ */
+const getAllGalleryImages = async (req, res) => {
   try {
     const { category, isActive } = req.query;
     
@@ -71,7 +84,11 @@ export const getAllGalleryImages = async (req, res) => {
 // @desc    Get single gallery image
 // @route   GET /api/gallery/:id
 // @access  Public
-export const getGalleryImageById = async (req, res) => {
+export /**
+ * Purpose: Get Gallery Image By Id
+ * Plain English: What this function is used for.
+ */
+const getGalleryImageById = async (req, res) => {
   try {
     const image = await Gallery.findById(req.params.id);
 
@@ -99,7 +116,11 @@ export const getGalleryImageById = async (req, res) => {
 // @desc    Update gallery image
 // @route   PATCH /api/gallery/:id
 // @access  Admin
-export const updateGalleryImage = async (req, res) => {
+export /**
+ * Purpose: Do Update Gallery Image
+ * Plain English: What this function is used for.
+ */
+const updateGalleryImage = async (req, res) => {
   try {
     const { title, description, category, displayOrder, isActive } = req.body;
 
@@ -139,7 +160,11 @@ export const updateGalleryImage = async (req, res) => {
 // @desc    Delete gallery image
 // @route   DELETE /api/gallery/:id
 // @access  Admin
-export const deleteGalleryImage = async (req, res) => {
+export /**
+ * Purpose: Do Delete Gallery Image
+ * Plain English: What this function is used for.
+ */
+const deleteGalleryImage = async (req, res) => {
   try {
     const image = await Gallery.findById(req.params.id);
 
@@ -170,7 +195,11 @@ export const deleteGalleryImage = async (req, res) => {
 // @desc    Get gallery statistics
 // @route   GET /api/gallery/stats
 // @access  Admin
-export const getGalleryStats = async (req, res) => {
+export /**
+ * Purpose: Get Gallery Stats
+ * Plain English: What this function is used for.
+ */
+const getGalleryStats = async (req, res) => {
   try {
     const totalImages = await Gallery.countDocuments();
     const activeImages = await Gallery.countDocuments({ isActive: true });
@@ -191,7 +220,11 @@ export const getGalleryStats = async (req, res) => {
         totalImages,
         activeImages,
         inactiveImages,
-        categoryStats: categoryStats.reduce((acc, stat) => {
+        categoryStats: categoryStats.reduce(/**
+         * Purpose: Array reduce callback (combines items into one result)
+         * Plain English: What this function is used for.
+         */
+        (acc, stat) => {
           acc[stat._id] = stat.count;
           return acc;
         }, {})

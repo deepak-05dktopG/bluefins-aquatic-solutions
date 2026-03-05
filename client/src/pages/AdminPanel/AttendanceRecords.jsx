@@ -1,62 +1,113 @@
+/**
+ * What it is: Admin panel page (Attendance records screen).
+ * Non-tech note: Admins use this to view past attendance entries.
+ */
+
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
 import { formatDateTime } from '../../utils/dateTime'
 
-const safeReadJson = async (res) => {
-	const text = await res.text()
-	if (!text) return { ok: false, message: 'Empty response from server' }
-	try {
+/**
+ * Purpose: Do Safe Read Json
+ * Plain English: What this function is used for.
+ */
+const safeReadJson = async res => {
+    const text = await res.text()
+    if (!text) return { ok: false, message: 'Empty response from server' }
+    try {
 		return JSON.parse(text)
 	} catch {
 		return { ok: false, message: text }
 	}
-}
+};
 
-const todayISO = () => new Date().toISOString().slice(0, 10)
+/**
+ * Purpose: Do Today ISO
+ * Plain English: What this function is used for.
+ */
+const todayISO = () => {
+    return new Date().toISOString().slice(0, 10);
+};
 
-const formatTime = (value) => formatDateTime(value)
+/**
+ * Purpose: Format Time
+ * Plain English: What this function is used for.
+ */
+const formatTime = value => {
+    return formatDateTime(value);
+};
 
-const toQueryString = (params) => {
-	const sp = new URLSearchParams()
-	Object.entries(params || {}).forEach(([k, v]) => {
-		if (v == null) return
-		const s = String(v)
-		if (!s.trim()) return
-		sp.set(k, s)
-	})
-	return sp.toString()
-}
+/**
+ * Purpose: Do To Query String
+ * Plain English: What this function is used for.
+ */
+const toQueryString = params => {
+    const sp = new URLSearchParams()
+    Object.entries(params || {}).forEach(/**
+     * Purpose: Array loop callback (runs once for each item)
+     * Plain English: What this function is used for.
+     */
+    ([k, v]) => {
+        if (v == null) return
+        const s = String(v)
+        if (!s.trim()) return
+        sp.set(k, s)
+    })
+    return sp.toString()
+};
 
-export default function AttendanceRecords() {
-	const navigate = useNavigate()
-	const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
+export default /**
+ * Purpose: Do Attendance Records
+ * Plain English: What this function is used for.
+ */
+function AttendanceRecords() {
+    const navigate = useNavigate()
+    const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
 
-	const [q, setQ] = React.useState('')
-	const [result, setResult] = React.useState('')
-	const [method, setMethod] = React.useState('')
-	const [planId, setPlanId] = React.useState('')
-	const [dateFrom, setDateFrom] = React.useState(todayISO())
-	const [dateTo, setDateTo] = React.useState(todayISO())
-	const [page, setPage] = React.useState(1)
-	const [limit, setLimit] = React.useState(25)
-	const [plans, setPlans] = React.useState([])
+    const [q, setQ] = React.useState('')
+    const [result, setResult] = React.useState('')
+    const [method, setMethod] = React.useState('')
+    const [planId, setPlanId] = React.useState('')
+    const [dateFrom, setDateFrom] = React.useState(todayISO())
+    const [dateTo, setDateTo] = React.useState(todayISO())
+    const [page, setPage] = React.useState(1)
+    const [limit, setLimit] = React.useState(25)
+    const [plans, setPlans] = React.useState([])
 
-	const [items, setItems] = React.useState([])
-	const [total, setTotal] = React.useState(0)
-	const [loading, setLoading] = React.useState(false)
-	const [selected, setSelected] = React.useState(() => new Set())
-	const [purgeBefore, setPurgeBefore] = React.useState('')
+    const [items, setItems] = React.useState([])
+    const [total, setTotal] = React.useState(0)
+    const [loading, setLoading] = React.useState(false)
+    const [selected, setSelected] = React.useState(/**
+     * Purpose: Helper callback used inside a larger operation
+     * Plain English: What this function is used for.
+     */
+    () => {
+        return new Set();
+    })
+    const [purgeBefore, setPurgeBefore] = React.useState('')
 
-	React.useEffect(() => {
-		if (!isAdminAuthenticated()) navigate('/admin')
-	}, [navigate])
+    React.useEffect(/**
+     * Purpose: React effect callback (runs after render based on dependencies)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        if (!isAdminAuthenticated()) navigate('/admin')
+    }, [navigate])
 
-	React.useEffect(() => {
-		let active = true
-		const fetchPlans = async () => {
-			try {
+    React.useEffect(/**
+     * Purpose: React effect callback (runs after render based on dependencies)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        let active = true
+        /**
+         * Purpose: Fetch Plans from server
+         * Plain English: What this function is used for.
+         */
+        const fetchPlans = async () => {
+            try {
 				const res = await fetch(`${apiBase}/membership/plans?isActive=true`)
 				const parsed = await safeReadJson(res)
 				if (!res.ok || parsed?.success === false) return
@@ -65,16 +116,26 @@ export default function AttendanceRecords() {
 			} catch {
 				// ignore
 			}
-		}
-		fetchPlans()
-		return () => {
-			active = false
-		}
-	}, [apiBase])
+        };
+        fetchPlans()
+        return (
+            /**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            () => {
+                active = false
+            }
+        );
+    }, [apiBase])
 
-	const load = React.useCallback(async () => {
-		setLoading(true)
-		try {
+    const load = React.useCallback(/**
+     * Purpose: React callback memoizer (keeps function stable between renders)
+     * Plain English: What this function is used for.
+     */
+    async () => {
+        setLoading(true)
+        try {
 			const qs = toQueryString({ q, result, method, planId, dateFrom, dateTo, page, limit })
 			const res = await adminFetch(`${apiBase}/attendance?${qs}`)
 			const parsed = await safeReadJson(res)
@@ -89,42 +150,82 @@ export default function AttendanceRecords() {
 		} finally {
 			setLoading(false)
 		}
-	}, [apiBase, dateFrom, dateTo, limit, method, page, planId, q, result])
+    }, [apiBase, dateFrom, dateTo, limit, method, page, planId, q, result])
 
-	React.useEffect(() => {
-		load()
-	}, [load])
+    React.useEffect(/**
+     * Purpose: React effect callback (runs after render based on dependencies)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        load()
+    }, [load])
 
-	const pageCount = Math.max(1, Math.ceil(total / limit))
+    const pageCount = Math.max(1, Math.ceil(total / limit))
 
-	React.useEffect(() => {
-		if (page > pageCount) setPage(pageCount)
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [pageCount])
+    React.useEffect(/**
+     * Purpose: React effect callback (runs after render based on dependencies)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        if (page > pageCount) setPage(pageCount)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageCount])
 
-	const toggleSelected = (id) => {
-		setSelected((prev) => {
-			const next = new Set(prev)
-			if (next.has(id)) next.delete(id)
+    /**
+     * Purpose: Do Toggle Selected
+     * Plain English: What this function is used for.
+     */
+    const toggleSelected = id => {
+        setSelected(/**
+         * Purpose: Helper callback used inside a larger operation
+         * Plain English: What this function is used for.
+         */
+        prev => {
+            const next = new Set(prev)
+            if (next.has(id)) next.delete(id)
 			else next.add(id)
-			return next
-		})
-	}
+            return next
+        })
+    };
 
-	const selectAllOnPage = () => {
-		setSelected((prev) => {
-			const next = new Set(prev)
-			for (const row of items) next.add(row._id)
-			return next
-		})
-	}
+    /**
+     * Purpose: Do Select All On Page
+     * Plain English: What this function is used for.
+     */
+    const selectAllOnPage = () => {
+        setSelected(/**
+         * Purpose: Helper callback used inside a larger operation
+         * Plain English: What this function is used for.
+         */
+        prev => {
+            const next = new Set(prev)
+            for (const row of items) next.add(row._id)
+            return next
+        })
+    };
 
-	const clearSelection = () => setSelected(new Set())
+    /**
+     * Purpose: Do Clear Selection
+     * Plain English: What this function is used for.
+     */
+    const clearSelection = () => {
+        return setSelected(new Set());
+    };
 
-	const isAllOnPageSelected = items.length > 0 && items.every((r) => selected.has(r._id))
+    const isAllOnPageSelected = items.length > 0 && items.every(/**
+     * Purpose: Array check callback (true if all items match)
+     * Plain English: What this function is used for.
+     */
+    r => {
+        return selected.has(r._id);
+    })
 
-	const downloadCsv = async () => {
-		try {
+    /**
+     * Purpose: Do Download Csv
+     * Plain English: What this function is used for.
+     */
+    const downloadCsv = async () => {
+        try {
 			const qs = toQueryString({ q, result, method, planId, dateFrom, dateTo, max: 50000 })
 			const res = await adminFetch(`${apiBase}/attendance/export?${qs}`)
 			if (!res.ok) {
@@ -143,10 +244,14 @@ export default function AttendanceRecords() {
 		} catch (e) {
 			await Swal.fire({ title: 'Download Failed', text: e?.message || 'Unable to export', icon: 'error', confirmButtonColor: '#FF6B9D' })
 		}
-	}
+    };
 
-	const deleteOne = async (id) => {
-		const confirm = await Swal.fire({
+    /**
+     * Purpose: Do Delete One
+     * Plain English: What this function is used for.
+     */
+    const deleteOne = async id => {
+        const confirm = await Swal.fire({
 			title: 'Delete record?',
 			text: 'This attendance record will be permanently removed.',
 			icon: 'warning',
@@ -155,8 +260,8 @@ export default function AttendanceRecords() {
 			cancelButtonText: 'Cancel',
 			confirmButtonColor: '#FF6B9D',
 		})
-		if (!confirm.isConfirmed) return
-		try {
+        if (!confirm.isConfirmed) return
+        try {
 			const res = await adminFetch(`${apiBase}/attendance/${id}`, { method: 'DELETE' })
 			const parsed = await safeReadJson(res)
 			if (!res.ok || parsed?.success === false) throw new Error(parsed?.message || `Delete failed (${res.status})`)
@@ -164,12 +269,16 @@ export default function AttendanceRecords() {
 		} catch (e) {
 			await Swal.fire({ title: 'Delete Failed', text: e?.message || 'Unable to delete', icon: 'error', confirmButtonColor: '#FF6B9D' })
 		}
-	}
+    };
 
-	const deleteSelected = async () => {
-		const ids = Array.from(selected)
-		if (ids.length === 0) return
-		const confirm = await Swal.fire({
+    /**
+     * Purpose: Do Delete Selected
+     * Plain English: What this function is used for.
+     */
+    const deleteSelected = async () => {
+        const ids = Array.from(selected)
+        if (ids.length === 0) return
+        const confirm = await Swal.fire({
 			title: `Delete ${ids.length} selected?`,
 			text: 'Selected attendance records will be permanently removed.',
 			icon: 'warning',
@@ -178,8 +287,8 @@ export default function AttendanceRecords() {
 			cancelButtonText: 'Cancel',
 			confirmButtonColor: '#FF6B9D',
 		})
-		if (!confirm.isConfirmed) return
-		try {
+        if (!confirm.isConfirmed) return
+        try {
 			const res = await adminFetch(`${apiBase}/attendance/bulk-delete`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -192,14 +301,18 @@ export default function AttendanceRecords() {
 		} catch (e) {
 			await Swal.fire({ title: 'Delete Failed', text: e?.message || 'Unable to delete', icon: 'error', confirmButtonColor: '#FF6B9D' })
 		}
-	}
+    };
 
-	const purgeOld = async () => {
-		if (!purgeBefore) {
+    /**
+     * Purpose: Do Purge Old
+     * Plain English: What this function is used for.
+     */
+    const purgeOld = async () => {
+        if (!purgeBefore) {
 			await Swal.fire({ title: 'Select a date', text: 'Choose a date to purge records before it.', icon: 'info', confirmButtonColor: '#0099FF' })
 			return
 		}
-		const confirm = await Swal.fire({
+        const confirm = await Swal.fire({
 			title: 'Purge old attendance?',
 			text: `This will permanently delete all attendance records before ${purgeBefore}.`,
 			icon: 'warning',
@@ -208,8 +321,8 @@ export default function AttendanceRecords() {
 			cancelButtonText: 'Cancel',
 			confirmButtonColor: '#FF6B9D',
 		})
-		if (!confirm.isConfirmed) return
-		try {
+        if (!confirm.isConfirmed) return
+        try {
 			const res = await adminFetch(`${apiBase}/attendance/purge?before=${encodeURIComponent(purgeBefore)}`, { method: 'DELETE' })
 			const parsed = await safeReadJson(res)
 			if (!res.ok || parsed?.success === false) throw new Error(parsed?.message || `Purge failed (${res.status})`)
@@ -219,17 +332,17 @@ export default function AttendanceRecords() {
 		} catch (e) {
 			await Swal.fire({ title: 'Purge Failed', text: e?.message || 'Unable to purge', icon: 'error', confirmButtonColor: '#FF6B9D' })
 		}
-	}
+    };
 
-	const cardStyle = {
+    const cardStyle = {
 		background: 'rgba(15, 25, 50, 0.75)',
 		border: '1px solid rgba(0, 255, 212, 0.25)',
 		borderRadius: '16px',
 		padding: '22px',
 	}
 
-	const labelStyle = { color: 'rgba(255,255,255,0.65)', fontWeight: 600, fontSize: '0.8rem', marginBottom: '6px' }
-	const buttonBase = {
+    const labelStyle = { color: 'rgba(255,255,255,0.65)', fontWeight: 600, fontSize: '0.8rem', marginBottom: '6px' }
+    const buttonBase = {
 		display: 'inline-flex',
 		alignItems: 'center',
 		gap: '6px',
@@ -239,16 +352,16 @@ export default function AttendanceRecords() {
 		fontSize: '0.85rem',
 	}
 
-	return (
-		<div
+    return (
+        <div
 			style={{
 				minHeight: '100vh',
 				background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1629 100%)',
 				fontFamily: 'Poppins, system-ui',
 			}}
 		>
-			<AdminNavbar />
-			<div className="admin-page-container" style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
+            <AdminNavbar />
+            <div className="admin-page-container" style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
 				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '20px', marginBottom: '20px' }}>
 					<div>
 						<h1 style={{ color: '#00FFD4', fontSize: '2.0rem', fontWeight: 700, margin: 0 }}>Attendance Records</h1>
@@ -279,10 +392,14 @@ export default function AttendanceRecords() {
 							<div style={labelStyle}>Search</div>
 							<input
 								value={q}
-								onChange={(e) => {
-									setQ(e.target.value)
-									setPage(1)
-								}}
+								onChange={/**
+                                 * Purpose: Helper callback used inside a larger operation
+                                 * Plain English: What this function is used for.
+                                 */
+                                e => {
+                                    setQ(e.target.value)
+                                    setPage(1)
+                                }}
 								placeholder="Name / Phone / Member ID / Payload"
 								style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(10, 14, 39, 0.65)', color: 'rgba(255,255,255,0.92)', outline: 'none' }}
 							/>
@@ -292,18 +409,28 @@ export default function AttendanceRecords() {
 							<div style={labelStyle}>Membership Plan</div>
 							<select
 								value={planId}
-								onChange={(e) => {
-									setPlanId(e.target.value)
-									setPage(1)
-								}}
+								onChange={/**
+                                 * Purpose: Helper callback used inside a larger operation
+                                 * Plain English: What this function is used for.
+                                 */
+                                e => {
+                                    setPlanId(e.target.value)
+                                    setPage(1)
+                                }}
 								style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(10, 14, 39, 0.65)', color: 'rgba(255,255,255,0.92)' }}
 							>
 								<option value="">All Plans</option>
-								{plans.map((p) => (
-									<option key={p._id} value={p._id}>
-										{p.planName}
-									</option>
-								))}
+								{plans.map(/**
+                                 * Purpose: Array mapping callback (converts each item to a new value)
+                                 * Plain English: What this function is used for.
+                                 */
+                                p => {
+                                    return (
+                                        <option key={p._id} value={p._id}>
+                                            {p.planName}
+                                        </option>
+                                    );
+                                })}
 							</select>
 						</div>
 
@@ -312,10 +439,14 @@ export default function AttendanceRecords() {
 							<input
 								type="date"
 								value={dateFrom}
-								onChange={(e) => {
-									setDateFrom(e.target.value)
-									setPage(1)
-								}}
+								onChange={/**
+                                 * Purpose: Helper callback used inside a larger operation
+                                 * Plain English: What this function is used for.
+                                 */
+                                e => {
+                                    setDateFrom(e.target.value)
+                                    setPage(1)
+                                }}
 								style={{ width: '100%', padding: '11px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(10, 14, 39, 0.65)', color: 'rgba(255,255,255,0.92)' }}
 							/>
 						</div>
@@ -325,10 +456,14 @@ export default function AttendanceRecords() {
 							<input
 								type="date"
 								value={dateTo}
-								onChange={(e) => {
-									setDateTo(e.target.value)
-									setPage(1)
-								}}
+								onChange={/**
+                                 * Purpose: Helper callback used inside a larger operation
+                                 * Plain English: What this function is used for.
+                                 */
+                                e => {
+                                    setDateTo(e.target.value)
+                                    setPage(1)
+                                }}
 								style={{ width: '100%', padding: '11px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(10, 14, 39, 0.65)', color: 'rgba(255,255,255,0.92)' }}
 							/>
 						</div>
@@ -337,10 +472,14 @@ export default function AttendanceRecords() {
 							<div style={labelStyle}>Result</div>
 							<select
 								value={result}
-								onChange={(e) => {
-									setResult(e.target.value)
-									setPage(1)
-								}}
+								onChange={/**
+                                 * Purpose: Helper callback used inside a larger operation
+                                 * Plain English: What this function is used for.
+                                 */
+                                e => {
+                                    setResult(e.target.value)
+                                    setPage(1)
+                                }}
 								style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(10, 14, 39, 0.65)', color: 'rgba(255,255,255,0.92)' }}
 							>
 								<option value="">All</option>
@@ -353,10 +492,14 @@ export default function AttendanceRecords() {
 							<div style={labelStyle}>Method</div>
 							<select
 								value={method}
-								onChange={(e) => {
-									setMethod(e.target.value)
-									setPage(1)
-								}}
+								onChange={/**
+                                 * Purpose: Helper callback used inside a larger operation
+                                 * Plain English: What this function is used for.
+                                 */
+                                e => {
+                                    setMethod(e.target.value)
+                                    setPage(1)
+                                }}
 								style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(10, 14, 39, 0.65)', color: 'rgba(255,255,255,0.92)' }}
 							>
 								<option value="">All</option>
@@ -404,10 +547,14 @@ export default function AttendanceRecords() {
 					<div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
 						<div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
 							<button
-								onClick={() => {
-									if (isAllOnPageSelected) clearSelection()
+								onClick={/**
+                                 * Purpose: Helper callback used inside a larger operation
+                                 * Plain English: What this function is used for.
+                                 */
+                                () => {
+                                    if (isAllOnPageSelected) clearSelection()
 									else selectAllOnPage()
-								}}
+                                }}
 								disabled={items.length === 0}
 								style={{ ...buttonBase, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.14)', cursor: items.length === 0 ? 'not-allowed' : 'pointer' }}
 							>
@@ -415,10 +562,14 @@ export default function AttendanceRecords() {
 							</button>
 							<select
 								value={limit}
-								onChange={(e) => {
-									setLimit(Number(e.target.value))
-									setPage(1)
-								}}
+								onChange={/**
+                                 * Purpose: Helper callback used inside a larger operation
+                                 * Plain English: What this function is used for.
+                                 */
+                                e => {
+                                    setLimit(Number(e.target.value))
+                                    setPage(1)
+                                }}
 								style={{ padding: '8px 11px', borderRadius: '10px', background: 'rgba(10, 14, 39, 0.65)', color: 'rgba(255,255,255,0.92)', border: '1px solid rgba(255,255,255,0.14)', fontWeight: 600, fontSize: '0.85rem' }}
 							>
 								<option value={10}>10 / page</option>
@@ -430,14 +581,38 @@ export default function AttendanceRecords() {
 						<div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
 							<div style={{ color: 'rgba(255,255,255,0.65)', fontWeight: 600 }}>Page {page} / {pageCount}</div>
 							<button
-								onClick={() => setPage((p) => Math.max(1, p - 1))}
+								onClick={/**
+                                 * Purpose: Helper callback used inside a larger operation
+                                 * Plain English: What this function is used for.
+                                 */
+                                () => {
+                                    return setPage(/**
+                                     * Purpose: Helper callback used inside a larger operation
+                                     * Plain English: What this function is used for.
+                                     */
+                                    p => {
+                                        return Math.max(1, p - 1);
+                                    });
+                                }}
 								disabled={page <= 1}
 								style={{ ...buttonBase, padding: '8px 10px', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.14)', cursor: page <= 1 ? 'not-allowed' : 'pointer' }}
 							>
 								Prev
 							</button>
 							<button
-								onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+								onClick={/**
+                                 * Purpose: Helper callback used inside a larger operation
+                                 * Plain English: What this function is used for.
+                                 */
+                                () => {
+                                    return setPage(/**
+                                     * Purpose: Helper callback used inside a larger operation
+                                     * Plain English: What this function is used for.
+                                     */
+                                    p => {
+                                        return Math.min(pageCount, p + 1);
+                                    });
+                                }}
 								disabled={page >= pageCount}
 								style={{ ...buttonBase, padding: '8px 10px', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.14)', cursor: page >= pageCount ? 'not-allowed' : 'pointer' }}
 							>
@@ -456,7 +631,13 @@ export default function AttendanceRecords() {
 								<input
 									type="date"
 									value={purgeBefore}
-									onChange={(e) => setPurgeBefore(e.target.value)}
+									onChange={/**
+                                     * Purpose: Helper callback used inside a larger operation
+                                     * Plain English: What this function is used for.
+                                     */
+                                    e => {
+                                        return setPurgeBefore(e.target.value);
+                                    }}
 									style={{ padding: '8px 11px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(10, 14, 39, 0.65)', color: 'rgba(255,255,255,0.92)', fontWeight: 600, fontSize: '0.85rem' }}
 								/>
 								<button
@@ -479,10 +660,14 @@ export default function AttendanceRecords() {
 										<input
 											type="checkbox"
 											checked={isAllOnPageSelected}
-											onChange={() => {
-												if (isAllOnPageSelected) clearSelection()
+											onChange={/**
+                                             * Purpose: Helper callback used inside a larger operation
+                                             * Plain English: What this function is used for.
+                                             */
+                                            () => {
+                                                if (isAllOnPageSelected) clearSelection()
 												else selectAllOnPage()
-											}}
+                                            }}
 											disabled={items.length === 0}
 											style={{ transform: 'scale(1.1)' }}
 										/>
@@ -502,42 +687,58 @@ export default function AttendanceRecords() {
 										<td colSpan={8} style={{ padding: '12px 8px', color: 'rgba(255,255,255,0.6)', fontSize: '0.88rem' }}>{loading ? 'Loading…' : 'No records found.'}</td>
 									</tr>
 								) : (
-									items.map((row) => {
-										const member = row?.memberId
-										const plan = member?.planId
-										const rejected = row?.result === 'rejected'
-										return (
-											<tr key={row._id}>
-												<td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '12px 0 0 12px' }}>
-													<input type="checkbox" checked={selected.has(row._id)} onChange={() => toggleSelected(row._id)} style={{ transform: 'scale(1.1)' }} />
+									items.map(/**
+                                     * Purpose: Array mapping callback (converts each item to a new value)
+                                     * Plain English: What this function is used for.
+                                     */
+                                    row => {
+                                        const member = row?.memberId
+                                        const plan = member?.planId
+                                        const rejected = row?.result === 'rejected'
+                                        return (
+                                            <tr key={row._id}>
+                                                <td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '12px 0 0 12px' }}>
+													<input type="checkbox" checked={selected.has(row._id)} onChange={/**
+                                                     * Purpose: Helper callback used inside a larger operation
+                                                     * Plain English: What this function is used for.
+                                                     */
+                                                    () => {
+                                                        return toggleSelected(row._id);
+                                                    }} style={{ transform: 'scale(1.1)' }} />
 												</td>
-														<td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', borderTop: '1px solid rgba(255,255,255,0.10)', borderBottom: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.85)', fontWeight: 500, fontSize: '0.88rem' }}>{formatTime(row?.scannedAt)}</td>
-														<td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', borderTop: '1px solid rgba(255,255,255,0.10)', borderBottom: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.92)', fontWeight: 600, fontSize: '0.9rem' }}>{member?.name || '—'}</td>
-														<td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', borderTop: '1px solid rgba(255,255,255,0.10)', borderBottom: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.75)', fontWeight: 500, fontSize: '0.88rem' }}>{member?.phone || '—'}</td>
-														<td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', borderTop: '1px solid rgba(255,255,255,0.10)', borderBottom: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.75)', fontWeight: 500, fontSize: '0.88rem' }}>{plan?.planName || '—'}</td>
-												<td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', borderTop: '1px solid rgba(255,255,255,0.10)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+                                                <td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', borderTop: '1px solid rgba(255,255,255,0.10)', borderBottom: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.85)', fontWeight: 500, fontSize: '0.88rem' }}>{formatTime(row?.scannedAt)}</td>
+                                                <td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', borderTop: '1px solid rgba(255,255,255,0.10)', borderBottom: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.92)', fontWeight: 600, fontSize: '0.9rem' }}>{member?.name || '—'}</td>
+                                                <td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', borderTop: '1px solid rgba(255,255,255,0.10)', borderBottom: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.75)', fontWeight: 500, fontSize: '0.88rem' }}>{member?.phone || '—'}</td>
+                                                <td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', borderTop: '1px solid rgba(255,255,255,0.10)', borderBottom: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.75)', fontWeight: 500, fontSize: '0.88rem' }}>{plan?.planName || '—'}</td>
+                                                <td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', borderTop: '1px solid rgba(255,255,255,0.10)', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
 																<span style={{ display: 'inline-flex', padding: '6px 10px', borderRadius: '999px', border: rejected ? '1px solid rgba(255, 50, 100, 0.55)' : '1px solid rgba(0, 255, 212, 0.55)', background: rejected ? 'rgba(255, 50, 100, 0.14)' : 'rgba(0, 255, 212, 0.14)', color: rejected ? '#FF6B9D' : '#00FFD4', fontWeight: 600, fontSize: '0.8rem' }}>
 														{rejected ? 'REJECTED' : 'ACCEPTED'}
 													</span>
 												</td>
-														<td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', borderTop: '1px solid rgba(255,255,255,0.10)', borderBottom: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: '0.85rem' }}>{(row?.method || '—').toUpperCase()}</td>
-												<td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '0 12px 12px 0', textAlign: 'right' }}>
+                                                <td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', borderTop: '1px solid rgba(255,255,255,0.10)', borderBottom: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: '0.85rem' }}>{(row?.method || '—').toUpperCase()}</td>
+                                                <td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '0 12px 12px 0', textAlign: 'right' }}>
 													<button
-														onClick={() => deleteOne(row._id)}
+														onClick={/**
+                                                         * Purpose: Helper callback used inside a larger operation
+                                                         * Plain English: What this function is used for.
+                                                         */
+                                                        () => {
+                                                            return deleteOne(row._id);
+                                                        }}
 														style={{ padding: '7px 10px', borderRadius: '10px', background: 'rgba(255, 50, 100, 0.18)', color: '#FF6B9D', border: '1px solid rgba(255, 50, 100, 0.35)', cursor: 'pointer', fontWeight: 600 }}
 													>
 														<FaTrash />
 													</button>
 												</td>
-											</tr>
-										)
-									})
+                                            </tr>
+                                        );
+                                    })
 								)}
 							</tbody>
 						</table>
 					</div>
 				</div>
 			</div>
-		</div>
-	)
+        </div>
+    );
 }

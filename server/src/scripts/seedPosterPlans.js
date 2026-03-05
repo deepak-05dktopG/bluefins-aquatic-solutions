@@ -1,3 +1,9 @@
+/**
+ * What it is: Seed script for the official membership plans (poster plans).
+ * Non-tech note: Run this once to create the standard plan list in the database.
+ * Command: `cd server` then `npm run seed-poster-plans`
+ */
+
 import '../config/env.js'
 import connectDB from '../config/db.js'
 import MembershipPlan from '../models/MembershipPlan.js'
@@ -119,28 +125,32 @@ const officialPlans = [
 	},
 ]
 
+/**
+ * Purpose: Do Main
+ * Plain English: What this function is used for.
+ */
 const main = async () => {
-	await connectDB()
+    await connectDB()
 
-	const existing = await MembershipPlan.countDocuments()
-	const validExisting = await MembershipPlan.countDocuments({
+    const existing = await MembershipPlan.countDocuments()
+    const validExisting = await MembershipPlan.countDocuments({
 		planName: { $exists: true, $type: 'string', $ne: '' },
 		type: { $exists: true, $type: 'string', $ne: '' },
 		basePrice: { $exists: true, $type: 'number' },
 	})
 
-	// If legacy plans exist (older fields like `name`/`price`), replace them with the official structure.
-	if (existing > 0 && validExisting === 0) {
+    // If legacy plans exist (older fields like `name`/`price`), replace them with the official structure.
+    if (existing > 0 && validExisting === 0) {
 		await MembershipPlan.deleteMany({})
 	}
 
-	// Keep historical records but make them inactive; only poster plans are active.
-	if (existing > 0 && validExisting > 0) {
+    // Keep historical records but make them inactive; only poster plans are active.
+    if (existing > 0 && validExisting > 0) {
 		await MembershipPlan.updateMany({}, { $set: { isActive: false } })
 	}
 
-	const upserted = []
-	for (const plan of officialPlans) {
+    const upserted = []
+    for (const plan of officialPlans) {
 		const resUpsert = await MembershipPlan.updateOne(
 			{ type: plan.type, planName: plan.planName },
 			{ $set: plan },
@@ -149,15 +159,19 @@ const main = async () => {
 		upserted.push({ planName: plan.planName, type: plan.type, inserted: Boolean(resUpsert.upsertedId) })
 	}
 
-	console.log('✅ Seeded poster plans:', upserted.length)
-	for (const row of upserted) {
+    console.log('✅ Seeded poster plans:', upserted.length)
+    for (const row of upserted) {
 		console.log(` - ${row.type}: ${row.planName}${row.inserted ? ' (inserted)' : ' (updated)'}`)
 	}
 
-	process.exit(0)
-}
+    process.exit(0)
+};
 
-main().catch((e) => {
-	console.error('❌ Failed to seed poster plans:', e?.message || e)
-	process.exit(1)
+main().catch(/**
+ * Purpose: Promise error handler (runs when async work fails)
+ * Plain English: What this function is used for.
+ */
+e => {
+    console.error('❌ Failed to seed poster plans:', e?.message || e)
+    process.exit(1)
 })

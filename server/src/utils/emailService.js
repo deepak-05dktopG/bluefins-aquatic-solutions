@@ -1,3 +1,8 @@
+/**
+ * What it is: Email sending helper (Nodemailer).
+ * Non-tech note: Used when the server needs to send an email.
+ */
+
 import nodemailer from 'nodemailer'
 
 const transporter = nodemailer.createTransport({
@@ -8,7 +13,11 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-export const sendEmail = async ({ to, subject, text, html }) => {
+export /**
+ * Purpose: Send Email
+ * Plain English: What this function is used for.
+ */
+const sendEmail = async ({ to, subject, text, html }) => {
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -25,6 +34,6 @@ export const sendEmail = async ({ to, subject, text, html }) => {
     console.error('Email sending failed:', error)
     throw error
   }
-}
+};
 
 export default sendEmail

@@ -1,4 +1,9 @@
-import { useNavigate } from "react-router-dom";
+/**
+ * What it is: Website footer component.
+ * Non-tech note: This controls the bottom section with contact/social info.
+ */
+
+import { Link, useNavigate } from "react-router-dom";
 import { Container, Row, Col } from "react-bootstrap";
 import {
   FaEnvelope,
@@ -10,6 +15,10 @@ import {
 
 
 
+/**
+ * Purpose: Do Footer
+ * Plain English: What this function is used for.
+ */
 const Footer = () => {
   const navigate = useNavigate();
   return (
@@ -48,13 +57,16 @@ const Footer = () => {
           filter: "blur(60px)",
         }}
       ></div>
-
       <Container>
         <Row className="g-5">
           {/* Column 1 – Brand Info */}
           <Col md={4}>
             <div 
-              onClick={() => {
+              onClick={/**
+               * Purpose: Helper callback used inside a larger operation
+               * Plain English: What this function is used for.
+               */
+              () => {
                 navigate("/");
               }}
               style={{ cursor: "pointer", marginBottom: "15px" }}
@@ -86,43 +98,57 @@ const Footer = () => {
                 { icon: <FaInstagram />, link: "https://www.instagram.com/bluefinsaquaticsolutions?utm_source=qr&igsh=MWNtcTlxaGphYWJiZg==" },
                 { icon: <FaWhatsapp />, link: "https://wa.me/918838407511" },
                 // { icon: <FaTwitter />, link: "https://twitter.com" },
-              ].map((social, index) => (
-                <a
-                  key={index}
-                  href={social.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="d-flex align-items-center justify-content-center"
-                  style={{
-                    width: "42px",
-                    height: "42px",
-                    borderRadius: "50%",
-                    background: "rgba(255,255,255,0.15)",
-                    color: "white",
-                    fontSize: "1.1rem",
-                    boxShadow: "0 0 10px rgba(255,255,255,0.2)",
-                    transition: "all 0.4s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background =
-                      "linear-gradient(90deg,#ffffff,#d7faff)";
-                    e.currentTarget.style.color = "#0077B6";
-                    e.currentTarget.style.transform = "scale(1.15)";
-                    e.currentTarget.style.boxShadow =
-                      "0 0 20px rgba(255,255,255,0.6)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background =
-                      "rgba(255,255,255,0.15)";
-                    e.currentTarget.style.color = "white";
-                    e.currentTarget.style.transform = "scale(1)";
-                    e.currentTarget.style.boxShadow =
-                      "0 0 10px rgba(255,255,255,0.2)";
-                  }}
-                >
-                  {social.icon}
-                </a>
-              ))}
+              ].map(/**
+               * Purpose: Array mapping callback (converts each item to a new value)
+               * Plain English: What this function is used for.
+               */
+              (social, index) => {
+                return (
+                  <a
+                    key={index}
+                    href={social.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="d-flex align-items-center justify-content-center"
+                    style={{
+                      width: "42px",
+                      height: "42px",
+                      borderRadius: "50%",
+                      background: "rgba(255,255,255,0.15)",
+                      color: "white",
+                      fontSize: "1.1rem",
+                      boxShadow: "0 0 10px rgba(255,255,255,0.2)",
+                      transition: "all 0.4s ease",
+                    }}
+                    onMouseEnter={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.background =
+                        "linear-gradient(90deg,#ffffff,#d7faff)";
+                      e.currentTarget.style.color = "#0077B6";
+                      e.currentTarget.style.transform = "scale(1.15)";
+                      e.currentTarget.style.boxShadow =
+                        "0 0 20px rgba(255,255,255,0.6)";
+                    }}
+                    onMouseLeave={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.background =
+                        "rgba(255,255,255,0.15)";
+                      e.currentTarget.style.color = "white";
+                      e.currentTarget.style.transform = "scale(1)";
+                      e.currentTarget.style.boxShadow =
+                        "0 0 10px rgba(255,255,255,0.2)";
+                    }}
+                  >
+                    {social.icon}
+                  </a>
+                );
+              })}
             </div>
           </Col>
 
@@ -139,28 +165,42 @@ const Footer = () => {
                 { text: "Shop", link: "/shop" },
                 { text: "Contact Us", link: "/contact" },
 
-              ].map((link, i) => (
-                <Link
-                  key={i}
-                  to={link.link}
-                  style={{
-                    color: "white",
-                    opacity: 0.9,
-                    textDecoration: "none",
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.opacity = "1";
-                    e.currentTarget.style.paddingLeft = "8px";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.opacity = "0.9";
-                    e.currentTarget.style.paddingLeft = "0";
-                  }}
-                >
-                  {link.text}
-                </Link>
-              ))}
+              ].map(/**
+               * Purpose: Array mapping callback (converts each item to a new value)
+               * Plain English: What this function is used for.
+               */
+              (link, i) => {
+                return (
+                  <Link
+                    key={i}
+                    to={link.link}
+                    style={{
+                      color: "white",
+                      opacity: 0.9,
+                      textDecoration: "none",
+                      transition: "all 0.3s ease",
+                    }}
+                    onMouseEnter={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.opacity = "1";
+                      e.currentTarget.style.paddingLeft = "8px";
+                    }}
+                    onMouseLeave={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      e.currentTarget.style.opacity = "0.9";
+                      e.currentTarget.style.paddingLeft = "0";
+                    }}
+                  >
+                    {link.text}
+                  </Link>
+                );
+              })}
             </div>
           </Col>
 
@@ -190,34 +230,51 @@ const Footer = () => {
                   text: "bluefinsaquaticsolutions@gmail.com",
                   link: "mailto:bluefinsaquaticsolutions@gmail.com",
                 },
-              ].map((item, i) => (
-                <div key={i} className="d-flex gap-3 align-items-start">
-                  <div style={{ fontSize: "1.2rem", marginTop: "2px" }}>
-                    {item.icon}
+              ].map(/**
+               * Purpose: Array mapping callback (converts each item to a new value)
+               * Plain English: What this function is used for.
+               */
+              (item, i) => {
+                return (
+                  <div key={i} className="d-flex gap-3 align-items-start">
+                    <div style={{ fontSize: "1.2rem", marginTop: "2px" }}>
+                      {item.icon}
+                    </div>
+                    {item.link ? (
+                      <a
+                        href={item.link}
+                        style={{
+                          color: "white",
+                          opacity: 0.9,
+                          textDecoration: "none",
+                          transition: "opacity 0.3s ease",
+                        }}
+                        onMouseEnter={/**
+                         * Purpose: Helper callback used inside a larger operation
+                         * Plain English: What this function is used for.
+                         */
+                        e => {
+                          return (e.currentTarget.style.opacity = "1");
+                        }}
+                        onMouseLeave={/**
+                         * Purpose: Helper callback used inside a larger operation
+                         * Plain English: What this function is used for.
+                         */
+                        e => {
+                          return (e.currentTarget.style.opacity = "0.9");
+                        }
+                        }
+                      >
+                        {item.text}
+                      </a>
+                    ) : (
+                      <p className="mb-0" style={{ opacity: 0.9 }}>
+                        {item.text}
+                      </p>
+                    )}
                   </div>
-                  {item.link ? (
-                    <a
-                      href={item.link}
-                      style={{
-                        color: "white",
-                        opacity: 0.9,
-                        textDecoration: "none",
-                        transition: "opacity 0.3s ease",
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.opacity = "0.9")
-                      }
-                    >
-                      {item.text}
-                    </a>
-                  ) : (
-                    <p className="mb-0" style={{ opacity: 0.9 }}>
-                      {item.text}
-                    </p>
-                  )}
-                </div>
-              ))}
+                );
+              })}
               {/* <Link to="#" onClick={(e) => e.preventDefault()}>
                 <Button
                   variant="outline-light"
@@ -273,7 +330,6 @@ const Footer = () => {
           </a>
         </p>
       </Container>
-
       {/* Top Wave */}
       <svg
         xmlns="http://www.w3.org/2000/svg"

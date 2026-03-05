@@ -1,6 +1,16 @@
+/**
+ * What it is: Website top navigation bar component.
+ * Non-tech note: This controls the menu links at the top of the site.
+ */
+
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Button, Container, Nav, Navbar as BsNavbar } from "react-bootstrap";
 
+/**
+ * Purpose: Do Navbar
+ * Plain English: What this function is used for.
+ */
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -8,11 +18,29 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [clickCount, setClickCount] = useState(0);
 
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 60);
+  useEffect(/**
+   * Purpose: React effect callback (runs after render based on dependencies)
+   * Plain English: What this function is used for.
+   */
+  () => {
+    /**
+     * Purpose: Handle Scroll
+     * Plain English: What this function is used for.
+     */
+    const handleScroll = () => {
+      return setIsScrolled(window.scrollY > 60);
+    };
     window.addEventListener("scroll", handleScroll);
     handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    return (
+      /**
+       * Purpose: Helper callback used inside a larger operation
+       * Plain English: What this function is used for.
+       */
+      () => {
+        return window.removeEventListener("scroll", handleScroll);
+      }
+    );
   }, []);
 
   const links = [
@@ -37,20 +65,28 @@ const Navbar = () => {
     transition: "all 0.4s ease",
   };
 
-  const linkStyle = (path) => ({
-    color: "#fff",
-    fontWeight: 600,
-    fontSize: "0.95rem",
-    margin: "0.4rem 0.6rem",
-    padding: "0.4rem 0.9rem",
-    borderRadius: "12px",
-    textTransform: "uppercase",
-    background:
-      location.pathname === path
-        ? "linear-gradient(90deg, #48CAE4, #00B4D8)"
-        : "transparent",
-    transition: "all 0.3s ease",
-  });
+  /**
+   * Purpose: Do Link Style
+   * Plain English: What this function is used for.
+   */
+  const linkStyle = path => {
+    return ({
+      color: "#fff",
+      fontWeight: 600,
+      fontSize: "0.95rem",
+      margin: "0.4rem 0.6rem",
+      padding: "0.4rem 0.9rem",
+      borderRadius: "12px",
+      textTransform: "uppercase",
+
+      background:
+        location.pathname === path
+          ? "linear-gradient(90deg, #48CAE4, #00B4D8)"
+          : "transparent",
+
+      transition: "all 0.3s ease"
+    });
+  };
 
   const buttonStyle = {
     borderRadius: "50px",
@@ -64,6 +100,10 @@ const Navbar = () => {
     transition: "all 0.4s ease",
   };
 
+  /**
+   * Purpose: Handle Hover
+   * Plain English: What this function is used for.
+   */
   const handleHover = (e, enter) => {
     e.currentTarget.style.backgroundPosition = enter ? "100% 0%" : "0% 0%";
     e.currentTarget.style.transform = enter ? "scale(1.05)" : "scale(1)";
@@ -76,7 +116,13 @@ const Navbar = () => {
     <>
       <BsNavbar
         expanded={expanded}
-        onToggle={() => setExpanded(!expanded)}
+        onToggle={/**
+         * Purpose: Helper callback used inside a larger operation
+         * Plain English: What this function is used for.
+         */
+        () => {
+          return setExpanded(!expanded);
+        }}
         expand="lg"
         fixed="top"
         style={navbarStyle}
@@ -88,8 +134,18 @@ const Navbar = () => {
             as={Link}
             to="/"
             className="d-flex align-items-center"
-            onClick={() => setExpanded(false)}
-            onDoubleClick={() => {
+            onClick={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            () => {
+              return setExpanded(false);
+            }}
+            onDoubleClick={/**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            () => {
               setClickCount(clickCount + 1);
               if (clickCount + 1 === 3) {
                 navigate("/admin");
@@ -151,33 +207,59 @@ const Navbar = () => {
           {/* Nav Links */}
           <BsNavbar.Collapse id="main-nav" className="mt-3 mt-lg-0">
             <Nav className="mx-auto text-center text-lg-start main-navbar__links">
-              {links.map((item) => (
-                <Nav.Link
-                  key={item.path}
-                  as={Link}
-                  to={item.path}
-                  onClick={() => setExpanded(false)}
-                  className="main-navbar__link"
-                  style={linkStyle(item.path)}
-                  onMouseEnter={(e) => {
-                    if (location.pathname !== item.path)
-                      e.currentTarget.style.background =
-                        "rgba(255,255,255,0.15)";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (location.pathname !== item.path)
-                      e.currentTarget.style.background = "transparent";
-                  }}
-                >
-                  {item.label}
-                </Nav.Link>
-              ))}
+              {links.map(/**
+               * Purpose: Array mapping callback (converts each item to a new value)
+               * Plain English: What this function is used for.
+               */
+              item => {
+                return (
+                  <Nav.Link
+                    key={item.path}
+                    as={Link}
+                    to={item.path}
+                    onClick={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    () => {
+                      return setExpanded(false);
+                    }}
+                    className="main-navbar__link"
+                    style={linkStyle(item.path)}
+                    onMouseEnter={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      if (location.pathname !== item.path)
+                        e.currentTarget.style.background =
+                          "rgba(255,255,255,0.15)";
+                    }}
+                    onMouseLeave={/**
+                     * Purpose: Helper callback used inside a larger operation
+                     * Plain English: What this function is used for.
+                     */
+                    e => {
+                      if (location.pathname !== item.path)
+                        e.currentTarget.style.background = "transparent";
+                    }}
+                  >
+                    {item.label}
+                  </Nav.Link>
+                );
+              })}
             </Nav>
 
             {/* CTA Button */}
             <div className="d-flex justify-content-center justify-content-lg-end gap-2 mt-3 mt-lg-0 main-navbar__cta">
               
-              <Link to="/admin" onClick={() => setExpanded(false)}>
+              <Link to="/admin" onClick={/**
+               * Purpose: Helper callback used inside a larger operation
+               * Plain English: What this function is used for.
+               */
+              () => {
+                return setExpanded(false);
+              }}>
                 <Button
                   style={{
                     borderRadius: "50px",
@@ -190,12 +272,20 @@ const Navbar = () => {
                     boxShadow: "0 0 12px rgba(255, 107, 107, 0.3)",
                     transition: "all 0.4s ease",
                   }}
-                  onMouseEnter={(e) => {
+                  onMouseEnter={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
                     e.currentTarget.style.backgroundPosition = "100% 0%";
                     e.currentTarget.style.transform = "scale(1.05)";
                     e.currentTarget.style.boxShadow = "0 0 20px rgba(255, 107, 107, 0.6)";
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
                     e.currentTarget.style.backgroundPosition = "0% 0%";
                     e.currentTarget.style.transform = "scale(1)";
                     e.currentTarget.style.boxShadow = "0 0 12px rgba(255, 107, 107, 0.3)";
@@ -205,11 +295,29 @@ const Navbar = () => {
                 </Button>
               </Link>
               
-              <Link to="/contact" onClick={() => setExpanded(false)}>
+              <Link to="/contact" onClick={/**
+               * Purpose: Helper callback used inside a larger operation
+               * Plain English: What this function is used for.
+               */
+              () => {
+                return setExpanded(false);
+              }}>
                 <Button
                   style={buttonStyle}
-                  onMouseEnter={(e) => handleHover(e, true)}
-                  onMouseLeave={(e) => handleHover(e, false)}
+                  onMouseEnter={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    return handleHover(e, true);
+                  }}
+                  onMouseLeave={/**
+                   * Purpose: Helper callback used inside a larger operation
+                   * Plain English: What this function is used for.
+                   */
+                  e => {
+                    return handleHover(e, false);
+                  }}
                 >
                   Get Quote
                 </Button>

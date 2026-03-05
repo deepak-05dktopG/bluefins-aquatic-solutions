@@ -1,104 +1,161 @@
+/**
+ * What it is: Admin panel page (Members list/manage screen).
+ * Non-tech note: Admins use this to view members and manage member actions.
+ */
+
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { downloadMemberIdCard } from '../../utils/idCard'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
 
-const safeReadJson = async (res) => {
-	const text = await res.text()
-	if (!text) return { ok: false, message: 'Empty response from server' }
-	try {
+/**
+ * Purpose: Do Safe Read Json
+ * Plain English: What this function is used for.
+ */
+const safeReadJson = async res => {
+    const text = await res.text()
+    if (!text) return { ok: false, message: 'Empty response from server' }
+    try {
 		return JSON.parse(text)
 	} catch {
 		return { ok: false, message: text }
 	}
-}
+};
 
-const formatDate = (value) => {
-	if (!value) return ''
-	const d = new Date(value)
-	if (Number.isNaN(d.getTime())) return ''
-	return d.toLocaleDateString()
-}
+/**
+ * Purpose: Format Date
+ * Plain English: What this function is used for.
+ */
+const formatDate = value => {
+    if (!value) return ''
+    const d = new Date(value)
+    if (Number.isNaN(d.getTime())) return ''
+    return d.toLocaleDateString()
+};
 
-const endOfLocalDay = (value) => {
-	if (!value) return null
-	const d = value instanceof Date ? value : new Date(value)
-	if (Number.isNaN(d.getTime())) return null
-	return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999)
-}
+/**
+ * Purpose: Do End Of Local Day
+ * Plain English: What this function is used for.
+ */
+const endOfLocalDay = value => {
+    if (!value) return null
+    const d = value instanceof Date ? value : new Date(value)
+    if (Number.isNaN(d.getTime())) return null
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999)
+};
 
+/**
+ * Purpose: Do Days Until
+ * Plain English: What this function is used for.
+ */
 const daysUntil = (expiryDate, planType) => {
-	if (!expiryDate) return null
-	const isPublic = String(planType || '').toLowerCase() === 'public'
-	const d = isPublic ? new Date(expiryDate) : endOfLocalDay(expiryDate)
-	if (!d || Number.isNaN(d.getTime())) return null
-	const diff = d.getTime() - Date.now()
-	return Math.ceil(diff / (1000 * 60 * 60 * 24))
-}
+    if (!expiryDate) return null
+    const isPublic = String(planType || '').toLowerCase() === 'public'
+    const d = isPublic ? new Date(expiryDate) : endOfLocalDay(expiryDate)
+    if (!d || Number.isNaN(d.getTime())) return null
+    const diff = d.getTime() - Date.now()
+    return Math.ceil(diff / (1000 * 60 * 60 * 24))
+};
 
+/**
+ * Purpose: Do Download Csv
+ * Plain English: What this function is used for.
+ */
 const downloadCsv = ({ rows, filename }) => {
-	const escape = (v) => {
-		const s = v == null ? '' : String(v)
-		if (/[\n\r\t,"]/g.test(s)) return `"${s.replaceAll('"', '""')}"`
-		return s
-	}
+    /**
+     * Purpose: Do Escape
+     * Plain English: What this function is used for.
+     */
+    const escape = v => {
+        const s = v == null ? '' : String(v)
+        if (/[\n\r\t,"]/g.test(s)) return `"${s.replaceAll('"', '""')}"`
+        return s
+    };
 
-	const lines = rows.map((row) => row.map(escape).join(','))
-	const csv = lines.join('\n')
-	const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-	const url = URL.createObjectURL(blob)
+    const lines = rows.map(/**
+     * Purpose: Array mapping callback (converts each item to a new value)
+     * Plain English: What this function is used for.
+     */
+    row => {
+        return row.map(escape).join(',');
+    })
+    const csv = lines.join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
 
-	const a = document.createElement('a')
-	a.href = url
-	a.download = filename
-	document.body.appendChild(a)
-	a.click()
-	a.remove()
-	URL.revokeObjectURL(url)
-}
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+};
 
-export default function Members() {
-	const navigate = useNavigate()
+export default /**
+ * Purpose: Do Members
+ * Plain English: What this function is used for.
+ */
+function Members() {
+    const navigate = useNavigate()
 
-	const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
+    const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
 
-	const [q, setQ] = React.useState('')
-	const [status, setStatus] = React.useState('')
-	const [planType, setPlanType] = React.useState('')
-	const [page, setPage] = React.useState(1)
-	const [limit, setLimit] = React.useState(25)
-	const [sort, setSort] = React.useState('createdAt')
-	const [order, setOrder] = React.useState('desc')
+    const [q, setQ] = React.useState('')
+    const [status, setStatus] = React.useState('')
+    const [planType, setPlanType] = React.useState('')
+    const [page, setPage] = React.useState(1)
+    const [limit, setLimit] = React.useState(25)
+    const [sort, setSort] = React.useState('createdAt')
+    const [order, setOrder] = React.useState('desc')
 
-	const [items, setItems] = React.useState([])
-	const [total, setTotal] = React.useState(0)
-	const [loading, setLoading] = React.useState(false)
-	const [error, setError] = React.useState('')
-	const [selectedIds, setSelectedIds] = React.useState(() => new Set())
+    const [items, setItems] = React.useState([])
+    const [total, setTotal] = React.useState(0)
+    const [loading, setLoading] = React.useState(false)
+    const [error, setError] = React.useState('')
+    const [selectedIds, setSelectedIds] = React.useState(/**
+     * Purpose: Helper callback used inside a larger operation
+     * Plain English: What this function is used for.
+     */
+    () => {
+        return new Set();
+    })
 
-	React.useEffect(() => {
-		if (!isAdminAuthenticated()) navigate('/admin')
-	}, [navigate])
+    React.useEffect(/**
+     * Purpose: React effect callback (runs after render based on dependencies)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        if (!isAdminAuthenticated()) navigate('/admin')
+    }, [navigate])
 
-	const pageCount = Math.max(1, Math.ceil(total / limit))
+    const pageCount = Math.max(1, Math.ceil(total / limit))
 
-	const buildUrl = React.useCallback(() => {
-		const params = new URLSearchParams()
-		if (q.trim()) params.set('q', q.trim())
-		if (status) params.set('status', status)
-		if (planType) params.set('planType', planType)
-		params.set('page', String(page))
-		params.set('limit', String(limit))
-		params.set('sort', sort)
-		params.set('order', order)
-		return `${apiBase}/membership/members?${params.toString()}`
-	}, [apiBase, limit, order, page, planType, q, sort, status])
+    const buildUrl = React.useCallback(/**
+     * Purpose: React callback memoizer (keeps function stable between renders)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        const params = new URLSearchParams()
+        if (q.trim()) params.set('q', q.trim())
+        if (status) params.set('status', status)
+        if (planType) params.set('planType', planType)
+        params.set('page', String(page))
+        params.set('limit', String(limit))
+        params.set('sort', sort)
+        params.set('order', order)
+        return `${apiBase}/membership/members?${params.toString()}`
+    }, [apiBase, limit, order, page, planType, q, sort, status])
 
-	const load = React.useCallback(async () => {
-		setLoading(true)
-		setError('')
-		try {
+    const load = React.useCallback(/**
+     * Purpose: React callback memoizer (keeps function stable between renders)
+     * Plain English: What this function is used for.
+     */
+    async () => {
+        setLoading(true)
+        setError('')
+        try {
 			const res = await adminFetch(buildUrl())
 			const parsed = await safeReadJson(res)
 			if (!res.ok || parsed?.success === false) {
@@ -115,47 +172,83 @@ export default function Members() {
 		} finally {
 			setLoading(false)
 		}
-	}, [buildUrl])
+    }, [buildUrl])
 
-	const selectedCount = selectedIds.size
-	const pageIds = React.useMemo(() => items.map((m) => String(m?._id || '')).filter(Boolean), [items])
-	const allSelectedOnPage = React.useMemo(() => {
-		if (!pageIds.length) return false
-		for (const id of pageIds) {
+    const selectedCount = selectedIds.size
+    const pageIds = React.useMemo(/**
+     * Purpose: React memo callback (computes a value and caches it)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        return items.map(/**
+         * Purpose: Array mapping callback (converts each item to a new value)
+         * Plain English: What this function is used for.
+         */
+        m => {
+            return String(m?._id || '');
+        }).filter(Boolean);
+    }, [items])
+    const allSelectedOnPage = React.useMemo(/**
+     * Purpose: React memo callback (computes a value and caches it)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        if (!pageIds.length) return false
+        for (const id of pageIds) {
 			if (!selectedIds.has(id)) return false
 		}
-		return true
-	}, [pageIds, selectedIds])
+        return true
+    }, [pageIds, selectedIds])
 
-	const toggleSelectOne = (id) => {
-		const key = String(id || '').trim()
-		if (!key) return
-		setSelectedIds((prev) => {
-			const next = new Set(prev)
-			if (next.has(key)) next.delete(key)
+    /**
+     * Purpose: Do Toggle Select One
+     * Plain English: What this function is used for.
+     */
+    const toggleSelectOne = id => {
+        const key = String(id || '').trim()
+        if (!key) return
+        setSelectedIds(/**
+         * Purpose: Helper callback used inside a larger operation
+         * Plain English: What this function is used for.
+         */
+        prev => {
+            const next = new Set(prev)
+            if (next.has(key)) next.delete(key)
 			else next.add(key)
-			return next
-		})
-	}
+            return next
+        })
+    };
 
-	const toggleSelectAllOnPage = () => {
-		setSelectedIds((prev) => {
-			const next = new Set(prev)
-			if (!pageIds.length) return next
-			const shouldSelectAll = !allSelectedOnPage
-			if (shouldSelectAll) {
+    /**
+     * Purpose: Do Toggle Select All On Page
+     * Plain English: What this function is used for.
+     */
+    const toggleSelectAllOnPage = () => {
+        setSelectedIds(/**
+         * Purpose: Helper callback used inside a larger operation
+         * Plain English: What this function is used for.
+         */
+        prev => {
+            const next = new Set(prev)
+            if (!pageIds.length) return next
+            const shouldSelectAll = !allSelectedOnPage
+            if (shouldSelectAll) {
 				for (const id of pageIds) next.add(id)
 			} else {
 				for (const id of pageIds) next.delete(id)
 			}
-			return next
-		})
-	}
+            return next
+        })
+    };
 
-	const onBulkDeleteSelected = async () => {
-		if (!selectedCount) return
+    /**
+     * Purpose: Run when Bulk Delete Selected happens
+     * Plain English: What this function is used for.
+     */
+    const onBulkDeleteSelected = async () => {
+        if (!selectedCount) return
 
-		const result = await Swal.fire({
+        const result = await Swal.fire({
 			title: `Delete ${selectedCount} member(s)?`,
 			text: 'This cannot be undone.',
 			icon: 'warning',
@@ -164,11 +257,11 @@ export default function Members() {
 			cancelButtonText: 'Cancel',
 			confirmButtonColor: '#FF6B9D',
 		})
-		if (!result.isConfirmed) return
+        if (!result.isConfirmed) return
 
-		setLoading(true)
-		setError('')
-		try {
+        setLoading(true)
+        setError('')
+        try {
 			const res = await adminFetch(`${apiBase}/membership/members/bulk-delete`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -195,12 +288,16 @@ export default function Members() {
 		} finally {
 			setLoading(false)
 		}
-	}
+    };
 
-	const onDelete = async (member) => {
-		if (!member?._id) return
+    /**
+     * Purpose: Run when Delete happens
+     * Plain English: What this function is used for.
+     */
+    const onDelete = async member => {
+        if (!member?._id) return
 
-		const result = await Swal.fire({
+        const result = await Swal.fire({
 			title: 'Delete member?',
 			text: `Delete "${member.name}"? This cannot be undone.`,
 			icon: 'warning',
@@ -209,11 +306,11 @@ export default function Members() {
 			cancelButtonText: 'Cancel',
 			confirmButtonColor: '#FF6B9D',
 		})
-		if (!result.isConfirmed) return
+        if (!result.isConfirmed) return
 
-		setLoading(true)
-		setError('')
-		try {
+        setLoading(true)
+        setError('')
+        try {
 			const res = await adminFetch(`${apiBase}/membership/members/${member._id}`, { method: 'DELETE' })
 			const parsed = await safeReadJson(res)
 			if (!res.ok || parsed?.success === false) {
@@ -235,10 +332,14 @@ export default function Members() {
 		} finally {
 			setLoading(false)
 		}
-	}
+    };
 
-	const onDownloadId = async (member) => {
-		try {
+    /**
+     * Purpose: Run when Download Id happens
+     * Plain English: What this function is used for.
+     */
+    const onDownloadId = async member => {
+        try {
 			if (!member?._id) throw new Error('Missing member id')
 			if (!member?.qrCode) throw new Error('QR not available for this member')
 			await downloadMemberIdCard({
@@ -256,23 +357,39 @@ export default function Members() {
 				icon: 'error',
 			})
 		}
-	}
+    };
 
-	React.useEffect(() => {
-		load()
-	}, [load])
+    React.useEffect(/**
+     * Purpose: React effect callback (runs after render based on dependencies)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        load()
+    }, [load])
 
-	React.useEffect(() => {
-		if (page > pageCount) setPage(pageCount)
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [pageCount])
+    React.useEffect(/**
+     * Purpose: React effect callback (runs after render based on dependencies)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        if (page > pageCount) setPage(pageCount)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageCount])
 
-	const onExport = () => {
-		const rows = [
+    /**
+     * Purpose: Run when Export happens
+     * Plain English: What this function is used for.
+     */
+    const onExport = () => {
+        const rows = [
 			['Name', 'Phone', 'Plan', 'Plan Type', 'Status', 'Join Date', 'Expiry Date', 'Days Left', 'Visits', 'Member ID', 'Group ID'],
-			...items.map((m) => {
-				const daysLeft = daysUntil(m.expiryDate, m.planType)
-				return [
+			...items.map(/**
+             * Purpose: Array mapping callback (converts each item to a new value)
+             * Plain English: What this function is used for.
+             */
+            m => {
+                const daysLeft = daysUntil(m.expiryDate, m.planType)
+                return [
 					m.name,
 					m.phone,
 					m?.plan?.planName || '',
@@ -285,33 +402,36 @@ export default function Members() {
 					m._id,
 					m.membershipGroupId || '',
 				]
-			}),
+            }),
 		]
-		downloadCsv({ rows, filename: `bluefins-members-page-${page}.csv` })
-	}
+        downloadCsv({ rows, filename: `bluefins-members-page-${page}.csv` })
+    };
 
-	const badgeFor = (m) => {
-		const daysLeft = daysUntil(m.expiryDate, m.planType)
-		if (m.status === 'expired' || (daysLeft != null && daysLeft <= 0)) {
+    /**
+     * Purpose: Do Badge For
+     * Plain English: What this function is used for.
+     */
+    const badgeFor = m => {
+        const daysLeft = daysUntil(m.expiryDate, m.planType)
+        if (m.status === 'expired' || (daysLeft != null && daysLeft <= 0)) {
 			return { label: 'Expired', color: '#FF6B9D', bg: 'rgba(255, 107, 157, 0.15)', border: 'rgba(255, 107, 157, 0.35)' }
 		}
-		if (daysLeft != null && daysLeft <= 7) {
+        if (daysLeft != null && daysLeft <= 7) {
 			return { label: `Expiring (${daysLeft}d)`, color: '#FFD700', bg: 'rgba(255, 215, 0, 0.12)', border: 'rgba(255, 215, 0, 0.35)' }
 		}
-		return { label: 'Active', color: '#00FFD4', bg: 'rgba(0, 255, 212, 0.12)', border: 'rgba(0, 255, 212, 0.35)' }
-	}
+        return { label: 'Active', color: '#00FFD4', bg: 'rgba(0, 255, 212, 0.12)', border: 'rgba(0, 255, 212, 0.35)' }
+    };
 
-	return (
-		<div
+    return (
+        <div
 			style={{
 				minHeight: '100vh',
 				background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1629 100%)',
 				fontFamily: 'Poppins, system-ui',
 			}}
 		>
-			<AdminNavbar />
-
-			<div className="admin-page-container" style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
+            <AdminNavbar />
+            <div className="admin-page-container" style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
 				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '20px', marginBottom: '20px' }}>
 					<div>
 						<h1 style={{ color: '#00FFD4', fontSize: '2.0rem', fontWeight: 700, margin: 0 }}>Members</h1>
@@ -392,10 +512,14 @@ export default function Members() {
 						<div className="admin-filter-span-2">
 							<input
 								value={q}
-								onChange={(e) => {
-									setPage(1)
-									setQ(e.target.value)
-								}}
+								onChange={/**
+                                 * Purpose: Helper callback used inside a larger operation
+                                 * Plain English: What this function is used for.
+                                 */
+                                e => {
+                                    setPage(1)
+                                    setQ(e.target.value)
+                                }}
 								placeholder="Search name / phone / group id"
 								style={{
 									width: '100%',
@@ -411,10 +535,14 @@ export default function Members() {
 
 						<select
 							value={status}
-							onChange={(e) => {
-								setPage(1)
-								setStatus(e.target.value)
-							}}
+							onChange={/**
+                             * Purpose: Helper callback used inside a larger operation
+                             * Plain English: What this function is used for.
+                             */
+                            e => {
+                                setPage(1)
+                                setStatus(e.target.value)
+                            }}
 							style={{
 								padding: '12px 14px',
 								borderRadius: '12px',
@@ -431,10 +559,14 @@ export default function Members() {
 
 						<select
 							value={planType}
-							onChange={(e) => {
-								setPage(1)
-								setPlanType(e.target.value)
-							}}
+							onChange={/**
+                             * Purpose: Helper callback used inside a larger operation
+                             * Plain English: What this function is used for.
+                             */
+                            e => {
+                                setPage(1)
+                                setPlanType(e.target.value)
+                            }}
 							style={{
 								padding: '12px 14px',
 								borderRadius: '12px',
@@ -454,10 +586,14 @@ export default function Members() {
 
 						<select
 							value={limit}
-							onChange={(e) => {
-								setPage(1)
-								setLimit(Number(e.target.value))
-							}}
+							onChange={/**
+                             * Purpose: Helper callback used inside a larger operation
+                             * Plain English: What this function is used for.
+                             */
+                            e => {
+                                setPage(1)
+                                setLimit(Number(e.target.value))
+                            }}
 							style={{
 								padding: '12px 14px',
 								borderRadius: '12px',
@@ -475,12 +611,16 @@ export default function Members() {
 
 						<select
 							value={`${sort}:${order}`}
-							onChange={(e) => {
-								setPage(1)
-								const [sf, od] = String(e.target.value).split(':')
-								setSort(sf)
-								setOrder(od)
-							}}
+							onChange={/**
+                             * Purpose: Helper callback used inside a larger operation
+                             * Plain English: What this function is used for.
+                             */
+                            e => {
+                                setPage(1)
+                                const [sf, od] = String(e.target.value).split(':')
+                                setSort(sf)
+                                setOrder(od)
+                            }}
 							style={{
 								padding: '12px 14px',
 								borderRadius: '12px',
@@ -532,49 +672,65 @@ export default function Members() {
 						<table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1250px' }}>
 							<thead>
 								<tr style={{ background: 'rgba(10, 14, 39, 0.7)' }}>
-									{['', 'Member', 'Phone', 'Plan', 'Status', 'Join', 'Expiry', 'Days Left', 'Visits', 'QR', ''].map((h) => (
-										<th
-											key={h}
-											style={{
-												textAlign: 'left',
-												padding: '10px 12px',
-												color: 'rgba(255,255,255,0.65)',
-												fontWeight: 600,
-												fontSize: '0.8rem',
-												borderBottom: '1px solid rgba(255,255,255,0.08)',
-											}}
-										>
-											{h === '' ? (
-												<input
-													type="checkbox"
-													checked={allSelectedOnPage}
-													onChange={toggleSelectAllOnPage}
-													disabled={loading || items.length === 0}
-													title="Select all on this page"
-													style={{ transform: 'translateY(1px)' }}
-												/>
-											) : (
-												h
-											)}
-										</th>
-									))}
+									{['', 'Member', 'Phone', 'Plan', 'Status', 'Join', 'Expiry', 'Days Left', 'Visits', 'QR', ''].map(/**
+                                     * Purpose: Array mapping callback (converts each item to a new value)
+                                     * Plain English: What this function is used for.
+                                     */
+                                    h => {
+                                        return (
+                                            <th
+                                                key={h}
+                                                style={{
+                                                    textAlign: 'left',
+                                                    padding: '10px 12px',
+                                                    color: 'rgba(255,255,255,0.65)',
+                                                    fontWeight: 600,
+                                                    fontSize: '0.8rem',
+                                                    borderBottom: '1px solid rgba(255,255,255,0.08)',
+                                                }}
+                                            >
+                                                {h === '' ? (
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={allSelectedOnPage}
+                                                        onChange={toggleSelectAllOnPage}
+                                                        disabled={loading || items.length === 0}
+                                                        title="Select all on this page"
+                                                        style={{ transform: 'translateY(1px)' }}
+                                                    />
+                                                ) : (
+                                                    h
+                                                )}
+                                            </th>
+                                        );
+                                    })}
 								</tr>
 							</thead>
 							<tbody>
-								{items.map((m) => {
-									const b = badgeFor(m)
-									const daysLeft = daysUntil(m.expiryDate, m.planType)
-									const rowBorder = b.border
-									const id = String(m._id)
-									const isSelected = selectedIds.has(id)
-									return (
-										<React.Fragment key={m._id}>
-											<tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+								{items.map(/**
+                                 * Purpose: Array mapping callback (converts each item to a new value)
+                                 * Plain English: What this function is used for.
+                                 */
+                                m => {
+                                    const b = badgeFor(m)
+                                    const daysLeft = daysUntil(m.expiryDate, m.planType)
+                                    const rowBorder = b.border
+                                    const id = String(m._id)
+                                    const isSelected = selectedIds.has(id)
+                                    return (
+                                        <React.Fragment key={m._id}>
+                                            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
 												<td style={{ padding: '10px 12px' }}>
 													<input
 														type="checkbox"
 														checked={isSelected}
-														onChange={() => toggleSelectOne(id)}
+														onChange={/**
+                                                         * Purpose: Helper callback used inside a larger operation
+                                                         * Plain English: What this function is used for.
+                                                         */
+                                                        () => {
+                                                            return toggleSelectOne(id);
+                                                        }}
 														disabled={loading}
 														title="Select member"
 														style={{ transform: 'translateY(1px)' }}
@@ -661,7 +817,13 @@ export default function Members() {
 														</div>
 
 														<button
-															onClick={() => onDownloadId(m)}
+															onClick={/**
+                                                             * Purpose: Helper callback used inside a larger operation
+                                                             * Plain English: What this function is used for.
+                                                             */
+                                                            () => {
+                                                                return onDownloadId(m);
+                                                            }}
 															disabled={loading || !m.qrCode}
 															title="Download ID Card"
 															aria-label={`Download ID for ${m.name}`}
@@ -684,7 +846,13 @@ export default function Members() {
 												</td>
 											<td style={{ padding: '10px 12px' }}>
 													<button
-														onClick={() => onDelete(m)}
+														onClick={/**
+                                                         * Purpose: Helper callback used inside a larger operation
+                                                         * Plain English: What this function is used for.
+                                                         */
+                                                        () => {
+                                                            return onDelete(m);
+                                                        }}
 														disabled={loading}
 														aria-label={`Delete ${m.name}`}
 														title="Delete"
@@ -706,9 +874,9 @@ export default function Members() {
 													</button>
 												</td>
 											</tr>
-										</React.Fragment>
-									)
-								})}
+                                        </React.Fragment>
+                                    );
+                                })}
 
 								{!loading && items.length === 0 ? (
 									<tr>
@@ -735,7 +903,19 @@ export default function Members() {
 						</div>
 						<div style={{ display: 'flex', gap: '10px' }}>
 							<button
-								onClick={() => setPage((p) => Math.max(1, p - 1))}
+								onClick={/**
+                                 * Purpose: Helper callback used inside a larger operation
+                                 * Plain English: What this function is used for.
+                                 */
+                                () => {
+                                    return setPage(/**
+                                     * Purpose: Helper callback used inside a larger operation
+                                     * Plain English: What this function is used for.
+                                     */
+                                    p => {
+                                        return Math.max(1, p - 1);
+                                    });
+                                }}
 								disabled={loading || page <= 1}
 								style={{
 									display: 'inline-flex',
@@ -754,7 +934,19 @@ export default function Members() {
 								<FaChevronLeft /> Prev
 							</button>
 							<button
-								onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+								onClick={/**
+                                 * Purpose: Helper callback used inside a larger operation
+                                 * Plain English: What this function is used for.
+                                 */
+                                () => {
+                                    return setPage(/**
+                                     * Purpose: Helper callback used inside a larger operation
+                                     * Plain English: What this function is used for.
+                                     */
+                                    p => {
+                                        return Math.min(pageCount, p + 1);
+                                    });
+                                }}
 								disabled={loading || page >= pageCount}
 								style={{
 									display: 'inline-flex',
@@ -776,6 +968,6 @@ export default function Members() {
 					</div>
 				</div>
 			</div>
-		</div>
-	)
+        </div>
+    );
 }

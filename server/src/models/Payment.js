@@ -1,3 +1,8 @@
+/**
+ * What it is: Database model for payments.
+ * Non-tech note: Stores payment/order details for memberships.
+ */
+
 import mongoose from 'mongoose'
 
 const paymentSchema = new mongoose.Schema(

@@ -1,48 +1,75 @@
+/**
+ * What it is: Admin panel page (Attendance scan screen).
+ * Non-tech note: Uses the camera to scan a QR code and mark attendance.
+ */
+
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
 import { formatTime } from '../../utils/dateTime'
 
-const safeReadJson = async (res) => {
-	const text = await res.text()
-	if (!text) return { ok: false, message: 'Empty response from server' }
-	try {
+/**
+ * Purpose: Do Safe Read Json
+ * Plain English: What this function is used for.
+ */
+const safeReadJson = async res => {
+    const text = await res.text()
+    if (!text) return { ok: false, message: 'Empty response from server' }
+    try {
 		return JSON.parse(text)
 	} catch {
 		return { ok: false, message: text }
 	}
-}
+};
 
 
 
-export default function AttendanceScan() {
-	const navigate = useNavigate()
-	const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
+export default /**
+ * Purpose: Do Attendance Scan
+ * Plain English: What this function is used for.
+ */
+function AttendanceScan() {
+    const navigate = useNavigate()
+    const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
 
-	const videoRef = React.useRef(null)
-	const canvasRef = React.useRef(null)
-	const streamRef = React.useRef(null)
-	const scanTimerRef = React.useRef(null)
-	const zxingControlsRef = React.useRef(null)
-	const lastSeenRef = React.useRef({ value: '', at: 0 })
-	const detectingRef = React.useRef(false)
-	const lastRequestedDeviceIdRef = React.useRef(null)
+    const videoRef = React.useRef(null)
+    const canvasRef = React.useRef(null)
+    const streamRef = React.useRef(null)
+    const scanTimerRef = React.useRef(null)
+    const zxingControlsRef = React.useRef(null)
+    const lastSeenRef = React.useRef({ value: '', at: 0 })
+    const detectingRef = React.useRef(false)
+    const lastRequestedDeviceIdRef = React.useRef(null)
 
-	const [videoInputs, setVideoInputs] = React.useState([])
-	const [activeDeviceId, setActiveDeviceId] = React.useState('')
-	const [enumeratedOnce, setEnumeratedOnce] = React.useState(false)
+    const [videoInputs, setVideoInputs] = React.useState([])
+    const [activeDeviceId, setActiveDeviceId] = React.useState('')
+    const [enumeratedOnce, setEnumeratedOnce] = React.useState(false)
 
-	const listVideoInputs = React.useCallback(async () => {
-		if (!navigator.mediaDevices?.enumerateDevices) return []
-		const all = await navigator.mediaDevices.enumerateDevices()
-		return (all || []).filter((d) => d && d.kind === 'videoinput')
-	}, [])
+    const listVideoInputs = React.useCallback(/**
+     * Purpose: React callback memoizer (keeps function stable between renders)
+     * Plain English: What this function is used for.
+     */
+    async () => {
+        if (!navigator.mediaDevices?.enumerateDevices) return []
+        const all = await navigator.mediaDevices.enumerateDevices()
+        return (all || []).filter(/**
+         * Purpose: Array filter callback (keeps items that match a condition)
+         * Plain English: What this function is used for.
+         */
+        d => {
+            return d && d.kind === 'videoinput';
+        });
+    }, [])
 
-	const getEnhancedCameraConstraints = React.useCallback(
-		({ deviceId } = {}) => {
-			const requestedDeviceId = deviceId || activeDeviceId || lastRequestedDeviceIdRef.current
-			if (requestedDeviceId) {
+    const getEnhancedCameraConstraints = React.useCallback(
+		/**
+         * Purpose: React callback memoizer (keeps function stable between renders)
+         * Plain English: What this function is used for.
+         */
+        ({ deviceId } = {}) => {
+            const requestedDeviceId = deviceId || activeDeviceId || lastRequestedDeviceIdRef.current
+            if (requestedDeviceId) {
 				return {
 					video: {
 						deviceId: { exact: requestedDeviceId },
@@ -53,7 +80,7 @@ export default function AttendanceScan() {
 					audio: false,
 				}
 			}
-			return {
+            return {
 				video: {
 					facingMode: { ideal: 'environment' },
 					width: { ideal: 1920 },
@@ -62,12 +89,16 @@ export default function AttendanceScan() {
 				},
 				audio: false,
 			}
-		},
+        },
 		[activeDeviceId]
 	)
 
-	const applyBestEffortVideoTrackConstraints = React.useCallback(async (stream) => {
-		try {
+    const applyBestEffortVideoTrackConstraints = React.useCallback(/**
+     * Purpose: React callback memoizer (keeps function stable between renders)
+     * Plain English: What this function is used for.
+     */
+    async stream => {
+        try {
 			const track = stream?.getVideoTracks?.()?.[0]
 			if (!track?.applyConstraints) return
 			const caps = track.getCapabilities?.() || {}
@@ -93,17 +124,21 @@ export default function AttendanceScan() {
 		} catch {
 			// best-effort; ignore unsupported constraint errors
 		}
-	}, [])
+    }, [])
 
-	const [starting, setStarting] = React.useState(false)
-	const [scanning, setScanning] = React.useState(false)
-	const [flipPreviewX, setFlipPreviewX] = React.useState(false)
-	const [manualPayload, setManualPayload] = React.useState('')
-	const [lastScan, setLastScan] = React.useState(null)
-	const [cameraError, setCameraError] = React.useState('')
+    const [starting, setStarting] = React.useState(false)
+    const [scanning, setScanning] = React.useState(false)
+    const [flipPreviewX, setFlipPreviewX] = React.useState(false)
+    const [manualPayload, setManualPayload] = React.useState('')
+    const [lastScan, setLastScan] = React.useState(null)
+    const [cameraError, setCameraError] = React.useState('')
 
-	const isUserFacingTrack = React.useCallback((track) => {
-		try {
+    const isUserFacingTrack = React.useCallback(/**
+     * Purpose: React callback memoizer (keeps function stable between renders)
+     * Plain English: What this function is used for.
+     */
+    track => {
+        try {
 			const settings = track?.getSettings?.() || {}
 			if (typeof settings.facingMode === 'string') return settings.facingMode === 'user'
 			const label = String(track?.label || '')
@@ -112,11 +147,15 @@ export default function AttendanceScan() {
 		} catch {
 			// ignore
 		}
-		return false
-	}, [])
+        return false
+    }, [])
 
-	const showPopup = React.useCallback(async ({ icon, title, text, ms = 2200 }) => {
-		await Swal.fire({
+    const showPopup = React.useCallback(/**
+     * Purpose: React callback memoizer (keeps function stable between renders)
+     * Plain English: What this function is used for.
+     */
+    async ({ icon, title, text, ms = 2200 }) => {
+        await Swal.fire({
 			icon,
 			title,
 			text,
@@ -126,19 +165,31 @@ export default function AttendanceScan() {
 			timerProgressBar: true,
 			allowOutsideClick: true,
 			allowEscapeKey: true,
-			didOpen: (popup) => {
-				popup.addEventListener('mouseenter', Swal.stopTimer)
-				popup.addEventListener('mouseleave', Swal.resumeTimer)
-			},
+			/**
+             * Purpose: Do Did Open
+             * Plain English: What this function is used for.
+             */
+            didOpen: popup => {
+                popup.addEventListener('mouseenter', Swal.stopTimer)
+                popup.addEventListener('mouseleave', Swal.resumeTimer)
+            },
 		})
-	}, [])
+    }, [])
 
-	React.useEffect(() => {
-		if (!isAdminAuthenticated()) navigate('/admin')
-	}, [navigate])
+    React.useEffect(/**
+     * Purpose: React effect callback (runs after render based on dependencies)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        if (!isAdminAuthenticated()) navigate('/admin')
+    }, [navigate])
 
-	const stopCamera = React.useCallback(() => {
-		if (zxingControlsRef.current) {
+    const stopCamera = React.useCallback(/**
+     * Purpose: React callback memoizer (keeps function stable between renders)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        if (zxingControlsRef.current) {
 			try {
 				zxingControlsRef.current.stop()
 			} catch {
@@ -147,30 +198,46 @@ export default function AttendanceScan() {
 			zxingControlsRef.current = null
 		}
 
-		if (scanTimerRef.current) {
+        if (scanTimerRef.current) {
 			window.clearInterval(scanTimerRef.current)
 			scanTimerRef.current = null
 		}
 
-		const stream = streamRef.current
-		if (stream) {
+        const stream = streamRef.current
+        if (stream) {
 			for (const track of stream.getTracks()) track.stop()
 		}
-		streamRef.current = null
-		setScanning(false)
-		setFlipPreviewX(false)
-	}, [])
+        streamRef.current = null
+        setScanning(false)
+        setFlipPreviewX(false)
+    }, [])
 
-	React.useEffect(() => {
-		return () => stopCamera()
-	}, [stopCamera])
+    React.useEffect(/**
+     * Purpose: React effect callback (runs after render based on dependencies)
+     * Plain English: What this function is used for.
+     */
+    () => {
+        return (
+            /**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            () => {
+                return stopCamera();
+            }
+        );
+    }, [stopCamera])
 
-	const submitPayload = React.useCallback(
-		async (payload, method) => {
-			const trimmed = payload == null ? '' : String(payload).trim()
-			if (!trimmed) return
+    const submitPayload = React.useCallback(
+		/**
+         * Purpose: React callback memoizer (keeps function stable between renders)
+         * Plain English: What this function is used for.
+         */
+        async (payload, method) => {
+            const trimmed = payload == null ? '' : String(payload).trim()
+            if (!trimmed) return
 
-			try {
+            try {
 				const res = await adminFetch(`${apiBase}/attendance/scan`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
@@ -230,14 +297,18 @@ export default function AttendanceScan() {
 					ms: 3200,
 				})
 			}
-		},
+        },
 		[apiBase, showPopup]
 	)
 
-	const startCamera = React.useCallback(async ({ deviceId } = {}) => {
-		setCameraError('')
-		setStarting(true)
-		try {
+    const startCamera = React.useCallback(/**
+     * Purpose: React callback memoizer (keeps function stable between renders)
+     * Plain English: What this function is used for.
+     */
+    async ({ deviceId } = {}) => {
+        setCameraError('')
+        setStarting(true)
+        try {
 			if (!window.isSecureContext && window.location.hostname !== 'localhost') {
 				throw new Error('Camera requires HTTPS (or localhost). Open the site using https:// or use a secure tunnel (ngrok/Cloudflare).')
 			}
@@ -256,9 +327,13 @@ export default function AttendanceScan() {
 				{ video: true, audio: false },
 			]
 
-			const getStreamWithFallbacks = async () => {
-				let lastErr = null
-				for (const constraints of fallbackConstraints) {
+			/**
+             * Purpose: Get Stream With Fallbacks
+             * Plain English: What this function is used for.
+             */
+            const getStreamWithFallbacks = async () => {
+                let lastErr = null
+                for (const constraints of fallbackConstraints) {
 					try {
 						const stream = await navigator.mediaDevices.getUserMedia(constraints)
 						return stream
@@ -268,8 +343,8 @@ export default function AttendanceScan() {
 						if (err?.name === 'NotAllowedError' || err?.name === 'SecurityError') throw err
 					}
 				}
-				throw lastErr || new Error('Unable to access camera')
-			}
+                throw lastErr || new Error('Unable to access camera')
+            };
 
 			let canUseBarcodeDetector = false
 			if ('BarcodeDetector' in window) {
@@ -319,56 +394,60 @@ export default function AttendanceScan() {
 				if (detector) {
 					setScanning(true)
 
-					scanTimerRef.current = window.setInterval(async () => {
-					if (detectingRef.current) return
-					try {
-						detectingRef.current = true
-						const v = videoRef.current
-						const canvas = canvasRef.current
-						if (!v || !canvas) return
-						if (v.readyState < 2) return
+					scanTimerRef.current = window.setInterval(/**
+                     * Purpose: Timer callback (runs repeatedly on an interval)
+                     * Plain English: What this function is used for.
+                     */
+                    async () => {
+                        if (detectingRef.current) return
+                        try {
+                            detectingRef.current = true
+                            const v = videoRef.current
+                            const canvas = canvasRef.current
+                            if (!v || !canvas) return
+                            if (v.readyState < 2) return
 
-						const w = v.videoWidth
-						const h = v.videoHeight
-						if (!w || !h) return
+                            const w = v.videoWidth
+                            const h = v.videoHeight
+                            if (!w || !h) return
 
-						if (canvas.width !== w) canvas.width = w
-						if (canvas.height !== h) canvas.height = h
-						const ctx = canvas.getContext('2d', { willReadFrequently: true })
-						if (!ctx) return
-						ctx.drawImage(v, 0, 0, w, h)
+                            if (canvas.width !== w) canvas.width = w
+                            if (canvas.height !== h) canvas.height = h
+                            const ctx = canvas.getContext('2d', { willReadFrequently: true })
+                            if (!ctx) return
+                            ctx.drawImage(v, 0, 0, w, h)
 
-						let codes = await detector.detect(canvas)
-						if (!codes || codes.length === 0) {
-							// Center-crop “zoom-in” pass helps with small printed QRs
-							const crops = [0.6, 0.35]
-							for (const scale of crops) {
-								const sw = Math.floor(w * scale)
-								const sh = Math.floor(h * scale)
-								const sx = Math.floor((w - sw) / 2)
-								const sy = Math.floor((h - sh) / 2)
-								ctx.drawImage(v, sx, sy, sw, sh, 0, 0, w, h)
-								codes = await detector.detect(canvas)
-								if (codes && codes.length > 0) break
-							}
-						}
-						if (!codes || codes.length === 0) return
+                            let codes = await detector.detect(canvas)
+                            if (!codes || codes.length === 0) {
+                                // Center-crop “zoom-in” pass helps with small printed QRs
+                                const crops = [0.6, 0.35]
+                                for (const scale of crops) {
+                                    const sw = Math.floor(w * scale)
+                                    const sh = Math.floor(h * scale)
+                                    const sx = Math.floor((w - sw) / 2)
+                                    const sy = Math.floor((h - sh) / 2)
+                                    ctx.drawImage(v, sx, sy, sw, sh, 0, 0, w, h)
+                                    codes = await detector.detect(canvas)
+                                    if (codes && codes.length > 0) break
+                                }
+                            }
+                            if (!codes || codes.length === 0) return
 
-						const rawValue = codes[0]?.rawValue
-						if (!rawValue) return
+                            const rawValue = codes[0]?.rawValue
+                            if (!rawValue) return
 
-						const now = Date.now()
-						const last = lastSeenRef.current
-						if (last.value === rawValue && now - last.at < 2000) return
-						lastSeenRef.current = { value: rawValue, at: now }
+                            const now = Date.now()
+                            const last = lastSeenRef.current
+                            if (last.value === rawValue && now - last.at < 2000) return
+                            lastSeenRef.current = { value: rawValue, at: now }
 
-						await submitPayload(rawValue, 'qr')
-					} catch {
-						// ignore per-frame errors
-					} finally {
-						detectingRef.current = false
-					}
-					}, 200)
+                            await submitPayload(rawValue, 'qr')
+                        } catch {
+                            // ignore per-frame errors
+                        } finally {
+                            detectingRef.current = false
+                        }
+                    }, 200)
 					return
 				}
 
@@ -376,18 +455,22 @@ export default function AttendanceScan() {
 				const { BrowserQRCodeReader } = await import('@zxing/browser')
 				const reader = new BrowserQRCodeReader()
 				setScanning(true)
-				const controls = await reader.decodeFromVideoElement(video, async (result) => {
-					if (!result) return
-					const rawValue = typeof result.getText === 'function' ? result.getText() : String(result)
-					if (!rawValue) return
+				const controls = await reader.decodeFromVideoElement(video, /**
+                 * Purpose: Helper callback used inside a larger operation
+                 * Plain English: What this function is used for.
+                 */
+                async result => {
+                    if (!result) return
+                    const rawValue = typeof result.getText === 'function' ? result.getText() : String(result)
+                    if (!rawValue) return
 
-					const now = Date.now()
-					const last = lastSeenRef.current
-					if (last.value === rawValue && now - last.at < 2000) return
-					lastSeenRef.current = { value: rawValue, at: now }
+                    const now = Date.now()
+                    const last = lastSeenRef.current
+                    if (last.value === rawValue && now - last.at < 2000) return
+                    lastSeenRef.current = { value: rawValue, at: now }
 
-					await submitPayload(rawValue, 'qr')
-				})
+                    await submitPayload(rawValue, 'qr')
+                })
 				zxingControlsRef.current = controls
 				return
 			}
@@ -422,18 +505,22 @@ export default function AttendanceScan() {
 			const { BrowserQRCodeReader } = await import('@zxing/browser')
 			const reader = new BrowserQRCodeReader()
 			setScanning(true)
-			const controls = await reader.decodeFromVideoElement(video, async (result) => {
-				if (!result) return
-				const rawValue = typeof result.getText === 'function' ? result.getText() : String(result)
-				if (!rawValue) return
+			const controls = await reader.decodeFromVideoElement(video, /**
+             * Purpose: Helper callback used inside a larger operation
+             * Plain English: What this function is used for.
+             */
+            async result => {
+                if (!result) return
+                const rawValue = typeof result.getText === 'function' ? result.getText() : String(result)
+                if (!rawValue) return
 
-				const now = Date.now()
-				const last = lastSeenRef.current
-				if (last.value === rawValue && now - last.at < 2000) return
-				lastSeenRef.current = { value: rawValue, at: now }
+                const now = Date.now()
+                const last = lastSeenRef.current
+                if (last.value === rawValue && now - last.at < 2000) return
+                lastSeenRef.current = { value: rawValue, at: now }
 
-				await submitPayload(rawValue, 'qr')
-			})
+                await submitPayload(rawValue, 'qr')
+            })
 			zxingControlsRef.current = controls
 		} catch (e) {
 			const msg = e?.message || e?.name || 'Failed to start camera'
@@ -454,29 +541,39 @@ export default function AttendanceScan() {
 		} finally {
 			setStarting(false)
 		}
-	}, [stopCamera, submitPayload, showPopup, getEnhancedCameraConstraints, applyBestEffortVideoTrackConstraints, listVideoInputs, enumeratedOnce, isUserFacingTrack])
+    }, [stopCamera, submitPayload, showPopup, getEnhancedCameraConstraints, applyBestEffortVideoTrackConstraints, listVideoInputs, enumeratedOnce, isUserFacingTrack])
 
-	const canSwitchCamera = scanning && !starting && videoInputs.length > 1
+    const canSwitchCamera = scanning && !starting && videoInputs.length > 1
 
-	const switchCamera = React.useCallback(async () => {
-		if (!canSwitchCamera) return
-		const currentId = String(activeDeviceId || lastRequestedDeviceIdRef.current || '')
-		const idx = videoInputs.findIndex((d) => String(d.deviceId) === currentId)
-		const next = videoInputs[(idx >= 0 ? idx + 1 : 0) % videoInputs.length]
-		if (!next?.deviceId) return
-		lastRequestedDeviceIdRef.current = String(next.deviceId)
-		setActiveDeviceId(String(next.deviceId))
-		await startCamera({ deviceId: String(next.deviceId) })
-	}, [activeDeviceId, canSwitchCamera, startCamera, videoInputs])
+    const switchCamera = React.useCallback(/**
+     * Purpose: React callback memoizer (keeps function stable between renders)
+     * Plain English: What this function is used for.
+     */
+    async () => {
+        if (!canSwitchCamera) return
+        const currentId = String(activeDeviceId || lastRequestedDeviceIdRef.current || '')
+        const idx = videoInputs.findIndex(/**
+         * Purpose: Helper callback used inside a larger operation
+         * Plain English: What this function is used for.
+         */
+        d => {
+            return String(d.deviceId) === currentId;
+        })
+        const next = videoInputs[(idx >= 0 ? idx + 1 : 0) % videoInputs.length]
+        if (!next?.deviceId) return
+        lastRequestedDeviceIdRef.current = String(next.deviceId)
+        setActiveDeviceId(String(next.deviceId))
+        await startCamera({ deviceId: String(next.deviceId) })
+    }, [activeDeviceId, canSwitchCamera, startCamera, videoInputs])
 
-	const cardStyle = {
+    const cardStyle = {
 		background: 'rgba(15, 25, 50, 0.75)',
 		border: '1px solid rgba(0, 255, 212, 0.25)',
 		borderRadius: '16px',
 		padding: 'clamp(14px, 2.2vw, 22px)',
 	}
 
-	const fullViewportScannerStyle = {
+    const fullViewportScannerStyle = {
 		position: 'fixed',
 		inset: 0,
 		width: '100vw',
@@ -487,27 +584,27 @@ export default function AttendanceScan() {
 		zIndex: 1000,
 	}
 
-	const compactScannerStyle = {
+    const compactScannerStyle = {
 		position: 'relative',
 		borderRadius: '12px',
 		overflow: 'hidden',
 		background: 'rgba(0,0,0,0.35)',
 	}
 
-	const useFullViewportPreview = scanning
+    const useFullViewportPreview = scanning
 
-	const tipText = 'Zoom the QR (bring it closer) and keep it centered inside the box.'
+    const tipText = 'Zoom the QR (bring it closer) and keep it centered inside the box.'
 
-	return (
-		<div
+    return (
+        <div
 			style={{
 				minHeight: '100vh',
 				background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1629 100%)',
 				fontFamily: 'Poppins, system-ui',
 			}}
 		>
-			{/* Intentionally hidden on scanner page */}
-			<div style={{ padding: 'clamp(16px, 4vw, 40px)', maxWidth: '1400px', margin: '0 auto' }}>
+            {/* Intentionally hidden on scanner page */}
+            <div style={{ padding: 'clamp(16px, 4vw, 40px)', maxWidth: '1400px', margin: '0 auto' }}>
 				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px', marginBottom: '20px' }}>
 					<div>
 						<h1 style={{ color: '#00FFD4', fontSize: 'clamp(1.5rem, 3.6vw, 2.2rem)', fontWeight: 700, margin: 0 }}>Attendance Scanner</h1>
@@ -544,7 +641,13 @@ export default function AttendanceScan() {
 							<div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
 								{!scanning ? (
 									<button
-										onClick={() => startCamera()}
+										onClick={/**
+                                         * Purpose: Helper callback used inside a larger operation
+                                         * Plain English: What this function is used for.
+                                         */
+                                        () => {
+                                            return startCamera();
+                                        }}
 										disabled={starting}
 										style={{
 											display: 'flex',
@@ -564,7 +667,7 @@ export default function AttendanceScan() {
 									</button>
 								) : useFullViewportPreview ? (
 									// Controls are shown as an overlay on the fullscreen scanner.
-									<div />
+									(<div />)
 								) : (
 									<>
 										<button
@@ -733,7 +836,13 @@ export default function AttendanceScan() {
 							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' }}>
 								<input
 									value={manualPayload}
-									onChange={(e) => setManualPayload(e.target.value)}
+									onChange={/**
+                                     * Purpose: Helper callback used inside a larger operation
+                                     * Plain English: What this function is used for.
+                                     */
+                                    e => {
+                                        return setManualPayload(e.target.value);
+                                    }}
 									placeholder="Enter 8 chars"
 									style={{
 										padding: '12px 14px',
@@ -745,10 +854,14 @@ export default function AttendanceScan() {
 									}}
 								/>
 								<button
-									onClick={async () => {
-									await submitPayload(manualPayload, 'manual')
-									setManualPayload('')
-								}}
+									onClick={/**
+                                     * Purpose: Helper callback used inside a larger operation
+                                     * Plain English: What this function is used for.
+                                     */
+                                    async () => {
+                                        await submitPayload(manualPayload, 'manual')
+                                        setManualPayload('')
+                                    }}
 									style={{
 										display: 'flex',
 										alignItems: 'center',
@@ -814,6 +927,6 @@ export default function AttendanceScan() {
 					</div>
 				</div>
 			</div>
-		</div>
-	)
+        </div>
+    );
 }

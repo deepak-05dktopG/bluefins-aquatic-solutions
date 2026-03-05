@@ -1,3 +1,8 @@
+/**
+ * What it is: Database model for worksheets/resources.
+ * Non-tech note: Stores shared links (like Google Forms/Drive) for weekly worksheets.
+ */
+
 import mongoose from 'mongoose';
 
 const worksheetSchema = new mongoose.Schema({
@@ -19,9 +24,13 @@ const worksheetSchema = new mongoose.Schema({
     required: [true, 'Link is required'],
     trim: true,
     validate: {
+      /**
+       * Purpose: Helper callback used inside a larger operation
+       * Plain English: What this function is used for.
+       */
       validator: function(v) {
         // Basic URL validation
-		return /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/.test(v);
+        return /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/.test(v);
       },
       message: 'Please enter a valid URL'
     }

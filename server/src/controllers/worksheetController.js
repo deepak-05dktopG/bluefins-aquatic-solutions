@@ -1,9 +1,18 @@
+/**
+ * What it is: Worksheets API controller.
+ * Non-tech note: Manages weekly worksheet links/resources for the team.
+ */
+
 import Worksheet from '../models/Worksheet.js';
 
 // @desc    Create new worksheet link
 // @route   POST /api/worksheets
 // @access  Private/Admin
-export const createWorksheet = async (req, res) => {
+export /**
+ * Purpose: Create Worksheet
+ * Plain English: What this function is used for.
+ */
+const createWorksheet = async (req, res) => {
   try {
     const { title, caption, message, link, linkType, createdBy } = req.body;
 
@@ -34,7 +43,13 @@ export const createWorksheet = async (req, res) => {
     console.error('Error creating worksheet:', error);
     
     if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(err => err.message);
+      const messages = Object.values(error.errors).map(/**
+       * Purpose: Array mapping callback (converts each item to a new value)
+       * Plain English: What this function is used for.
+       */
+      err => {
+        return err.message;
+      });
       return res.status(400).json({
         success: false,
         message: messages.join(', ')
@@ -51,7 +66,11 @@ export const createWorksheet = async (req, res) => {
 // @desc    Get all worksheets
 // @route   GET /api/worksheets
 // @access  Private/Team
-export const getAllWorksheets = async (req, res) => {
+export /**
+ * Purpose: Get All Worksheets
+ * Plain English: What this function is used for.
+ */
+const getAllWorksheets = async (req, res) => {
   try {
     const { isActive = true, linkType, limit = 50, page = 1 } = req.query;
 
@@ -96,7 +115,11 @@ export const getAllWorksheets = async (req, res) => {
 // @desc    Get single worksheet by ID
 // @route   GET /api/worksheets/:id
 // @access  Private/Team
-export const getWorksheetById = async (req, res) => {
+export /**
+ * Purpose: Get Worksheet By Id
+ * Plain English: What this function is used for.
+ */
+const getWorksheetById = async (req, res) => {
   try {
     const worksheet = await Worksheet.findById(req.params.id);
 
@@ -123,7 +146,11 @@ export const getWorksheetById = async (req, res) => {
 // @desc    Update worksheet
 // @route   PATCH /api/worksheets/:id
 // @access  Private/Admin
-export const updateWorksheet = async (req, res) => {
+export /**
+ * Purpose: Do Update Worksheet
+ * Plain English: What this function is used for.
+ */
+const updateWorksheet = async (req, res) => {
   try {
     const { title, caption, message, link, linkType, isActive } = req.body;
 
@@ -157,7 +184,11 @@ export const updateWorksheet = async (req, res) => {
 // @desc    Delete worksheet
 // @route   DELETE /api/worksheets/:id
 // @access  Private/Admin
-export const deleteWorksheet = async (req, res) => {
+export /**
+ * Purpose: Do Delete Worksheet
+ * Plain English: What this function is used for.
+ */
+const deleteWorksheet = async (req, res) => {
   try {
     const worksheet = await Worksheet.findByIdAndDelete(req.params.id);
 
@@ -184,7 +215,11 @@ export const deleteWorksheet = async (req, res) => {
 // @desc    Increment click count
 // @route   PATCH /api/worksheets/:id/click
 // @access  Public
-export const incrementClick = async (req, res) => {
+export /**
+ * Purpose: Do Increment Click
+ * Plain English: What this function is used for.
+ */
+const incrementClick = async (req, res) => {
   try {
     const worksheet = await Worksheet.findByIdAndUpdate(
       req.params.id,
@@ -215,7 +250,11 @@ export const incrementClick = async (req, res) => {
 // @desc    Get worksheets statistics
 // @route   GET /api/worksheets/stats
 // @access  Private/Admin
-export const getWorksheetStats = async (req, res) => {
+export /**
+ * Purpose: Get Worksheet Stats
+ * Plain English: What this function is used for.
+ */
+const getWorksheetStats = async (req, res) => {
   try {
     const totalWorksheets = await Worksheet.countDocuments();
     const activeWorksheets = await Worksheet.countDocuments({ isActive: true });

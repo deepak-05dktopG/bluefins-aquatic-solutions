@@ -1,3 +1,8 @@
+/**
+ * What it is: Backend linting rules (ESLint config).
+ * Non-tech note: Helps keep server code consistent and catch mistakes.
+ */
+
 import js from '@eslint/js'
 import globals from 'globals'
 import unusedImports from 'eslint-plugin-unused-imports'

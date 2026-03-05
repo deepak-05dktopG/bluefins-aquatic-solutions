@@ -1,25 +1,38 @@
+/**
+ * What it is: Security middleware for admin login (JWT token check).
+ * Non-tech note: Blocks admin APIs unless the user is properly logged in.
+ */
+
 import jwt from 'jsonwebtoken'
 import Admin from '../models/Admin.js'
 
-const extractBearerToken = (value) => {
-	if (!value) return null
-	const s = String(value)
-	const m = s.match(/^Bearer\s+(.+)$/i)
-	return m ? m[1].trim() : null
-}
+/**
+ * Purpose: Do Extract Bearer Token
+ * Plain English: What this function is used for.
+ */
+const extractBearerToken = value => {
+    if (!value) return null
+    const s = String(value)
+    const m = s.match(/^Bearer\s+(.+)$/i)
+    return m ? m[1].trim() : null
+};
 
+/**
+ * Purpose: Do Require Admin Auth
+ * Plain English: What this function is used for.
+ */
 const requireAdminAuth = async (req, res, next) => {
-	const secret = process.env.JWT_SECRET
-	if (!secret) {
+    const secret = process.env.JWT_SECRET
+    if (!secret) {
 		return res.status(500).json({ success: false, message: 'Server JWT secret is not configured (JWT_SECRET)' })
 	}
 
-	const token = extractBearerToken(req.header('Authorization'))
-	if (!token) {
+    const token = extractBearerToken(req.header('Authorization'))
+    if (!token) {
 		return res.status(401).json({ success: false, message: 'Unauthorized (missing token)' })
 	}
 
-	try {
+    try {
 		const decoded = jwt.verify(token, secret)
 		const adminDbId = decoded?.adminDbId || decoded?.adminId
 		if (!decoded || decoded.typ !== 'admin' || !adminDbId) {
@@ -41,6 +54,6 @@ const requireAdminAuth = async (req, res, next) => {
 	} catch {
 		return res.status(401).json({ success: false, message: 'Unauthorized (invalid token)' })
 	}
-}
+};
 
 export default requireAdminAuth
