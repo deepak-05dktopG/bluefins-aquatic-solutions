@@ -21,7 +21,7 @@ const worksheetSchema = new mongoose.Schema({
     validate: {
       validator: function(v) {
         // Basic URL validation
-        return /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(v);
+		return /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/.test(v);
       },
       message: 'Please enter a valid URL'
     }

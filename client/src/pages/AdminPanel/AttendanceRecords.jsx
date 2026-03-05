@@ -1,7 +1,5 @@
 import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import AdminNavbar from '../../components/adminPanel/AdminNavbar.jsx'
-import { FaCamera, FaDownload, FaTrash, FaSyncAlt } from 'react-icons/fa'
+import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
 import { formatDateTime } from '../../utils/dateTime'

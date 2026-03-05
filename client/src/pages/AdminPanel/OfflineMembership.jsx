@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AdminNavbar from '../../components/adminPanel/AdminNavbar.jsx'
 import { downloadMemberIdCard } from '../../utils/idCard'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
 
@@ -160,7 +159,7 @@ const OfflineMembership = () => {
 
 	useEffect(() => {
 		if (selectedPlan?.type !== 'family') setFamilyMembers([emptyFamilyMember])
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		 
 	}, [selectedPlan?.type])
 
 	const fetchPlans = async () => {

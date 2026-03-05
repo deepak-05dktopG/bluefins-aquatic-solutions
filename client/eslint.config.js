@@ -14,6 +14,11 @@ export default [
 		languageOptions: {
 			ecmaVersion: 'latest',
 			sourceType: 'module',
+			parserOptions: {
+				ecmaFeatures: {
+					jsx: true,
+				},
+			},
 			globals: {
 				...globals.browser,
 				...globals.es2021,
@@ -44,6 +49,7 @@ export default [
 			// React
 			'react/react-in-jsx-scope': 'off',
 			'react/jsx-uses-react': 'off',
+			'react/jsx-uses-vars': 'error',
 			'react-hooks/rules-of-hooks': 'error',
 			'react-hooks/exhaustive-deps': 'warn',
 		},

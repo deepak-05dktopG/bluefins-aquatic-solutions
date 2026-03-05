@@ -1,9 +1,7 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { FaSwimmer, FaTrophy, FaUsers, FaToolbox, FaChartLine, FaAward, FaShieldAlt, FaClock } from "react-icons/fa";
-import { NavLink } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import { FaTrophy, FaUsers, FaChartLine, FaAward, FaShieldAlt, FaClock } from "react-icons/fa";
 const Service = () => {
   useEffect(() => {
     AOS.init({

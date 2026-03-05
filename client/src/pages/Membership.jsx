@@ -1,7 +1,5 @@
 import { adminFetch, isAdminAuthenticated } from '../utils/adminAuth'
-import React, { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import Navbar from '../components/Navbar'
+import { useEffect, useMemo, useState } from 'react'
 import { downloadMemberIdCard } from '../utils/idCard'
 import { formatDateTime, formatHHmmTo12Hour } from '../utils/dateTime'
 
@@ -136,12 +134,6 @@ const Membership = () => {
   }, [])
 
   const selectedPlan = useMemo(() => plans.find((p) => p._id === selectedPlanId) || null, [plans, selectedPlanId])
-
-  const planLabel = (p) => {
-    const name = p?.planName || p?.name || 'Membership Plan'
-    const type = p?.type || 'monthly'
-    return `${name} (${PLAN_TYPE_LABEL[type] || type})`
-  }
 
   const computedSubtotal = useMemo(() => {
     if (testAmountInr != null) return Number(testAmountInr)
@@ -291,7 +283,7 @@ const Membership = () => {
     if (selectedPlan?.type !== 'family') {
       setFamilyMembers([emptyFamilyMember])
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [selectedPlan?.type])
 
   useEffect(() => {

@@ -1,6 +1,5 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FaCamera, FaKeyboard, FaStopCircle, FaSyncAlt } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
 import { formatTime } from '../../utils/dateTime'
@@ -20,19 +19,6 @@ const safeReadJson = async (res) => {
 export default function AttendanceScan() {
 	const navigate = useNavigate()
 	const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
-
-	const isLikelyMobile = React.useMemo(() => {
-		if (typeof navigator === 'undefined') return false
-		return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '')
-	}, [])
-
-	const isLikelyIOSSafari = React.useMemo(() => {
-		if (typeof navigator === 'undefined') return false
-		const ua = navigator.userAgent || ''
-		const isIOS = /iPhone|iPad|iPod/i.test(ua)
-		const isSafari = /Safari/i.test(ua) && !/Chrome|CriOS|EdgiOS|FxiOS/i.test(ua)
-		return isIOS && isSafari
-	}, [])
 
 	const videoRef = React.useRef(null)
 	const canvasRef = React.useRef(null)
@@ -111,9 +97,23 @@ export default function AttendanceScan() {
 
 	const [starting, setStarting] = React.useState(false)
 	const [scanning, setScanning] = React.useState(false)
+	const [flipPreviewX, setFlipPreviewX] = React.useState(false)
 	const [manualPayload, setManualPayload] = React.useState('')
 	const [lastScan, setLastScan] = React.useState(null)
 	const [cameraError, setCameraError] = React.useState('')
+
+	const isUserFacingTrack = React.useCallback((track) => {
+		try {
+			const settings = track?.getSettings?.() || {}
+			if (typeof settings.facingMode === 'string') return settings.facingMode === 'user'
+			const label = String(track?.label || '')
+			if (/front|user/i.test(label)) return true
+			if (/back|rear|environment/i.test(label)) return false
+		} catch {
+			// ignore
+		}
+		return false
+	}, [])
 
 	const showPopup = React.useCallback(async ({ icon, title, text, ms = 2200 }) => {
 		await Swal.fire({
@@ -158,6 +158,7 @@ export default function AttendanceScan() {
 		}
 		streamRef.current = null
 		setScanning(false)
+		setFlipPreviewX(false)
 	}, [])
 
 	React.useEffect(() => {
@@ -289,6 +290,7 @@ export default function AttendanceScan() {
 
 				try {
 					const track = stream?.getVideoTracks?.()?.[0]
+					setFlipPreviewX(isUserFacingTrack(track))
 					const settings = track?.getSettings?.() || {}
 					if (settings?.deviceId) {
 						setActiveDeviceId(String(settings.deviceId))
@@ -307,10 +309,17 @@ export default function AttendanceScan() {
 					}
 				}
 
-				const detector = new window.BarcodeDetector({ formats: ['qr_code'] })
-				setScanning(true)
+				let detector
+				try {
+					detector = new window.BarcodeDetector({ formats: ['qr_code'] })
+				} catch {
+					// Some browsers expose BarcodeDetector but throw on construction/options.
+					detector = null
+				}
+				if (detector) {
+					setScanning(true)
 
-				scanTimerRef.current = window.setInterval(async () => {
+					scanTimerRef.current = window.setInterval(async () => {
 					if (detectingRef.current) return
 					try {
 						detectingRef.current = true
@@ -359,7 +368,27 @@ export default function AttendanceScan() {
 					} finally {
 						detectingRef.current = false
 					}
-				}, 200)
+					}, 200)
+					return
+				}
+
+				// BarcodeDetector not usable -> fall back to ZXing with the existing stream.
+				const { BrowserQRCodeReader } = await import('@zxing/browser')
+				const reader = new BrowserQRCodeReader()
+				setScanning(true)
+				const controls = await reader.decodeFromVideoElement(video, async (result) => {
+					if (!result) return
+					const rawValue = typeof result.getText === 'function' ? result.getText() : String(result)
+					if (!rawValue) return
+
+					const now = Date.now()
+					const last = lastSeenRef.current
+					if (last.value === rawValue && now - last.at < 2000) return
+					lastSeenRef.current = { value: rawValue, at: now }
+
+					await submitPayload(rawValue, 'qr')
+				})
+				zxingControlsRef.current = controls
 				return
 			}
 
@@ -371,6 +400,7 @@ export default function AttendanceScan() {
 
 			try {
 				const track = stream?.getVideoTracks?.()?.[0]
+				setFlipPreviewX(isUserFacingTrack(track))
 				const settings = track?.getSettings?.() || {}
 				if (settings?.deviceId) {
 					setActiveDeviceId(String(settings.deviceId))
@@ -424,7 +454,7 @@ export default function AttendanceScan() {
 		} finally {
 			setStarting(false)
 		}
-	}, [stopCamera, submitPayload, showPopup, getEnhancedCameraConstraints, applyBestEffortVideoTrackConstraints, listVideoInputs, enumeratedOnce])
+	}, [stopCamera, submitPayload, showPopup, getEnhancedCameraConstraints, applyBestEffortVideoTrackConstraints, listVideoInputs, enumeratedOnce, isUserFacingTrack])
 
 	const canSwitchCamera = scanning && !starting && videoInputs.length > 1
 
@@ -445,6 +475,28 @@ export default function AttendanceScan() {
 		borderRadius: '16px',
 		padding: 'clamp(14px, 2.2vw, 22px)',
 	}
+
+	const fullViewportScannerStyle = {
+		position: 'fixed',
+		inset: 0,
+		width: '100vw',
+		height: '100vh',
+		overflow: 'hidden',
+		borderRadius: 0,
+		background: 'rgba(0,0,0,0.35)',
+		zIndex: 1000,
+	}
+
+	const compactScannerStyle = {
+		position: 'relative',
+		borderRadius: '12px',
+		overflow: 'hidden',
+		background: 'rgba(0,0,0,0.35)',
+	}
+
+	const useFullViewportPreview = scanning
+
+	const tipText = 'Zoom the QR (bring it closer) and keep it centered inside the box.'
 
 	return (
 		<div
@@ -470,14 +522,29 @@ export default function AttendanceScan() {
 							<div>
 								<h2 style={{ margin: 0, color: 'rgba(255,255,255,0.92)', fontSize: '1.2rem', fontWeight: 700 }}>Camera Scan</h2>
 								<p style={{ margin: '8px 0 0 0', color: 'rgba(255,255,255,0.6)' }}>{scanning ? 'Scanning… hold the QR steady' : 'Start the camera to scan member QR codes'}</p>
-								<p style={{ margin: '6px 0 0 0', color: 'rgba(255,255,255,0.55)', fontSize: '0.95rem' }}>
-									Tip: Zoom the QR (bring it closer) and keep it centered inside the box.
-								</p>
+								{scanning ? (
+									<div
+										style={{
+											marginTop: '10px',
+											display: 'inline-flex',
+											alignItems: 'center',
+											gap: '8px',
+											padding: '10px 12px',
+											borderRadius: '12px',
+											background: 'rgba(0, 255, 212, 0.12)',
+											border: '1px solid rgba(0, 255, 212, 0.30)',
+											color: 'rgba(255,255,255,0.92)',
+											fontWeight: 700,
+										}}
+									>
+										{tipText}
+									</div>
+								) : null}
 							</div>
 							<div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
 								{!scanning ? (
 									<button
-										onClick={startCamera}
+										onClick={() => startCamera()}
 										disabled={starting}
 										style={{
 											display: 'flex',
@@ -495,6 +562,9 @@ export default function AttendanceScan() {
 									>
 										<FaCamera /> {starting ? 'Starting…' : 'Start Camera'}
 									</button>
+								) : useFullViewportPreview ? (
+									// Controls are shown as an overlay on the fullscreen scanner.
+									<div />
 								) : (
 									<>
 										<button
@@ -546,22 +616,104 @@ export default function AttendanceScan() {
 						) : null}
 
 						<div style={{ marginTop: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(10, 14, 39, 0.75)', padding: '14px' }}>
-							<div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', background: 'rgba(0,0,0,0.35)' }}>
+							<div style={useFullViewportPreview ? fullViewportScannerStyle : compactScannerStyle}>
+								{useFullViewportPreview ? (
+									<div
+										style={{
+											position: 'absolute',
+											top: 0,
+											left: 0,
+											right: 0,
+											zIndex: 2,
+											padding: '14px',
+											display: 'flex',
+											justifyContent: 'space-between',
+											alignItems: 'flex-start',
+											gap: '12px',
+											background: 'linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0))',
+											pointerEvents: 'auto',
+										}}
+									>
+										<div style={{ display: 'flex', flexDirection: 'column', gap: '10px', pointerEvents: 'none' }}>
+											<div style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 800 }}>Scanning…</div>
+											<div
+												style={{
+													display: 'inline-flex',
+													alignItems: 'center',
+													gap: '8px',
+													padding: '10px 12px',
+													borderRadius: '12px',
+													background: 'rgba(0, 255, 212, 0.12)',
+													border: '1px solid rgba(0, 255, 212, 0.30)',
+													color: 'rgba(255,255,255,0.92)',
+													fontWeight: 800,
+												}}
+											>
+												{tipText}
+											</div>
+										</div>
+										<div style={{ display: 'flex', gap: '10px', pointerEvents: 'auto' }}>
+											<button
+												onClick={switchCamera}
+												disabled={!canSwitchCamera}
+												title={canSwitchCamera ? 'Switch camera' : 'No alternate camera found'}
+												style={{
+													display: 'flex',
+													alignItems: 'center',
+													gap: '8px',
+													padding: '10px 14px',
+													background: 'rgba(255, 255, 255, 0.10)',
+													color: 'rgba(255,255,255,0.92)',
+													border: '1px solid rgba(255,255,255,0.20)',
+													borderRadius: '10px',
+													cursor: canSwitchCamera ? 'pointer' : 'not-allowed',
+													fontWeight: 600,
+													opacity: canSwitchCamera ? 1 : 0.55,
+												}}
+											>
+												<FaSyncAlt /> Switch
+											</button>
+											<button
+												onClick={stopCamera}
+												style={{
+													display: 'flex',
+													alignItems: 'center',
+													gap: '8px',
+													padding: '10px 16px',
+													background: 'rgba(255, 50, 100, 0.2)',
+													color: '#FF6B9D',
+													border: '1px solid rgba(255, 50, 100, 0.4)',
+													borderRadius: '10px',
+													cursor: 'pointer',
+													fontWeight: 600,
+												}}
+											>
+												<FaStopCircle /> Stop
+											</button>
+										</div>
+									</div>
+								) : null}
 								<video
 									ref={videoRef}
+									autoPlay
 									playsInline
 									muted
 									style={{
-										width: '100%',
-										height: 'clamp(260px, 52vh, 420px)',
+										position: useFullViewportPreview ? 'absolute' : 'static',
+										inset: useFullViewportPreview ? 0 : undefined,
+										zIndex: useFullViewportPreview ? 1 : undefined,
+										width: useFullViewportPreview ? '100vw' : '100%',
+										height: useFullViewportPreview ? '100vh' : 'clamp(260px, 52vh, 420px)',
 										objectFit: 'cover',
+										transform: flipPreviewX ? 'scaleX(-1)' : 'none',
+										transformOrigin: 'center',
 										opacity: scanning ? 1 : 0.35,
 									}}
 								/>
 								<div
 									style={{
 										position: 'absolute',
-										inset: '18px',
+										inset: useFullViewportPreview ? 'clamp(14px, 3.5vw, 28px)' : '18px',
 										borderRadius: '16px',
 										border: '2px dashed rgba(0, 255, 212, 0.55)',
 										boxShadow: 'inset 0 0 0 2000px rgba(0,0,0,0.10)',

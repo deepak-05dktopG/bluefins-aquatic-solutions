@@ -1,6 +1,4 @@
-import React from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { FaRocket, FaSignOutAlt } from 'react-icons/fa'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { clearAdminToken } from '../../utils/adminAuth'
 
 const AdminNavbar = () => {
@@ -14,7 +12,6 @@ const AdminNavbar = () => {
 
 	const isDashboard = location.pathname === '/admin/dashboard'
 	const isOfflineMembership = location.pathname === '/admin/offline-membership'
-	const isMarketing = location.pathname === '/admin/marketing'
 
 	const linkStyle = (active) => ({
 		display: 'flex',
@@ -94,10 +91,6 @@ const AdminNavbar = () => {
 
 					<Link to="/admin/offline-membership" style={linkStyle(isOfflineMembership)}>
 						<FaRocket /> Offline Membership
-					</Link>
-
-					<Link to="/admin/marketing" style={linkStyle(isMarketing)}>
-						<FaRocket /> Marketing
 					</Link>
 
 					<button

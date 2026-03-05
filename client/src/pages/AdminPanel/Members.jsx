@@ -1,7 +1,5 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import AdminNavbar from '../../components/adminPanel/AdminNavbar.jsx'
-import { FaSyncAlt, FaDownload, FaChevronLeft, FaChevronRight, FaTrash } from 'react-icons/fa'
 import Swal from 'sweetalert2'
 import { downloadMemberIdCard } from '../../utils/idCard'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
@@ -42,7 +40,7 @@ const daysUntil = (expiryDate, planType) => {
 const downloadCsv = ({ rows, filename }) => {
 	const escape = (v) => {
 		const s = v == null ? '' : String(v)
-		if (/[\n\r\t,\"]/g.test(s)) return `"${s.replaceAll('"', '""')}"`
+		if (/[\n\r\t,"]/g.test(s)) return `"${s.replaceAll('"', '""')}"`
 		return s
 	}
 

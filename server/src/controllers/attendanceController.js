@@ -146,7 +146,7 @@ const parseDateEnd = (value) => {
 
 const escapeCsv = (value) => {
 	const s = value == null ? '' : String(value)
-	if (/[\n\r\t,\"]/g.test(s)) return `"${s.replaceAll('"', '""')}"`
+	if (/[\n\r\t,"]/.test(s)) return `"${s.replaceAll('"', '""')}"`
 	return s
 }
 

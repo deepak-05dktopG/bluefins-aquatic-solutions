@@ -46,6 +46,10 @@ const isValidAdminId = (adminId) => {
 	return /^[a-z0-9._@-]+$/.test(adminId)
 }
 
+const printHelp = () => {
+	console.log(`\nCreate or update an admin user\n\nUsage:\n  npm run create-admin -- --email you@example.com --password "..." [--id adminId] [--role admin|superadmin] [--update]\n\nFlags:\n  --email      Required. Admin email.\n  --password   Required. If omitted and running in a TTY, you will be prompted.\n  --id         Optional. Admin id (defaults to email).\n  --adminId    Optional. Alias for --id.\n  --role       Optional. admin | superadmin (default: admin).\n  --update     Optional. Update existing admin if found.\n  --help       Show this message.\n`)
+}
+
 const promptHidden = async (question) => {
 	if (!process.stdin.isTTY) return ''
 	process.stdout.write(question)

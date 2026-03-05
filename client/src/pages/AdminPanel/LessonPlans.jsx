@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminNavbar from "../../components/adminPanel/AdminNavbar.jsx";
-import { FaDownload, FaTrash, FaEye, FaTimes } from "react-icons/fa";
 import { isAdminAuthenticated } from "../../utils/adminAuth";
+import AdminNavbar from "../../components/adminPanel/AdminNavbar";
+import { FaDownload, FaEye, FaTimes } from "react-icons/fa";
 
 const LessonPlans = () => {
   const navigate = useNavigate();
@@ -13,59 +13,12 @@ const LessonPlans = () => {
     }
   }, [navigate]);
 
-  // Helper function
-  const hexToRgb = (hex) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : "0, 0, 0";
-  };
-
   // Yearly Plans State
-  const [yearlyPlans, setYearlyPlans] = useState([
+  const [yearlyPlans] = useState([
     { id: 1, year: 2025-2026, title: "Annual Swimming Curriculum", pdfUrl: "/assets/lessonPlan/yearly plan.pdf", uploadDate: "2025-01-15" },
     { id: 2, year: 2025-2026, title: "Level of Learning", pdfUrl: "/assets/lessonPlan/level of learning.pdf", uploadDate: "2025-06-20" },
   ]);
   const [selectedYearlyPlan, setSelectedYearlyPlan] = useState(null);
-
-  // Learning Levels State
-  const [learningLevels, setLearningLevels] = useState([
-    {
-      id: 1,
-      name: "Beginner",
-      description: "Kids aged 4-6 years. Basic water familiarization, floating techniques, and overcoming water fear.",
-      color: "#00FFD4",
-      duration: "3-4 months",
-      skills: ["Water familiarization", "Floating", "Basic breathing", "Pool safety"],
-      pdfUrl: "/assets/lessonPlan/level of learning.pdf",
-    },
-    {
-      id: 2,
-      name: "Intermediate",
-      description: "Kids aged 7-10 years. Stroke development, endurance building, and swimming coordination.",
-      color: "#0099FF",
-      duration: "4-6 months",
-      skills: ["Freestyle stroke", "Backstroke", "Endurance training", "Diving basics"],
-      pdfUrl: "/assets/lessonPlan/level of learning.pdf",
-    },
-    {
-      id: 3,
-      name: "Advanced",
-      description: "Kids aged 11+ years. Competitive swimming techniques and advanced stroke refinement.",
-      color: "#FF6B9D",
-      duration: "6-12 months",
-      skills: ["Butterfly stroke", "Breaststroke", "Speed training", "Competition prep"],
-      pdfUrl: "/assets/lessonPlan/level of learning.pdf",
-    },
-    {
-      id: 4,
-      name: "Professional",
-      description: "Selected swimmers for state and national level competitions with intensive training.",
-      color: "#FFD700",
-      duration: "Ongoing",
-      skills: ["Race strategies", "Advanced techniques", "Mental conditioning", "Performance analysis"],
-      pdfUrl: "/assets/lessonPlan/level of learning.pdf",
-    },
-  ]);
-  const [slectedLevel, setSelectedLevel] = useState(null);
 
   return (
     <div

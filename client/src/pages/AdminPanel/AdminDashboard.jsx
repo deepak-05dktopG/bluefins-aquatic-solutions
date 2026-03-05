@@ -1,8 +1,16 @@
-import React, { useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import AdminNavbar from "../../components/adminPanel/AdminNavbar.jsx";
-import { FaBookmark, FaComments, FaClipboard, FaFileAlt, FaChartBar, FaUsers, FaArrowRight, FaQrcode } from "react-icons/fa";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { isAdminAuthenticated } from "../../utils/adminAuth";
+import AdminNavbar from "../../components/adminPanel/AdminNavbar";
+import {
+  FaArrowRight,
+  FaBookmark,
+  FaClipboard,
+  FaComments,
+  FaFileAlt,
+  FaQrcode,
+  FaUsers,
+} from "react-icons/fa";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -78,21 +86,6 @@ const AdminDashboard = () => {
       color: "#FFB6C1",
       count: "",
     },
-    {
-      title: "Marketing (WhatsApp)",
-      description: "Filter members/customers and send bulk WhatsApp",
-      icon: <FaComments />,
-      path: "/admin/marketing",
-      color: "#00FFD4",
-      count: "",
-    },
-  ];
-
-  const stats = [
-    { label: "Total Students", value: "156", icon: <FaUsers />, color: "#00FFD4" },
-    { label: "Active Programs", value: "8", icon: <FaChartBar />, color: "#0099FF" },
-    { label: "Feedback Received", value: "42", icon: <FaComments />, color: "#FF6B9D" },
-    { label: "Published Posts", value: "15", icon: <FaFileAlt />, color: "#FFD700" },
   ];
 
   return (

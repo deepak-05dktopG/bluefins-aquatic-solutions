@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaRocket, FaLock } from "react-icons/fa";
-import Navbar from "../../components/Navbar";
 import api from "../../api/api";
 import { isAdminAuthenticated, setAdminToken } from "../../utils/adminAuth";
 

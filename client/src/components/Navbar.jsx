@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Navbar as BsNavbar, Nav, Container, Button } from "react-bootstrap";
-import { FaWater } from "react-icons/fa";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);

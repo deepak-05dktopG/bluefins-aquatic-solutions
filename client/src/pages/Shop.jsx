@@ -1,11 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import Navbar from "../components/Navbar";
 
 const Shop = () => {
 

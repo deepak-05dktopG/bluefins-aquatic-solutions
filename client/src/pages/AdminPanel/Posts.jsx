@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminNavbar from "../../components/adminPanel/AdminNavbar.jsx";
-import { FaTrash, FaPlusCircle, FaImage, FaTimes, FaUpload, FaImages } from "react-icons/fa";
 import Swal from 'sweetalert2';
 import { adminFetch, isAdminAuthenticated } from "../../utils/adminAuth";
 import { formatDateTime } from "../../utils/dateTime";

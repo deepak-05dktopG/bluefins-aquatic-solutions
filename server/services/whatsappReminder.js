@@ -46,10 +46,15 @@ const buildRenewUrl = (memberId) => {
 	return `${base}/pay?memberId=${encodeURIComponent(String(memberId))}`
 }
 
+const getWhatsAppApiVersion = () => {
+	// Backward compatible: some envs use WA_VERSION
+	return String(process.env.WA_API_VERSION || process.env.WA_VERSION || 'v19.0').trim()
+}
+
 export const sendWhatsAppText = async ({ to, body }) => {
 	const phoneId = String(process.env.WA_PHONE_ID || '').trim()
 	const token = String(process.env.WA_TOKEN || '').trim()
-	const version = String(process.env.WA_API_VERSION || 'v19.0').trim()
+	const version = getWhatsAppApiVersion()
 
 	if (!phoneId) throw new Error('Missing WA_PHONE_ID')
 	if (!token) throw new Error('Missing WA_TOKEN')
@@ -79,10 +84,55 @@ export const sendWhatsAppText = async ({ to, body }) => {
 	return json
 }
 
+export const sendWhatsAppTemplateMessage = async ({ to, templateName, templateLang = 'en_US', bodyParams = [] } = {}) => {
+	const phoneId = String(process.env.WA_PHONE_ID || '').trim()
+	const token = String(process.env.WA_TOKEN || '').trim()
+	const version = getWhatsAppApiVersion()
+
+	const name = String(templateName || '').trim()
+	const lang = String(templateLang || '').trim() || 'en_US'
+	if (!name) throw new Error('Missing template name')
+	if (!phoneId) throw new Error('Missing WA_PHONE_ID')
+	if (!token) throw new Error('Missing WA_TOKEN')
+	if (!to) throw new Error('Missing destination phone')
+
+	const params = Array.isArray(bodyParams) ? bodyParams : []
+	const url = `https://graph.facebook.com/${version}/${phoneId}/messages`
+	const res = await fetch(url, {
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			messaging_product: 'whatsapp',
+			to,
+			type: 'template',
+			template: {
+				name,
+				language: { code: lang },
+				components: [
+					{
+						type: 'body',
+						parameters: params.map((p) => ({ type: 'text', text: String(p ?? '') })),
+					},
+				],
+			},
+		}),
+	})
+
+	const json = await res.json().catch(() => null)
+	if (!res.ok) {
+		const msg = json?.error?.message || `WhatsApp API error (${res.status})`
+		throw new Error(msg)
+	}
+	return json
+}
+
 export const sendWhatsAppTemplate = async ({ to, name, daysLeft, renewUrl }) => {
 	const phoneId = String(process.env.WA_PHONE_ID || '').trim()
 	const token = String(process.env.WA_TOKEN || '').trim()
-	const version = String(process.env.WA_API_VERSION || 'v19.0').trim()
+	const version = getWhatsAppApiVersion()
 	const templateName = String(process.env.WA_TEMPLATE_NAME || '').trim()
 	const templateLang = String(process.env.WA_TEMPLATE_LANG || 'en_US').trim()
 

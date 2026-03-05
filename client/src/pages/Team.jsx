@@ -1,10 +1,6 @@
-﻿import React, { useEffect, useState } from "react"
+﻿import { useEffect } from "react"
 import AOS from "aos"
 import "aos/dist/aos.css"
-import { Container, Row, Col } from "react-bootstrap"
-import { FaBolt, FaRibbon, FaHeadset, FaTrophy, FaFire, FaStar, FaAward } from "react-icons/fa"
-import { NavLink } from "react-router-dom"
-import Navbar from "../components/Navbar"
 const Team = () => {
   useEffect(() => {
     AOS.init({ 
@@ -16,8 +12,6 @@ const Team = () => {
     });
     AOS.refresh();
   }, [])
-
-  const [hoveredTeam, setHoveredTeam] = useState(null)
 
   const teamData = {
     leadership: {

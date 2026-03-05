@@ -1,20 +1,17 @@
-import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Container, Row, Col } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
 import {
-  FaPhone,
   FaEnvelope,
-  FaMapMarkerAlt,
-  FaFacebookF,
   FaInstagram,
+  FaMapMarkerAlt,
+  FaPhone,
   FaWhatsapp,
-  FaTwitter,
 } from "react-icons/fa";
-import { Button } from "react-bootstrap";
+
+
 
 const Footer = () => {
   const navigate = useNavigate();
-  const [clickCount, setClickCount] = useState(0);
   return (
     <footer
       style={{
@@ -59,7 +56,6 @@ const Footer = () => {
             <div 
               onClick={() => {
                 navigate("/");
-                setClickCount(0);
               }}
               style={{ cursor: "pointer", marginBottom: "15px" }}
             >

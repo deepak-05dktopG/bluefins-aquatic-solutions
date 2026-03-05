@@ -1,9 +1,6 @@
-﻿import React, { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaFacebook, FaInstagram, FaTwitter, FaLinkedin, FaCheckCircle, FaClock, FaHeadset } from "react-icons/fa";
-import { Link } from "react-router-dom";
-import Navbar from "../components/Navbar";
 import emailjs from "@emailjs/browser";
 import Swal from 'sweetalert2';
 import { formatDateTime } from "../utils/dateTime";
@@ -38,8 +35,6 @@ const Contact = () => {
     e.preventDefault();
     setLoading(true);
 
-    let databaseSaved = false;
-
     try {
       // Save to database first
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/feedback`, {
@@ -53,8 +48,6 @@ const Contact = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Failed to save feedback');
       }
-      
-      databaseSaved = true;
       
       // Then send email via EmailJS
       try {

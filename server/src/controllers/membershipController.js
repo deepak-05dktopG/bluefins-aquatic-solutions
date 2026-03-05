@@ -6,8 +6,6 @@ import MembershipPlan from '../models/MembershipPlan.js'
 import Member from '../models/Member.js'
 import Payment from '../models/Payment.js'
 import Attendance from '../models/Attendance.js'
-import { upsertMarkettingLead } from '../utils/marketting.js'
-import Marketting from '../models/Marketting.js'
 
 const BUSINESS_TZ_OFFSET_MINUTES = Number.parseInt(process.env.BUSINESS_TZ_OFFSET_MINUTES || '330', 10)
 
@@ -477,17 +475,6 @@ const createMembersForDraft = async ({ plan, amountRes, membersToCreate, joinDat
 		doc.qrPayload = qrPayload
 		doc.qrCode = qrCode
 		await doc.save()
-
-		// Best-effort: store for marketing use (no duplicates by WhatsApp number)
-		try {
-			void upsertMarkettingLead({
-				customerName: doc?.name,
-				whatsappNumber: doc?.phone,
-				source: 'membership',
-			}).catch(() => {})
-		} catch {
-			// ignore marketing persistence failures
-		}
 
 		createdMembers.push(doc)
 	}
