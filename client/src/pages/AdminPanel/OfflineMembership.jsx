@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { downloadMemberIdCard } from '../../utils/idCard'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
+import AdminNavbar from '../../components/adminPanel/AdminNavbar'
 
 const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
 

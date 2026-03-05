@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import { isAdminAuthenticated, setAdminToken } from "../../utils/adminAuth";
 import Navbar from "../../components/Navbar";
+import { FaLock, FaRocket } from "react-icons/fa";
 
 /**
  * Purpose: Do Admin Login

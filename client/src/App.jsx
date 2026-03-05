@@ -38,6 +38,25 @@ import WeeklyWorksheets from './pages/AdminPanel/WeeklyWorksheets'
  * Purpose: Do App
  * Plain English: What this function is used for.
  */
+// Defined outside App so React sees a stable component type (preserves ref across renders).
+function ScannerExitRedirect() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const lastPathRef = React.useRef(location.pathname)
+
+  React.useEffect(() => {
+    const last = lastPathRef.current
+    const current = location.pathname
+    if (last === '/admin/attendance/scan' && current !== '/admin/attendance/scan') {
+      clearAdminToken()
+      if (current !== '/') navigate('/', { replace: true })
+    }
+    lastPathRef.current = current
+  }, [location.pathname, navigate])
+
+  return null
+}
+
 function App() {
   const appLocation = useLocation()
   /**
@@ -48,33 +67,6 @@ function App() {
     const location = useLocation()
     if (location.pathname.startsWith('/admin')) return null
     return <Footer />
-  }
-
-  /**
-   * Purpose: Do Scanner Exit Redirect
-   * Plain English: What this function is used for.
-   */
-  function ScannerExitRedirect() {
-    const navigate = useNavigate()
-    const location = useLocation()
-    const lastPathRef = React.useRef(location.pathname)
-
-    React.useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
-     */
-    () => {
-      const last = lastPathRef.current
-      const current = location.pathname
-      // If anyone tries to leave the scanner page, force admin logout and send them to the public homepage.
-      if (last === '/admin/attendance/scan' && current !== '/admin/attendance/scan' && current !== '/') {
-  		clearAdminToken()
-        navigate('/', { replace: true })
-      }
-      lastPathRef.current = current
-    }, [location.pathname, navigate])
-
-    return null
   }
 
   /**

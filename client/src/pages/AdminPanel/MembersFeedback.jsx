@@ -8,6 +8,10 @@ import { useNavigate } from "react-router-dom";
 import Swal from 'sweetalert2';
 import { adminFetch, isAdminAuthenticated } from "../../utils/adminAuth";
 import { formatDateTime } from "../../utils/dateTime";
+import { FaFilter, FaUser, FaEnvelope, FaPhone, FaClock, FaTrash } from "react-icons/fa";
+import AdminNavbar from "../../components/adminPanel/AdminNavbar";
+
+const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
 
 /**
  * Purpose: Do Members Feedback
@@ -47,7 +51,7 @@ const MembersFeedback = () => {
   const fetchFeedbacks = async () => {
     try {
       setLoading(true);
-      const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/feedback`);
+      const response = await adminFetch(`${apiBase}/feedback`);
       const data = await response.json();
       
       if (data.success) {
@@ -83,7 +87,7 @@ const MembersFeedback = () => {
 
     if (result.isConfirmed) {
       try {
-          const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/feedback/${id}`, {
+          const response = await adminFetch(`${apiBase}/feedback/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();
@@ -149,7 +153,7 @@ const MembersFeedback = () => {
    */
   const markAsRead = async id => {
     try {
-        const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/feedback/${id}`, {
+        const response = await adminFetch(`${apiBase}/feedback/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

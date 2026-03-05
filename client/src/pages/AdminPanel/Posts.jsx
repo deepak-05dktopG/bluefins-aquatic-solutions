@@ -8,6 +8,10 @@ import { useNavigate } from "react-router-dom";
 import Swal from 'sweetalert2';
 import { adminFetch, isAdminAuthenticated } from "../../utils/adminAuth";
 import { formatDateTime } from "../../utils/dateTime";
+import { FaPlusCircle, FaImages, FaImage, FaTimes, FaUpload, FaTrash } from "react-icons/fa";
+import AdminNavbar from "../../components/adminPanel/AdminNavbar";
+
+const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
 
 /**
  * Purpose: Do Posts
@@ -71,7 +75,7 @@ const Posts = () => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts`);
+      const response = await fetch(`${apiBase}/posts`);
       const data = await response.json();
       
       if (data.success) {
@@ -93,7 +97,7 @@ const Posts = () => {
    */
   const fetchGallery = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/gallery`);
+      const response = await fetch(`${apiBase}/gallery`);
       const data = await response.json();
       
       if (data.success) {
@@ -188,7 +192,7 @@ const Posts = () => {
         cloudinaryPublicId: imageData?.publicId || undefined
       };
 
-  	  const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/posts`, {
+  	  const response = await adminFetch(`${apiBase}/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -269,7 +273,7 @@ const Posts = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/posts/${id}`, {
+        const response = await adminFetch(`${apiBase}/posts/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();
@@ -412,7 +416,7 @@ const Posts = () => {
         cloudinaryPublicId: cloudinaryData.public_id
       };
 
-  	  const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/gallery`, {
+  	  const response = await adminFetch(`${apiBase}/gallery`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -481,7 +485,7 @@ const Posts = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/gallery/${id}`, {
+        const response = await adminFetch(`${apiBase}/gallery/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();

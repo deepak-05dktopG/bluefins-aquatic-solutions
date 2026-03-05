@@ -3,8 +3,9 @@
  * Non-tech note: This is the menu inside the admin area.
  */
 
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { clearAdminToken } from '../../utils/adminAuth'
+import { FaRocket, FaSignOutAlt } from 'react-icons/fa'
 
 /**
  * Purpose: Do Admin Navbar

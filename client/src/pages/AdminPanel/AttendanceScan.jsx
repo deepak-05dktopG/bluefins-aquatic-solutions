@@ -6,8 +6,9 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
-import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
+import { adminFetch, isAdminAuthenticated, clearAdminToken } from '../../utils/adminAuth'
 import { formatTime } from '../../utils/dateTime'
+import { FaCamera, FaSyncAlt, FaStopCircle, FaKeyboard } from 'react-icons/fa'
 
 /**
  * Purpose: Do Safe Read Json
@@ -183,6 +184,13 @@ function AttendanceScan() {
     () => {
         if (!isAdminAuthenticated()) navigate('/admin')
     }, [navigate])
+
+    // Security: auto-logout when the browser tab/window is closed or refreshed
+    React.useEffect(() => {
+        const handleBeforeUnload = () => clearAdminToken()
+        window.addEventListener('beforeunload', handleBeforeUnload)
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+    }, [])
 
     const stopCamera = React.useCallback(/**
      * Purpose: React callback memoizer (keeps function stable between renders)

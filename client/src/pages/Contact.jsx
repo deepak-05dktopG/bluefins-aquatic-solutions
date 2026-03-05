@@ -11,6 +11,10 @@ import "aos/dist/aos.css";
 import emailjs from "@emailjs/browser";
 import Swal from 'sweetalert2';
 import { formatDateTime } from "../utils/dateTime";
+import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaInstagram, FaClock, FaHeadset } from "react-icons/fa";
+
+
+const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
 
 
 
@@ -60,7 +64,7 @@ const Contact = () => {
 
     try {
       // Save to database first
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/feedback`, {
+      const response = await fetch(`${apiBase}/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -7,6 +7,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from 'sweetalert2';
 import { adminFetch, isAdminAuthenticated } from "../../utils/adminAuth";
+import { FaPlusCircle, FaLink, FaGoogle, FaGoogleDrive, FaEye, FaTrash, FaExternalLinkAlt } from "react-icons/fa";
+import AdminNavbar from "../../components/adminPanel/AdminNavbar";
+
+const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
 
 /**
  * Purpose: Do Weekly Worksheets
@@ -56,7 +60,7 @@ const WeeklyWorksheets = () => {
   const fetchWorksheets = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/worksheets`);
+      const response = await fetch(`${apiBase}/worksheets`);
       const data = await response.json();
       
       if (data.success) {
@@ -105,7 +109,7 @@ const WeeklyWorksheets = () => {
     }
 
     try {
-      const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/worksheets`, {
+      const response = await adminFetch(`${apiBase}/worksheets`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,7 +188,7 @@ const WeeklyWorksheets = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await adminFetch(`${import.meta.env.VITE_API_BASE_URL}/worksheets/${id}`, {
+        const response = await adminFetch(`${apiBase}/worksheets/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();
@@ -245,7 +249,7 @@ const WeeklyWorksheets = () => {
   const handleLinkClick = async (id, link) => {
     // Track click
     try {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/worksheets/${id}/click`, {
+      await fetch(`${apiBase}/worksheets/${id}/click`, {
         method: 'PATCH',
       });
     } catch (err) {

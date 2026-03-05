@@ -11,6 +11,8 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+
+const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
 /**
  * Purpose: Do Home
  * Plain English: What this function is used for.
@@ -44,7 +46,7 @@ const Home = () => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts`);
+      const response = await fetch(`${apiBase}/posts`);
       const data = await response.json();
       if (data.success) {
         setPosts(data.data);
@@ -62,7 +64,7 @@ const Home = () => {
    */
   const fetchGallery = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/gallery?isActive=true`);
+      const response = await fetch(`${apiBase}/gallery?isActive=true`);
       const data = await response.json();
       if (data.success) {
         setGalleryImages(data.data); // Show all gallery images

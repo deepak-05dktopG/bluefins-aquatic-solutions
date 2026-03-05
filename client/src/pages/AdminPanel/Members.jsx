@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { downloadMemberIdCard } from '../../utils/idCard'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
+import { FaSyncAlt, FaDownload, FaTrash, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import AdminNavbar from '../../components/adminPanel/AdminNavbar'
 
 /**
  * Purpose: Do Safe Read Json

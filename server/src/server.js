@@ -8,13 +8,9 @@ import express from 'express'
 import cors from 'cors'
 import connectDB from './config/db.js'
 import apiRoutes from './routes/api.js'
-import { startWhatsAppExpiryReminderCron } from '../services/whatsappReminder.js'
 
 // Connect to database
 connectDB()
-
-// Daily WhatsApp expiry reminders (Meta WhatsApp Cloud API)
-startWhatsAppExpiryReminderCron()
 
 const app = express()
 

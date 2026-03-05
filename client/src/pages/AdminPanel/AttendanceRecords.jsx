@@ -8,6 +8,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
 import { formatDateTime } from '../../utils/dateTime'
+import { FaCamera, FaSyncAlt, FaDownload, FaTrash } from 'react-icons/fa'
+import AdminNavbar from '../../components/adminPanel/AdminNavbar'
 
 /**
  * Purpose: Do Safe Read Json

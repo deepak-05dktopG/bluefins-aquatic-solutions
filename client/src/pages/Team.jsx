@@ -5,6 +5,7 @@
 
 import { useEffect } from "react"
 import { NavLink } from "react-router-dom"
+import { Container, Row, Col } from "react-bootstrap"
 import Navbar from "../components/Navbar"
 import AOS from "aos"
 import "aos/dist/aos.css"

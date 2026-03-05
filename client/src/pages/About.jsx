@@ -8,6 +8,7 @@ import { NavLink } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { FaFire, FaUsers, FaTrophy, FaLightbulb } from "react-icons/fa";
 /**
  * Purpose: Do About
  * Plain English: What this function is used for.
