@@ -12,8 +12,9 @@ import { FaCamera, FaSyncAlt, FaDownload, FaTrash } from 'react-icons/fa'
 import AdminNavbar from '../../components/adminPanel/AdminNavbar'
 
 /**
- * Purpose: Do Safe Read Json
- * Plain English: What this function is used for.
+ * Utility: parse API responses that might return JSON or plain text.
+ * Keeps admin screens resilient when the backend returns an empty body or a
+ * non-JSON error.
  */
 const safeReadJson = async res => {
     const text = await res.text()
@@ -26,30 +27,27 @@ const safeReadJson = async res => {
 };
 
 /**
- * Purpose: Do Today ISO
- * Plain English: What this function is used for.
+ * Default date filter value (YYYY-MM-DD) for the attendance records screen.
  */
 const todayISO = () => {
     return new Date().toISOString().slice(0, 10);
 };
 
 /**
- * Purpose: Format Time
- * Plain English: What this function is used for.
+ * Display a scan/check-in timestamp in a human-friendly format.
  */
 const formatTime = value => {
     return formatDateTime(value);
 };
 
 /**
- * Purpose: Do To Query String
- * Plain English: What this function is used for.
+ * Convert a filter object into a URL query string.
+ * Used to build list/export requests to the attendance admin APIs.
  */
 const toQueryString = params => {
     const sp = new URLSearchParams()
     Object.entries(params || {}).forEach(/**
-     * Purpose: Array loop callback (runs once for each item)
-     * Plain English: What this function is used for.
+	 * Include only non-empty filters.
      */
     ([k, v]) => {
         if (v == null) return
@@ -61,8 +59,9 @@ const toQueryString = params => {
 };
 
 export default /**
- * Purpose: Do Attendance Records
- * Plain English: What this function is used for.
+ * Bluefins admin screen: Attendance Records.
+ * Lets staff review past scans/check-ins, filter by date/plan/method/result,
+ * export a CSV for reporting, and remove incorrect/old records.
  */
 function AttendanceRecords() {
     const navigate = useNavigate()
@@ -82,8 +81,7 @@ function AttendanceRecords() {
     const [total, setTotal] = React.useState(0)
     const [loading, setLoading] = React.useState(false)
     const [selected, setSelected] = React.useState(/**
-     * Purpose: Helper callback used inside a larger operation
-     * Plain English: What this function is used for.
+	 * Track selected attendance record IDs for bulk delete.
      */
     () => {
         return new Set();
@@ -91,22 +89,19 @@ function AttendanceRecords() {
     const [purgeBefore, setPurgeBefore] = React.useState('')
 
     React.useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
+	 * Admin-only guard: redirect to login if admin session is missing.
      */
     () => {
         if (!isAdminAuthenticated()) navigate('/admin')
     }, [navigate])
 
     React.useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
+	 * Load active membership plans for the plan filter dropdown.
      */
     () => {
         let active = true
         /**
-         * Purpose: Fetch Plans from server
-         * Plain English: What this function is used for.
+		 * Public endpoint call: fetch active plans (used only for filter UI).
          */
         const fetchPlans = async () => {
             try {
@@ -122,8 +117,7 @@ function AttendanceRecords() {
         fetchPlans()
         return (
             /**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
+			 * Prevent setting state if the component unmounts mid-request.
              */
             () => {
                 active = false
@@ -132,8 +126,8 @@ function AttendanceRecords() {
     }, [apiBase])
 
     const load = React.useCallback(/**
-     * Purpose: React callback memoizer (keeps function stable between renders)
-     * Plain English: What this function is used for.
+	 * Fetch attendance records for the current filters + page.
+	 * Clears selection because the visible records may change.
      */
     async () => {
         setLoading(true)
@@ -155,8 +149,7 @@ function AttendanceRecords() {
     }, [apiBase, dateFrom, dateTo, limit, method, page, planId, q, result])
 
     React.useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
+	 * Load the list on mount and whenever filters/pagination change.
      */
     () => {
         load()
@@ -165,8 +158,7 @@ function AttendanceRecords() {
     const pageCount = Math.max(1, Math.ceil(total / limit))
 
     React.useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
+	 * Keep `page` in range when page count changes.
      */
     () => {
         if (page > pageCount) setPage(pageCount)
@@ -174,13 +166,11 @@ function AttendanceRecords() {
     }, [pageCount])
 
     /**
-     * Purpose: Do Toggle Selected
-     * Plain English: What this function is used for.
+	 * Toggle selection for a single attendance record row.
      */
     const toggleSelected = id => {
         setSelected(/**
-         * Purpose: Helper callback used inside a larger operation
-         * Plain English: What this function is used for.
+		 * Functional update prevents stale state when clicking quickly.
          */
         prev => {
             const next = new Set(prev)
@@ -191,13 +181,11 @@ function AttendanceRecords() {
     };
 
     /**
-     * Purpose: Do Select All On Page
-     * Plain English: What this function is used for.
+	 * Select every record visible on the current page.
      */
     const selectAllOnPage = () => {
         setSelected(/**
-         * Purpose: Helper callback used inside a larger operation
-         * Plain English: What this function is used for.
+		 * Adds each row id from the current list to the selection.
          */
         prev => {
             const next = new Set(prev)
@@ -207,24 +195,21 @@ function AttendanceRecords() {
     };
 
     /**
-     * Purpose: Do Clear Selection
-     * Plain English: What this function is used for.
+	 * Clear all selected record IDs.
      */
     const clearSelection = () => {
         return setSelected(new Set());
     };
 
     const isAllOnPageSelected = items.length > 0 && items.every(/**
-     * Purpose: Array check callback (true if all items match)
-     * Plain English: What this function is used for.
+	 * True when every row on the page is checked.
      */
     r => {
         return selected.has(r._id);
     })
 
     /**
-     * Purpose: Do Download Csv
-     * Plain English: What this function is used for.
+	 * Export attendance history as a CSV (uses the server-side export endpoint).
      */
     const downloadCsv = async () => {
         try {
@@ -249,8 +234,7 @@ function AttendanceRecords() {
     };
 
     /**
-     * Purpose: Do Delete One
-     * Plain English: What this function is used for.
+		* Delete a single attendance record (used for corrections).
      */
     const deleteOne = async id => {
         const confirm = await Swal.fire({
@@ -274,8 +258,7 @@ function AttendanceRecords() {
     };
 
     /**
-     * Purpose: Do Delete Selected
-     * Plain English: What this function is used for.
+		* Bulk-delete selected attendance records after confirmation.
      */
     const deleteSelected = async () => {
         const ids = Array.from(selected)
@@ -306,8 +289,8 @@ function AttendanceRecords() {
     };
 
     /**
-     * Purpose: Do Purge Old
-     * Plain English: What this function is used for.
+		* Data retention tool: purge all attendance records before a cutoff date.
+		* Helps keep the database performant over long periods.
      */
     const purgeOld = async () => {
         if (!purgeBefore) {
@@ -395,8 +378,7 @@ function AttendanceRecords() {
 							<input
 								value={q}
 								onChange={/**
-                                 * Purpose: Helper callback used inside a larger operation
-                                 * Plain English: What this function is used for.
+								 * Update free-text search and reset to page 1.
                                  */
                                 e => {
                                     setQ(e.target.value)
@@ -412,8 +394,7 @@ function AttendanceRecords() {
 							<select
 								value={planId}
 								onChange={/**
-                                 * Purpose: Helper callback used inside a larger operation
-                                 * Plain English: What this function is used for.
+								 * Filter by plan and reset to page 1.
                                  */
                                 e => {
                                     setPlanId(e.target.value)
@@ -423,9 +404,8 @@ function AttendanceRecords() {
 							>
 								<option value="">All Plans</option>
 								{plans.map(/**
-                                 * Purpose: Array mapping callback (converts each item to a new value)
-                                 * Plain English: What this function is used for.
-                                 */
+								 * Render each plan option.
+								 */
                                 p => {
                                     return (
                                         <option key={p._id} value={p._id}>
@@ -442,8 +422,7 @@ function AttendanceRecords() {
 								type="date"
 								value={dateFrom}
 								onChange={/**
-                                 * Purpose: Helper callback used inside a larger operation
-                                 * Plain English: What this function is used for.
+								 * Update start date and reset to page 1.
                                  */
                                 e => {
                                     setDateFrom(e.target.value)
@@ -459,8 +438,7 @@ function AttendanceRecords() {
 								type="date"
 								value={dateTo}
 								onChange={/**
-                                 * Purpose: Helper callback used inside a larger operation
-                                 * Plain English: What this function is used for.
+								 * Update end date and reset to page 1.
                                  */
                                 e => {
                                     setDateTo(e.target.value)
@@ -475,8 +453,7 @@ function AttendanceRecords() {
 							<select
 								value={result}
 								onChange={/**
-                                 * Purpose: Helper callback used inside a larger operation
-                                 * Plain English: What this function is used for.
+								 * Filter by scan result and reset to page 1.
                                  */
                                 e => {
                                     setResult(e.target.value)
@@ -495,8 +472,7 @@ function AttendanceRecords() {
 							<select
 								value={method}
 								onChange={/**
-                                 * Purpose: Helper callback used inside a larger operation
-                                 * Plain English: What this function is used for.
+								 * Filter by check-in method and reset to page 1.
                                  */
                                 e => {
                                     setMethod(e.target.value)
@@ -550,8 +526,7 @@ function AttendanceRecords() {
 						<div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
 							<button
 								onClick={/**
-                                 * Purpose: Helper callback used inside a larger operation
-                                 * Plain English: What this function is used for.
+								 * Select/unselect the current page.
                                  */
                                 () => {
                                     if (isAllOnPageSelected) clearSelection()
@@ -565,8 +540,7 @@ function AttendanceRecords() {
 							<select
 								value={limit}
 								onChange={/**
-                                 * Purpose: Helper callback used inside a larger operation
-                                 * Plain English: What this function is used for.
+								 * Change page size and reset to page 1.
                                  */
                                 e => {
                                     setLimit(Number(e.target.value))
@@ -584,13 +558,11 @@ function AttendanceRecords() {
 							<div style={{ color: 'rgba(255,255,255,0.65)', fontWeight: 600 }}>Page {page} / {pageCount}</div>
 							<button
 								onClick={/**
-                                 * Purpose: Helper callback used inside a larger operation
-                                 * Plain English: What this function is used for.
+								 * Pagination: go to previous page.
                                  */
                                 () => {
                                     return setPage(/**
-                                     * Purpose: Helper callback used inside a larger operation
-                                     * Plain English: What this function is used for.
+									 * Functional update avoids stale state.
                                      */
                                     p => {
                                         return Math.max(1, p - 1);
@@ -603,13 +575,11 @@ function AttendanceRecords() {
 							</button>
 							<button
 								onClick={/**
-                                 * Purpose: Helper callback used inside a larger operation
-                                 * Plain English: What this function is used for.
+								 * Pagination: go to next page.
                                  */
                                 () => {
                                     return setPage(/**
-                                     * Purpose: Helper callback used inside a larger operation
-                                     * Plain English: What this function is used for.
+									 * Functional update avoids stale state.
                                      */
                                     p => {
                                         return Math.min(pageCount, p + 1);
@@ -634,8 +604,7 @@ function AttendanceRecords() {
 									type="date"
 									value={purgeBefore}
 									onChange={/**
-                                     * Purpose: Helper callback used inside a larger operation
-                                     * Plain English: What this function is used for.
+									 * Set the cutoff date used by the purge action.
                                      */
                                     e => {
                                         return setPurgeBefore(e.target.value);
@@ -663,8 +632,7 @@ function AttendanceRecords() {
 											type="checkbox"
 											checked={isAllOnPageSelected}
 											onChange={/**
-                                             * Purpose: Helper callback used inside a larger operation
-                                             * Plain English: What this function is used for.
+												 * Header checkbox toggles selecting the current page.
                                              */
                                             () => {
                                                 if (isAllOnPageSelected) clearSelection()
@@ -690,8 +658,7 @@ function AttendanceRecords() {
 									</tr>
 								) : (
 									items.map(/**
-                                     * Purpose: Array mapping callback (converts each item to a new value)
-                                     * Plain English: What this function is used for.
+									 * Render each attendance record row.
                                      */
                                     row => {
                                         const member = row?.memberId
@@ -701,9 +668,8 @@ function AttendanceRecords() {
                                             <tr key={row._id}>
                                                 <td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '12px 0 0 12px' }}>
 													<input type="checkbox" checked={selected.has(row._id)} onChange={/**
-                                                     * Purpose: Helper callback used inside a larger operation
-                                                     * Plain English: What this function is used for.
-                                                     */
+													 * Toggle selection for this record.
+													 */
                                                     () => {
                                                         return toggleSelected(row._id);
                                                     }} style={{ transform: 'scale(1.1)' }} />
@@ -721,8 +687,7 @@ function AttendanceRecords() {
                                                 <td style={{ padding: '10px 8px', background: 'rgba(10, 14, 39, 0.65)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '0 12px 12px 0', textAlign: 'right' }}>
 													<button
 														onClick={/**
-                                                         * Purpose: Helper callback used inside a larger operation
-                                                         * Plain English: What this function is used for.
+															 * Delete this record (used to correct mistakes).
                                                          */
                                                         () => {
                                                             return deleteOne(row._id);

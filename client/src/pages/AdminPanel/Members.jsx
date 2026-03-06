@@ -12,8 +12,9 @@ import { FaSyncAlt, FaDownload, FaTrash, FaChevronLeft, FaChevronRight } from 'r
 import AdminNavbar from '../../components/adminPanel/AdminNavbar'
 
 /**
- * Purpose: Do Safe Read Json
- * Plain English: What this function is used for.
+ * Utility: Parse API responses that might be JSON or plain text.
+ * Bluefins admin endpoints typically return JSON, but this keeps the UI resilient
+ * when the server returns an empty body or a plain-text error.
  */
 const safeReadJson = async res => {
     const text = await res.text()
@@ -26,8 +27,7 @@ const safeReadJson = async res => {
 };
 
 /**
- * Purpose: Format Date
- * Plain English: What this function is used for.
+ * Format a date value for display in the admin table.
  */
 const formatDate = value => {
     if (!value) return ''
@@ -37,8 +37,8 @@ const formatDate = value => {
 };
 
 /**
- * Purpose: Do End Of Local Day
- * Plain English: What this function is used for.
+ * Normalize a date to the end of the local day.
+ * Used so expiry-date logic matches “valid through end of that day”.
  */
 const endOfLocalDay = value => {
     if (!value) return null
@@ -48,8 +48,8 @@ const endOfLocalDay = value => {
 };
 
 /**
- * Purpose: Do Days Until
- * Plain English: What this function is used for.
+ * Calculate remaining days until a member’s plan expires.
+ * Some plan types store timestamps; others are treated as valid until end-of-day.
  */
 const daysUntil = (expiryDate, planType) => {
     if (!expiryDate) return null
@@ -61,13 +61,12 @@ const daysUntil = (expiryDate, planType) => {
 };
 
 /**
- * Purpose: Do Download Csv
- * Plain English: What this function is used for.
+ * Client-side CSV export for admin reporting.
+ * Used by the Members screen “Export CSV” action.
  */
 const downloadCsv = ({ rows, filename }) => {
     /**
-     * Purpose: Do Escape
-     * Plain English: What this function is used for.
+	 * Escape CSV values (commas/quotes/newlines) so spreadsheets open correctly.
      */
     const escape = v => {
         const s = v == null ? '' : String(v)
@@ -76,8 +75,7 @@ const downloadCsv = ({ rows, filename }) => {
     };
 
     const lines = rows.map(/**
-     * Purpose: Array mapping callback (converts each item to a new value)
-     * Plain English: What this function is used for.
+	 * Convert each row array into a single CSV line.
      */
     row => {
         return row.map(escape).join(',');
@@ -96,8 +94,9 @@ const downloadCsv = ({ rows, filename }) => {
 };
 
 export default /**
- * Purpose: Do Members
- * Plain English: What this function is used for.
+ * Bluefins admin screen: Members registry.
+ * Admins use this to search/filter members, monitor expiry, export a CSV report,
+ * download member ID cards (QR), and delete records when required.
  */
 function Members() {
     const navigate = useNavigate()
@@ -117,16 +116,14 @@ function Members() {
     const [loading, setLoading] = React.useState(false)
     const [error, setError] = React.useState('')
     const [selectedIds, setSelectedIds] = React.useState(/**
-     * Purpose: Helper callback used inside a larger operation
-     * Plain English: What this function is used for.
+	 * Initialize selection state once; a Set makes bulk actions straightforward.
      */
     () => {
         return new Set();
     })
 
     React.useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
+	 * Admin-only guard: redirect to login if there is no valid admin session.
      */
     () => {
         if (!isAdminAuthenticated()) navigate('/admin')
@@ -135,8 +132,8 @@ function Members() {
     const pageCount = Math.max(1, Math.ceil(total / limit))
 
     const buildUrl = React.useCallback(/**
-     * Purpose: React callback memoizer (keeps function stable between renders)
-     * Plain English: What this function is used for.
+		* Build the list API URL from the current filters/sort/pagination.
+		* Memoized so the `load()` fetch function stays stable across renders.
      */
     () => {
         const params = new URLSearchParams()
@@ -151,8 +148,8 @@ function Members() {
     }, [apiBase, limit, order, page, planType, q, sort, status])
 
     const load = React.useCallback(/**
-     * Purpose: React callback memoizer (keeps function stable between renders)
-     * Plain English: What this function is used for.
+		* Fetch members for the current view (filters + page) and refresh the table.
+		* Resets selection because the visible rows may have changed.
      */
     async () => {
         setLoading(true)
@@ -178,21 +175,20 @@ function Members() {
 
     const selectedCount = selectedIds.size
     const pageIds = React.useMemo(/**
-     * Purpose: React memo callback (computes a value and caches it)
-     * Plain English: What this function is used for.
+	 * Cache IDs for members visible on the current page.
+	 * Used for “select all on page”.
      */
     () => {
         return items.map(/**
-         * Purpose: Array mapping callback (converts each item to a new value)
-         * Plain English: What this function is used for.
+		 * Extract the member id from each row.
          */
         m => {
             return String(m?._id || '');
         }).filter(Boolean);
     }, [items])
     const allSelectedOnPage = React.useMemo(/**
-     * Purpose: React memo callback (computes a value and caches it)
-     * Plain English: What this function is used for.
+	 * True when every row on the current page is selected.
+	 * Drives the header checkbox state.
      */
     () => {
         if (!pageIds.length) return false
@@ -203,15 +199,13 @@ function Members() {
     }, [pageIds, selectedIds])
 
     /**
-     * Purpose: Do Toggle Select One
-     * Plain English: What this function is used for.
+		* Toggle selection for a single member row.
      */
     const toggleSelectOne = id => {
         const key = String(id || '').trim()
         if (!key) return
         setSelectedIds(/**
-         * Purpose: Helper callback used inside a larger operation
-         * Plain English: What this function is used for.
+		 * Functional update avoids stale state when toggling rapidly.
          */
         prev => {
             const next = new Set(prev)
@@ -222,13 +216,11 @@ function Members() {
     };
 
     /**
-     * Purpose: Do Toggle Select All On Page
-     * Plain English: What this function is used for.
+	 * Select/deselect all rows visible on the current page.
      */
     const toggleSelectAllOnPage = () => {
         setSelectedIds(/**
-         * Purpose: Helper callback used inside a larger operation
-         * Plain English: What this function is used for.
+		 * Only add/remove the IDs present on this page.
          */
         prev => {
             const next = new Set(prev)
@@ -244,8 +236,8 @@ function Members() {
     };
 
     /**
-     * Purpose: Run when Bulk Delete Selected happens
-     * Plain English: What this function is used for.
+		* Admin bulk action: delete all selected members after confirmation.
+		* Intended for cleanup (duplicates/test data) and should be used carefully.
      */
     const onBulkDeleteSelected = async () => {
         if (!selectedCount) return
@@ -293,8 +285,7 @@ function Members() {
     };
 
     /**
-     * Purpose: Run when Delete happens
-     * Plain English: What this function is used for.
+		* Admin action: delete one member after confirmation.
      */
     const onDelete = async member => {
         if (!member?._id) return
@@ -337,8 +328,8 @@ function Members() {
     };
 
     /**
-     * Purpose: Run when Download Id happens
-     * Plain English: What this function is used for.
+		* Admin action: download the member ID card that includes the QR code.
+		* The QR is used for quick attendance scanning at the pool.
      */
     const onDownloadId = async member => {
         try {
@@ -362,16 +353,14 @@ function Members() {
     };
 
     React.useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
+	 * Load the table on mount and whenever filters/sorting/pagination changes.
      */
     () => {
         load()
     }, [load])
 
     React.useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
+	 * Keep `page` in range when total/limit changes reduce the page count.
      */
     () => {
         if (page > pageCount) setPage(pageCount)
@@ -379,15 +368,13 @@ function Members() {
     }, [pageCount])
 
     /**
-     * Purpose: Run when Export happens
-     * Plain English: What this function is used for.
+	 * Export the current page of results to CSV (quick admin reporting).
      */
     const onExport = () => {
         const rows = [
 			['Name', 'Phone', 'Plan', 'Plan Type', 'Status', 'Join Date', 'Expiry Date', 'Days Left', 'Visits', 'Member ID', 'Group ID'],
 			...items.map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
+			 * Convert each member record into a flat CSV row.
              */
             m => {
                 const daysLeft = daysUntil(m.expiryDate, m.planType)
@@ -410,8 +397,8 @@ function Members() {
     };
 
     /**
-     * Purpose: Do Badge For
-     * Plain English: What this function is used for.
+	 * Decide the status badge for a row.
+	 * Highlights expired members and those expiring soon.
      */
     const badgeFor = m => {
         const daysLeft = daysUntil(m.expiryDate, m.planType)
@@ -515,8 +502,7 @@ function Members() {
 							<input
 								value={q}
 								onChange={/**
-                                 * Purpose: Helper callback used inside a larger operation
-                                 * Plain English: What this function is used for.
+								 * Update search query and reset to page 1.
                                  */
                                 e => {
                                     setPage(1)
@@ -538,8 +524,7 @@ function Members() {
 						<select
 							value={status}
 							onChange={/**
-                             * Purpose: Helper callback used inside a larger operation
-                             * Plain English: What this function is used for.
+							 * Filter by status and reset to page 1.
                              */
                             e => {
                                 setPage(1)
@@ -562,8 +547,7 @@ function Members() {
 						<select
 							value={planType}
 							onChange={/**
-                             * Purpose: Helper callback used inside a larger operation
-                             * Plain English: What this function is used for.
+							 * Filter by plan type and reset to page 1.
                              */
                             e => {
                                 setPage(1)
@@ -589,8 +573,7 @@ function Members() {
 						<select
 							value={limit}
 							onChange={/**
-                             * Purpose: Helper callback used inside a larger operation
-                             * Plain English: What this function is used for.
+							 * Change page size and reset to page 1.
                              */
                             e => {
                                 setPage(1)
@@ -614,8 +597,7 @@ function Members() {
 						<select
 							value={`${sort}:${order}`}
 							onChange={/**
-                             * Purpose: Helper callback used inside a larger operation
-                             * Plain English: What this function is used for.
+							 * Change sorting and reset to page 1.
                              */
                             e => {
                                 setPage(1)
@@ -675,8 +657,7 @@ function Members() {
 							<thead>
 								<tr style={{ background: 'rgba(10, 14, 39, 0.7)' }}>
 									{['', 'Member', 'Phone', 'Plan', 'Status', 'Join', 'Expiry', 'Days Left', 'Visits', 'QR', ''].map(/**
-                                     * Purpose: Array mapping callback (converts each item to a new value)
-                                     * Plain English: What this function is used for.
+									 * Render table headers (first column is the “select all on page” checkbox).
                                      */
                                     h => {
                                         return (
@@ -710,8 +691,7 @@ function Members() {
 							</thead>
 							<tbody>
 								{items.map(/**
-                                 * Purpose: Array mapping callback (converts each item to a new value)
-                                 * Plain English: What this function is used for.
+								 * Render each member row.
                                  */
                                 m => {
                                     const b = badgeFor(m)
@@ -727,8 +707,7 @@ function Members() {
 														type="checkbox"
 														checked={isSelected}
 														onChange={/**
-                                                         * Purpose: Helper callback used inside a larger operation
-                                                         * Plain English: What this function is used for.
+														 * Toggle selection for this row.
                                                          */
                                                         () => {
                                                             return toggleSelectOne(id);
@@ -820,8 +799,7 @@ function Members() {
 
 														<button
 															onClick={/**
-                                                             * Purpose: Helper callback used inside a larger operation
-                                                             * Plain English: What this function is used for.
+															 * Download ID card (with QR) for this member.
                                                              */
                                                             () => {
                                                                 return onDownloadId(m);
@@ -849,8 +827,7 @@ function Members() {
 											<td style={{ padding: '10px 12px' }}>
 													<button
 														onClick={/**
-                                                         * Purpose: Helper callback used inside a larger operation
-                                                         * Plain English: What this function is used for.
+															 * Delete this member after confirmation.
                                                          */
                                                         () => {
                                                             return onDelete(m);
@@ -906,13 +883,11 @@ function Members() {
 						<div style={{ display: 'flex', gap: '10px' }}>
 							<button
 								onClick={/**
-                                 * Purpose: Helper callback used inside a larger operation
-                                 * Plain English: What this function is used for.
+								 * Pagination: go to previous page.
                                  */
                                 () => {
                                     return setPage(/**
-                                     * Purpose: Helper callback used inside a larger operation
-                                     * Plain English: What this function is used for.
+									 * Functional update avoids stale state.
                                      */
                                     p => {
                                         return Math.max(1, p - 1);
@@ -937,13 +912,11 @@ function Members() {
 							</button>
 							<button
 								onClick={/**
-                                 * Purpose: Helper callback used inside a larger operation
-                                 * Plain English: What this function is used for.
+								 * Pagination: go to next page.
                                  */
                                 () => {
                                     return setPage(/**
-                                     * Purpose: Helper callback used inside a larger operation
-                                     * Plain English: What this function is used for.
+									 * Functional update avoids stale state.
                                      */
                                     p => {
                                         return Math.min(pageCount, p + 1);

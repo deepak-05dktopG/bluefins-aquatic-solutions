@@ -13,15 +13,16 @@ import AdminNavbar from "../../components/adminPanel/AdminNavbar";
 const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
 
 /**
- * Purpose: Do Weekly Worksheets
- * Plain English: What this function is used for.
+ * Bluefins admin tool: share weekly worksheets and team resources (Google Forms,
+ * Drive folders, or any other link) with coaches/staff.
+ * Admins can add new links, track views, filter by link type, and delete outdated items.
  */
 const WeeklyWorksheets = () => {
   const navigate = useNavigate();
 
   useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
+   * Bluefins guard: only authenticated admins should access internal staff resources.
+   * Redirect to the admin login page if the session/token is missing.
    */
   () => {
     if (!isAdminAuthenticated()) {
@@ -46,16 +47,15 @@ const WeeklyWorksheets = () => {
 
   // Fetch worksheets from backend
   useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
+   * Load the current list of shared links once when the page opens.
    */
   () => {
     fetchWorksheets();
   }, []);
 
   /**
-   * Purpose: Fetch Worksheets from server
-   * Plain English: What this function is used for.
+   * Fetch the latest shared worksheets/resources from the API.
+   * Keeps `loading`/`error` in sync so the UI can show a spinner or error banner.
    */
   const fetchWorksheets = async () => {
     try {
@@ -77,16 +77,15 @@ const WeeklyWorksheets = () => {
   };
 
   /**
-   * Purpose: Handle Change
-   * Plain English: What this function is used for.
+   * Form helper: keep `formData` in sync as admins type (title, link, message, etc.).
    */
   const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   /**
-   * Purpose: Handle Submit
-   * Plain English: What this function is used for.
+   * Admin action: publish a new resource link.
+   * Used for weekly training worksheets, attendance sheets, parent forms, etc.
    */
   const handleSubmit = async e => {
     e.preventDefault();
@@ -169,8 +168,8 @@ const WeeklyWorksheets = () => {
   };
 
   /**
-   * Purpose: Do Delete Worksheet
-   * Plain English: What this function is used for.
+   * Admin action: delete a shared resource link.
+   * Helpful when a form expires, a drive link changes, or an item was added by mistake.
    */
   const deleteWorksheet = async id => {
     const result = await Swal.fire({
@@ -243,8 +242,8 @@ const WeeklyWorksheets = () => {
   };
 
   /**
-   * Purpose: Handle Link Click
-   * Plain English: What this function is used for.
+   * When a staff member opens a resource, we best-effort track a view/click in the API
+   * and then open the external URL in a new tab.
    */
   const handleLinkClick = async (id, link) => {
     // Track click
@@ -261,8 +260,7 @@ const WeeklyWorksheets = () => {
   };
 
   /**
-   * Purpose: Do Reset Form
-   * Plain English: What this function is used for.
+   * Reset the share form after a successful submit or when the admin cancels.
    */
   const resetForm = () => {
     setFormData({
@@ -278,8 +276,8 @@ const WeeklyWorksheets = () => {
 
   // Filter worksheets
   const filteredWorksheets = worksheets.filter(/**
-   * Purpose: Array filter callback (keeps items that match a condition)
-   * Plain English: What this function is used for.
+   * Apply the selected link-type filter from the dropdown.
+   * "all" shows everything; otherwise only matching link types are shown.
    */
   ws => {
     if (filterType === "all") return true;
@@ -289,15 +287,13 @@ const WeeklyWorksheets = () => {
   // Statistics
   const totalWorksheets = worksheets.length;
   const googleForms = worksheets.filter(/**
-   * Purpose: Array filter callback (keeps items that match a condition)
-   * Plain English: What this function is used for.
+   * Count Google Form links for the stats cards.
    */
   ws => {
     return ws.linkType === "google-form";
   }).length;
   const googleDrive = worksheets.filter(/**
-   * Purpose: Array filter callback (keeps items that match a condition)
-   * Plain English: What this function is used for.
+   * Count Google Drive links for the stats cards.
    */
   ws => {
     return ws.linkType === "google-drive";
@@ -325,8 +321,7 @@ const WeeklyWorksheets = () => {
           </div>
           <button
             onClick={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
+             * Toggle the “Share New Link” form open/closed.
              */
             () => {
               return setShowForm(!showForm);
@@ -346,16 +341,14 @@ const WeeklyWorksheets = () => {
               transition: "all 0.3s ease",
             }}
             onMouseEnter={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
+             * Hover affordance: lift the CTA button slightly.
              */
             e => {
               e.currentTarget.style.transform = "translateY(-2px)";
               e.currentTarget.style.boxShadow = "0 6px 20px rgba(78, 205, 196, 0.4)";
             }}
             onMouseLeave={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
+             * Restore the default styling when hover ends.
              */
             e => {
               e.currentTarget.style.transform = "translateY(0)";
@@ -562,8 +555,7 @@ const WeeklyWorksheets = () => {
           <select
             value={filterType}
             onChange={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
+             * Update the active link-type filter.
              */
             e => {
               return setFilterType(e.target.value);
@@ -609,8 +601,7 @@ const WeeklyWorksheets = () => {
         {/* Links List */}
         <div style={{ display: "grid", gap: "20px" }}>
           {filteredWorksheets.map(/**
-           * Purpose: Array mapping callback (converts each item to a new value)
-           * Plain English: What this function is used for.
+           * Render each shared resource link as a card.
            */
           worksheet => {
             return (
@@ -624,16 +615,14 @@ const WeeklyWorksheets = () => {
                   transition: "all 0.3s ease",
                 }}
                 onMouseEnter={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
+                 * Small hover lift to indicate the card is interactive.
                  */
                 e => {
                   e.currentTarget.style.transform = "translateY(-2px)";
                   e.currentTarget.style.boxShadow = "0 8px 30px rgba(0, 0, 0, 0.3)";
                 }}
                 onMouseLeave={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
+                 * Restore the default styling when hover ends.
                  */
                 e => {
                   e.currentTarget.style.transform = "translateY(0)";
@@ -672,8 +661,7 @@ const WeeklyWorksheets = () => {
                   
                   <button
                     onClick={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                     * Admin cleanup: delete this shared link (after confirmation).
                      */
                     () => {
                       return deleteWorksheet(worksheet._id);
@@ -693,16 +681,14 @@ const WeeklyWorksheets = () => {
                       transition: "all 0.3s ease",
                     }}
                     onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                     * Hover affordance for a destructive action.
                      */
                     e => {
                       e.currentTarget.style.transform = "translateY(-2px)";
                       e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 107, 107, 0.4)";
                     }}
                     onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                     * Restore the default styling when hover ends.
                      */
                     e => {
                       e.currentTarget.style.transform = "translateY(0)";
@@ -714,8 +700,7 @@ const WeeklyWorksheets = () => {
                 </div>
                 <button
                   onClick={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Open the resource link and record a view/click for basic usage metrics.
                    */
                   () => {
                     return handleLinkClick(worksheet._id, worksheet.link);
@@ -737,16 +722,14 @@ const WeeklyWorksheets = () => {
                     transition: "all 0.3s ease",
                   }}
                   onMouseEnter={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Hover affordance for the “Open Link” CTA.
                    */
                   e => {
                     e.currentTarget.style.transform = "scale(1.02)";
                     e.currentTarget.style.boxShadow = "0 6px 20px rgba(102, 126, 234, 0.4)";
                   }}
                   onMouseLeave={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Restore the default styling when hover ends.
                    */
                   e => {
                     e.currentTarget.style.transform = "scale(1)";

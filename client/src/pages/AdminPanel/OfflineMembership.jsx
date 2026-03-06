@@ -29,16 +29,16 @@ const emptyMember = { name: '', phone: '', age: '', gender: 'other' }
 const emptyFamilyMember = { name: '', phone: '', age: '', gender: 'other' }
 
 /**
- * Purpose: Do Normalize Text
- * Plain English: What this function is used for.
+ * Normalize free-text inputs from the offline desk registration form.
+ * Trims whitespace and converts null/undefined to an empty string.
  */
 const normalizeText = v => {
     return (v == null ? '' : String(v)).trim();
 };
 
 /**
- * Purpose: Do Normalize Phone10
- * Plain English: What this function is used for.
+ * Normalize WhatsApp/phone numbers into a consistent 10-digit format.
+ * Handles common prefixes like +91 and leading 0.
  */
 const normalizePhone10 = v => {
     const raw = normalizeText(v)
@@ -50,16 +50,14 @@ const normalizePhone10 = v => {
 };
 
 /**
- * Purpose: Check whether Valid Phone10
- * Plain English: What this function is used for.
+ * Validate that a phone number is exactly 10 digits.
  */
 const isValidPhone10 = v => {
     return /^\d{10}$/.test(String(v || ''));
 };
 
 /**
- * Purpose: Do Normalize Gender
- * Plain English: What this function is used for.
+ * Normalize gender inputs to one of: male/female/other.
  */
 const normalizeGender = v => {
     const raw = normalizeText(v)
@@ -70,8 +68,7 @@ const normalizeGender = v => {
 };
 
 /**
- * Purpose: Do Normalize Age
- * Plain English: What this function is used for.
+ * Parse and validate age from the form (optional but bounded).
  */
 const normalizeAge = v => {
     if (v == null || v === '') return { ok: true, age: undefined }
@@ -82,8 +79,7 @@ const normalizeAge = v => {
 };
 
 /**
- * Purpose: Do Payment Type Label
- * Plain English: What this function is used for.
+ * Display-friendly payment provider label used on the confirmation screen.
  */
 const paymentTypeLabel = provider => {
     const p = String(provider || '').toLowerCase()
@@ -94,8 +90,9 @@ const paymentTypeLabel = provider => {
 };
 
 /**
- * Purpose: Do Safe Read Json
- * Plain English: What this function is used for.
+ * Utility: safely parse JSON responses from the backend.
+ * Offline registration is used during desk operations, so this also provides
+ * a clear error when the backend is unreachable or returns non-JSON.
  */
 const safeReadJson = async res => {
     const contentType = res.headers.get('content-type') || ''
@@ -118,8 +115,9 @@ const STEP = {
 }
 
 /**
- * Purpose: Do Offline Membership
- * Plain English: What this function is used for.
+ * Bluefins admin flow: Offline Membership Registration.
+ * Used when a customer pays cash/in-hand at the pool/desk (no Razorpay).
+ * Creates the member(s) and allows immediate ID card (QR) download.
  */
 const OfflineMembership = () => {
     const navigate = useNavigate()
@@ -137,8 +135,7 @@ const OfflineMembership = () => {
 	})
     const [familyMembers, setFamilyMembers] = useState([emptyFamilyMember])
     const [collectedBy, setCollectedBy] = useState(/**
-     * Purpose: Helper callback used inside a larger operation
-     * Plain English: What this function is used for.
+     * Load the last “Collected by” staff name to speed up desk workflows.
      */
     () => {
         try {
@@ -152,21 +149,18 @@ const OfflineMembership = () => {
     const [result, setResult] = useState(null)
 
     useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
+     * Admin-only guard: redirect to login if session is missing.
      */
     () => {
         if (!isAdminAuthenticated()) navigate('/admin')
     }, [navigate])
 
     const selectedPlan = useMemo(/**
-     * Purpose: React memo callback (computes a value and caches it)
-     * Plain English: What this function is used for.
+     * Resolve the selected plan object from the loaded plan list.
      */
     () => {
         return plans.find(/**
-         * Purpose: Array search callback (finds the first matching item)
-         * Plain English: What this function is used for.
+         * Match the current selected plan id.
          */
         p => {
             return p._id === selectedPlanId;
@@ -174,8 +168,7 @@ const OfflineMembership = () => {
     }, [plans, selectedPlanId])
 
     /**
-     * Purpose: Format Inr
-     * Plain English: What this function is used for.
+     * Format currency amounts for the summary panel.
      */
     const formatInr = value => {
         const n = Number(value)
@@ -184,8 +177,8 @@ const OfflineMembership = () => {
     };
 
     const computedSubtotal = useMemo(/**
-     * Purpose: React memo callback (computes a value and caches it)
-     * Plain English: What this function is used for.
+        * Compute the amount to collect (before any online fees).
+        * Pricing rules differ by plan type (public per-session, category-based, etc.).
      */
     () => {
         if (testAmountInr != null) return Number(testAmountInr)
@@ -200,8 +193,7 @@ const OfflineMembership = () => {
         if (selectedPlan.categoryRequired) {
 			const category = selection.category
 			const row = (selectedPlan.categoryPrices || []).find(/**
-             * Purpose: Array search callback (finds the first matching item)
-             * Plain English: What this function is used for.
+             * Find the price row for the chosen category.
              */
             x => {
                 return x.category === category;
@@ -218,8 +210,8 @@ const OfflineMembership = () => {
     }, [selectedPlan, selection, testAmountInr])
 
     const computedTotal = useMemo(/**
-     * Purpose: React memo callback (computes a value and caches it)
-     * Plain English: What this function is used for.
+        * Total to collect for offline cash registrations.
+        * Note: no Razorpay fee/GST is applied here.
      */
     () => {
         if (testAmountInr != null) return Number(testAmountInr)
@@ -228,8 +220,8 @@ const OfflineMembership = () => {
     }, [computedSubtotal, testAmountInr])
 
     const peopleCount = useMemo(/**
-     * Purpose: React memo callback (computes a value and caches it)
-     * Plain English: What this function is used for.
+        * Headcount summary shown in the side panel.
+        * Family plans count members; public plans use the per-session quantity.
      */
     () => {
         if (!selectedPlan) return null
@@ -242,16 +234,14 @@ const OfflineMembership = () => {
     }, [selectedPlan, familyMembers, selection.quantity])
 
     useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
+     * When switching away from Family plans, reset the family-members list.
      */
     () => {
         if (selectedPlan?.type !== 'family') setFamilyMembers([emptyFamilyMember])
     }, [selectedPlan?.type])
 
     /**
-     * Purpose: Fetch Plans from server
-     * Plain English: What this function is used for.
+     * Fetch active membership plans so staff can pick a plan for offline signup.
      */
     const fetchPlans = async () => {
         setError('')
@@ -270,8 +260,7 @@ const OfflineMembership = () => {
 			const list = data?.data || []
 			const typeOrder = ['public', 'monthly', 'summer', 'yearly', 'family']
 			const sorted = [...list].sort(/**
-             * Purpose: Sort comparator callback (decides item ordering)
-             * Plain English: What this function is used for.
+             * Sort plans into a staff-friendly order (type, then price, then name).
              */
             (a, b) => {
                 const ai = typeOrder.indexOf(a?.type)
@@ -286,8 +275,7 @@ const OfflineMembership = () => {
             })
 			setPlans(sorted)
 			if (sorted.length && (!selectedPlanId || !sorted.some(/**
-             * Purpose: Array check callback (true if any item matches)
-             * Plain English: What this function is used for.
+             * Ensure the selected plan still exists after refresh.
              */
             p => {
                 return p._id === selectedPlanId;
@@ -302,8 +290,7 @@ const OfflineMembership = () => {
     };
 
     useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
+     * Initial load: fetch plans once when the screen opens.
      */
     () => {
         fetchPlans()
@@ -311,8 +298,8 @@ const OfflineMembership = () => {
     }, [])
 
     /**
-     * Purpose: Validate
-     * Plain English: What this function is used for.
+     * Validate the offline registration form before submitting.
+     * Returns an error message string or an empty string when valid.
      */
     const validate = () => {
         if (!selectedPlan) return 'Please select a plan'
@@ -322,8 +309,7 @@ const OfflineMembership = () => {
         if (selectedPlan.categoryRequired) {
 			if (!selection.category) return 'Select a category'
 			const allowed = (selectedPlan.categoryPrices || []).map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
+             * Normalize allowed category keys from the plan config.
              */
             x => {
                 return String(x?.category || '').toLowerCase();
@@ -375,8 +361,8 @@ const OfflineMembership = () => {
     };
 
     /**
-     * Purpose: Do Submit Offline
-     * Plain English: What this function is used for.
+        * Submit the offline registration to the admin API.
+        * On success, transitions to the confirmation step and enables ID card download.
      */
     const submitOffline = async () => {
         const err = validate()
@@ -408,8 +394,7 @@ const OfflineMembership = () => {
 				selection,
 				familyMembers: selectedPlan?.type === 'family'
 					? familyMembers.map(/**
-                 * Purpose: Array mapping callback (converts each item to a new value)
-                 * Plain English: What this function is used for.
+                 * Normalize each family member record for storage.
                  */
                 m => {
                     return ({
@@ -450,8 +435,7 @@ const OfflineMembership = () => {
     };
 
     /**
-     * Purpose: Do Reset All
-     * Plain English: What this function is used for.
+        * Reset the wizard to start a fresh offline registration.
      */
     const resetAll = () => {
         setResult(null)
@@ -463,23 +447,20 @@ const OfflineMembership = () => {
     };
 
     /**
-     * Purpose: Do Plan Card Price
-     * Plain English: What this function is used for.
+        * Small display helper for the plan-selection grid cards.
      */
     const planCardPrice = p => {
         if (!p) return '—'
         if (p.categoryRequired) {
 			const prices = (p.categoryPrices || [])
 				.map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
+             * Extract numeric price values.
              */
             x => {
                 return Number(x?.price);
             })
 				.filter(/**
-             * Purpose: Array filter callback (keeps items that match a condition)
-             * Plain English: What this function is used for.
+             * Keep only valid positive prices.
              */
             x => {
                 return Number.isFinite(x) && x > 0;
@@ -507,8 +488,7 @@ const OfflineMembership = () => {
 						</div>
 					</div>
 					<button className="btn btn-outline-light btn-sm" onClick={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                     * Return to the main admin dashboard.
                      */
                     () => {
                         return navigate('/admin/dashboard');
@@ -547,8 +527,7 @@ const OfflineMembership = () => {
 												placeholder="Enter admin/staff name"
 												value={collectedBy}
 												onChange={/**
-                                                 * Purpose: Helper callback used inside a larger operation
-                                                 * Plain English: What this function is used for.
+                                                                 * Update “Collected by” staff name.
                                                  */
                                                 e => {
                                                     return setCollectedBy(e.target.value);
@@ -569,17 +548,15 @@ const OfflineMembership = () => {
 													className="form-select form-select-sm"
 													value={selectedPlanId}
 													onChange={/**
-                                                     * Purpose: Helper callback used inside a larger operation
-                                                     * Plain English: What this function is used for.
+                                                                 * Change the selected plan.
                                                      */
                                                     e => {
                                                         return setSelectedPlanId(e.target.value);
                                                     }}
 												>
-													{plans.map(/**
-                                                     * Purpose: Array mapping callback (converts each item to a new value)
-                                                     * Plain English: What this function is used for.
-                                                     */
+            										{plans.map(/**
+            										 * Render each plan option.
+            										 */
                                                     p => {
                                                         return (
                                                             <option key={p._id} value={p._id}>
@@ -595,8 +572,7 @@ const OfflineMembership = () => {
 									{plans.length ? (
 										<div className="membership-plan-grid mt-3">
 											{plans.map(/**
-                                             * Purpose: Array mapping callback (converts each item to a new value)
-                                             * Plain English: What this function is used for.
+                                                 * Render the plan selection cards.
                                              */
                                             p => {
                                                 const isSelected = p._id === selectedPlanId
@@ -606,8 +582,7 @@ const OfflineMembership = () => {
 														type="button"
 														className={`membership-plan-card ${isSelected ? 'membership-plan-card--active' : ''}`}
 														onClick={/**
-                                                         * Purpose: Helper callback used inside a larger operation
-                                                         * Plain English: What this function is used for.
+                                                                 * Select this plan.
                                                          */
                                                         () => {
                                                             return setSelectedPlanId(p._id);
@@ -630,8 +605,7 @@ const OfflineMembership = () => {
 										<button
 											className="btn btn-success btn-sm"
 											onClick={/**
-                                             * Purpose: Helper callback used inside a larger operation
-                                             * Plain English: What this function is used for.
+                                                 * Move to the details step.
                                              */
                                             () => {
                                                 setError('')
@@ -657,8 +631,7 @@ const OfflineMembership = () => {
 													className="form-control form-control-sm"
 													value={member.name}
 													onChange={/**
-                                                     * Purpose: Helper callback used inside a larger operation
-                                                     * Plain English: What this function is used for.
+                                                     * Update contact name for the family plan.
                                                      */
                                                     e => {
                                                         return setMember({ ...member, name: e.target.value });
@@ -671,8 +644,7 @@ const OfflineMembership = () => {
 													className="form-control form-control-sm"
 													value={member.phone}
 													onChange={/**
-                                                     * Purpose: Helper callback used inside a larger operation
-                                                     * Plain English: What this function is used for.
+                                                     * Update contact WhatsApp number for the family plan.
                                                      */
                                                     e => {
                                                         return setMember({ ...member, phone: e.target.value });
@@ -685,8 +657,7 @@ const OfflineMembership = () => {
 											<div className="col-12 col-md-6">
 												<label className="form-label" style={{ color: '#fff' }}>Name</label>
 												<input className="form-control form-control-sm" value={member.name} onChange={/**
-                                                 * Purpose: Helper callback used inside a larger operation
-                                                 * Plain English: What this function is used for.
+                                                     * Update member name.
                                                  */
                                                 e => {
                                                     return setMember({ ...member, name: e.target.value });
@@ -695,8 +666,7 @@ const OfflineMembership = () => {
 											<div className="col-12 col-md-6">
 												<label className="form-label" style={{ color: '#fff' }}>WhatsApp Number</label>
 												<input className="form-control form-control-sm" value={member.phone} onChange={/**
-                                                 * Purpose: Helper callback used inside a larger operation
-                                                 * Plain English: What this function is used for.
+                                                     * Update member WhatsApp number.
                                                  */
                                                 e => {
                                                     return setMember({ ...member, phone: e.target.value });
@@ -713,13 +683,11 @@ const OfflineMembership = () => {
 													type="button"
 													className="btn btn-outline-light btn-sm"
 													onClick={/**
-                                                     * Purpose: Helper callback used inside a larger operation
-                                                     * Plain English: What this function is used for.
+                                                     * Add an additional family member row.
                                                      */
                                                     () => {
                                                         return setFamilyMembers(/**
-                                                         * Purpose: Helper callback used inside a larger operation
-                                                         * Plain English: What this function is used for.
+                                                         * Append a blank member template.
                                                          */
                                                         prev => {
                                                             return [...prev, emptyFamilyMember];
@@ -731,10 +699,9 @@ const OfflineMembership = () => {
 											</div>
 
 											<div className="mt-2" style={{ display: 'grid', gap: 10 }}>
-												{familyMembers.map(/**
-                                                 * Purpose: Array mapping callback (converts each item to a new value)
-                                                 * Plain English: What this function is used for.
-                                                 */
+														{familyMembers.map(/**
+														 * Render each family member input block.
+														 */
                                                 (fm, idx) => {
                                                     return (
                                                         <div key={idx} className="p-2" style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.05)' }}>
@@ -745,8 +712,7 @@ const OfflineMembership = () => {
                                                                         className="form-control form-control-sm"
                                                                         value={fm.name}
                                                                         onChange={/**
-                                                                         * Purpose: Helper callback used inside a larger operation
-                                                                         * Plain English: What this function is used for.
+                                                                         * Update this family member’s name.
                                                                          */
                                                                         e => {
                                                                             const next = [...familyMembers]
@@ -761,8 +727,7 @@ const OfflineMembership = () => {
                                                                         className="form-control form-control-sm"
                                                                         value={fm.phone}
                                                                         onChange={/**
-                                                                         * Purpose: Helper callback used inside a larger operation
-                                                                         * Plain English: What this function is used for.
+                                                                         * Update this family member’s WhatsApp number (optional).
                                                                          */
                                                                         e => {
                                                                             const next = [...familyMembers]
@@ -778,8 +743,7 @@ const OfflineMembership = () => {
                                                                         className="form-control form-control-sm"
                                                                         value={fm.age}
                                                                         onChange={/**
-                                                                         * Purpose: Helper callback used inside a larger operation
-                                                                         * Plain English: What this function is used for.
+                                                                         * Update this family member’s age.
                                                                          */
                                                                         e => {
                                                                             const next = [...familyMembers]
@@ -794,8 +758,7 @@ const OfflineMembership = () => {
                                                                         className="form-select form-select-sm"
                                                                         value={fm.gender}
                                                                         onChange={/**
-                                                                         * Purpose: Helper callback used inside a larger operation
-                                                                         * Plain English: What this function is used for.
+                                                                         * Update this family member’s gender.
                                                                          */
                                                                         e => {
                                                                             const next = [...familyMembers]
@@ -813,18 +776,15 @@ const OfflineMembership = () => {
                                                                         type="button"
                                                                         className="btn btn-outline-danger btn-sm"
                                                                         onClick={/**
-                                                                         * Purpose: Helper callback used inside a larger operation
-                                                                         * Plain English: What this function is used for.
+                                                                         * Remove this family member row.
                                                                          */
                                                                         () => {
                                                                             return setFamilyMembers(/**
-                                                                             * Purpose: Helper callback used inside a larger operation
-                                                                             * Plain English: What this function is used for.
+                                                                             * Filter out the index being removed.
                                                                              */
                                                                             prev => {
                                                                                 return prev.filter(/**
-                                                                                 * Purpose: Array filter callback (keeps items that match a condition)
-                                                                                 * Plain English: What this function is used for.
+                                                                                 * Keep all rows except the one being removed.
                                                                                  */
                                                                                 (_, i) => {
                                                                                     return i !== idx;
@@ -851,8 +811,7 @@ const OfflineMembership = () => {
 												className="form-select form-select-sm"
 												value={selection.category}
 												onChange={/**
-                                                 * Purpose: Helper callback used inside a larger operation
-                                                 * Plain English: What this function is used for.
+                                                 * Update selected category for category-priced plans.
                                                  */
                                                 e => {
                                                     return setSelection({ ...selection, category: e.target.value });
@@ -875,8 +834,7 @@ const OfflineMembership = () => {
 														className="form-control form-control-sm"
 														value={selection.publicSlot.date}
 														onChange={/**
-                                                         * Purpose: Helper callback used inside a larger operation
-                                                         * Plain English: What this function is used for.
+                                                                 * Set the session date for a public batch (per-session) plan.
                                                          */
                                                         e => {
                                                             return setSelection({ ...selection, publicSlot: { ...selection.publicSlot, date: e.target.value } });
@@ -891,8 +849,7 @@ const OfflineMembership = () => {
 														className="form-control form-control-sm"
 														value={selection.quantity}
 														onChange={/**
-                                                         * Purpose: Helper callback used inside a larger operation
-                                                         * Plain English: What this function is used for.
+                                                                 * Set headcount for public batch (charged per person).
                                                          */
                                                         e => {
                                                             return setSelection({ ...selection, quantity: e.target.value });
@@ -906,8 +863,7 @@ const OfflineMembership = () => {
 														className="form-control form-control-sm"
 														value={selection.publicSlot.startTime}
 														onChange={/**
-                                                         * Purpose: Helper callback used inside a larger operation
-                                                         * Plain English: What this function is used for.
+                                                                 * Set the session start time.
                                                          */
                                                         e => {
                                                             return setSelection({ ...selection, publicSlot: { ...selection.publicSlot, startTime: e.target.value } });
@@ -921,8 +877,7 @@ const OfflineMembership = () => {
 														className="form-control form-control-sm"
 														value={selection.publicSlot.endTime}
 														onChange={/**
-                                                         * Purpose: Helper callback used inside a larger operation
-                                                         * Plain English: What this function is used for.
+                                                                 * Optional session end time.
                                                          */
                                                         e => {
                                                             return setSelection({ ...selection, publicSlot: { ...selection.publicSlot, endTime: e.target.value } });
@@ -935,8 +890,7 @@ const OfflineMembership = () => {
 
 									<div className="d-flex justify-content-between mt-4">
 										<button className="btn btn-outline-light btn-sm" onClick={/**
-                                         * Purpose: Helper callback used inside a larger operation
-                                         * Plain English: What this function is used for.
+                                             * Go back to plan selection.
                                          */
                                         () => {
                                             return setStep(STEP.PLAN);
@@ -978,8 +932,7 @@ const OfflineMembership = () => {
 
 									<div className="mt-3" style={{ display: 'grid', gap: 10 }}>
 										{(result?.members || []).map(/**
-                                         * Purpose: Array mapping callback (converts each item to a new value)
-                                         * Plain English: What this function is used for.
+                                             * Render the created members and allow downloading ID cards.
                                          */
                                         m => {
                                             return (
@@ -996,8 +949,7 @@ const OfflineMembership = () => {
                                                         <button
                                                             className="btn btn-outline-light btn-sm"
                                                             onClick={/**
-                                                             * Purpose: Helper callback used inside a larger operation
-                                                             * Plain English: What this function is used for.
+                                                             * Download the member ID card (includes QR used for attendance scans).
                                                              */
                                                             () => {
                                                                 return downloadMemberIdCard({

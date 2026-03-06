@@ -14,15 +14,15 @@ import AdminNavbar from "../../components/adminPanel/AdminNavbar";
 const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
 
 /**
- * Purpose: Do Posts
- * Plain English: What this function is used for.
+ * Bluefins admin screen: Content Management.
+ * Admins publish announcements (posts) and curate the homepage/gallery images.
+ * Images are uploaded to Cloudinary and the returned URL is stored in the DB.
  */
 const Posts = () => {
   const navigate = useNavigate();
 
   useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
+   * Admin-only guard: redirect to login if the admin session is missing.
    */
   () => {
     if (!isAdminAuthenticated()) {
@@ -60,8 +60,7 @@ const Posts = () => {
 
   // Fetch posts and gallery from backend
   useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
+   * Initial load: fetch both announcements and gallery images.
    */
   () => {
     fetchPosts();
@@ -69,8 +68,7 @@ const Posts = () => {
   }, []);
 
   /**
-   * Purpose: Fetch Posts from server
-   * Plain English: What this function is used for.
+   * Load announcements shown to users (news, closures, event updates).
    */
   const fetchPosts = async () => {
     try {
@@ -92,8 +90,7 @@ const Posts = () => {
   };
 
   /**
-   * Purpose: Fetch Gallery from server
-   * Plain English: What this function is used for.
+    * Load gallery images used across the public site (training, events, facilities).
    */
   const fetchGallery = async () => {
     try {
@@ -109,8 +106,7 @@ const Posts = () => {
   };
 
   /**
-   * Purpose: Handle Image Change
-   * Plain English: What this function is used for.
+    * Handle selecting an image for an announcement and generate a local preview.
    */
   const handleImageChange = e => {
     const file = e.target.files[0];
@@ -121,8 +117,8 @@ const Posts = () => {
   };
 
   /**
-   * Purpose: Do Upload Image To Cloudinary
-   * Plain English: What this function is used for.
+    * Upload the selected announcement image to Cloudinary.
+    * Returns a public URL + publicId for later cleanup if needed.
    */
   const uploadImageToCloudinary = async () => {
     if (!imageFile) return null;
@@ -152,8 +148,8 @@ const Posts = () => {
   };
 
   /**
-   * Purpose: Handle Submit
-   * Plain English: What this function is used for.
+    * Create a new announcement.
+    * If an image is selected, upload to Cloudinary first, then submit the post.
    */
   const handleSubmit = async e => {
     e.preventDefault();
@@ -254,8 +250,7 @@ const Posts = () => {
   };
 
   /**
-   * Purpose: Do Delete Post
-   * Plain English: What this function is used for.
+    * Delete an announcement after admin confirmation.
    */
   const deletePost = async id => {
     const result = await Swal.fire({
@@ -328,8 +323,7 @@ const Posts = () => {
   };
 
   /**
-   * Purpose: Do Reset Form
-   * Plain English: What this function is used for.
+    * Reset the announcement form and close the modal section.
    */
   const resetForm = () => {
     setFormData({
@@ -345,16 +339,14 @@ const Posts = () => {
   };
 
   /**
-   * Purpose: Handle Change
-   * Plain English: What this function is used for.
+   * Update announcement form fields.
    */
   const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   /**
-   * Purpose: Handle Gallery Image Change
-   * Plain English: What this function is used for.
+    * Handle selecting a gallery image and generate a local preview.
    */
   // Gallery handlers
   const handleGalleryImageChange = e => {
@@ -366,8 +358,8 @@ const Posts = () => {
   };
 
   /**
-   * Purpose: Handle Gallery Submit
-   * Plain English: What this function is used for.
+    * Add a new gallery image.
+    * Upload the file to Cloudinary, then store metadata (title/description/category).
    */
   const handleGallerySubmit = async e => {
     e.preventDefault();
@@ -466,8 +458,7 @@ const Posts = () => {
   };
 
   /**
-   * Purpose: Do Delete Gallery Image
-   * Plain English: What this function is used for.
+    * Delete a gallery image after admin confirmation.
    */
   const deleteGalleryImage = async id => {
     const result = await Swal.fire({
@@ -528,8 +519,7 @@ const Posts = () => {
   };
 
   /**
-   * Purpose: Do Reset Gallery Form
-   * Plain English: What this function is used for.
+    * Reset the gallery form and close the “add image” section.
    */
   const resetGalleryForm = () => {
     setGalleryFormData({
@@ -543,8 +533,7 @@ const Posts = () => {
   };
 
   /**
-   * Purpose: Handle Gallery Change
-   * Plain English: What this function is used for.
+   * Update gallery form fields (title/description/category).
    */
   const handleGalleryChange = e => {
     setGalleryFormData({ ...galleryFormData, [e.target.name]: e.target.value });
@@ -573,8 +562,7 @@ const Posts = () => {
           <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
             <button
               onClick={/**
-               * Purpose: Helper callback used inside a larger operation
-               * Plain English: What this function is used for.
+               * Switch to announcement management.
                */
               () => {
                 setActiveTab("posts");
@@ -597,8 +585,7 @@ const Posts = () => {
             </button>
             <button
               onClick={/**
-               * Purpose: Helper callback used inside a larger operation
-               * Plain English: What this function is used for.
+               * Switch to gallery management.
                */
               () => {
                 setActiveTab("gallery");
@@ -626,8 +613,7 @@ const Posts = () => {
             {activeTab === "posts" ? (
               <button
                 onClick={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
+                 * Toggle the “create post” form.
                  */
                 () => {
                   return setShowPostForm(!showPostForm);
@@ -647,16 +633,14 @@ const Posts = () => {
                   transition: "all 0.3s ease",
                 }}
                 onMouseEnter={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
+                 * Hover affordance for the primary action button.
                  */
                 e => {
                   e.currentTarget.style.transform = "translateY(-2px)";
                   e.currentTarget.style.boxShadow = "0 6px 20px rgba(78, 205, 196, 0.4)";
                 }}
                 onMouseLeave={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
+                 * Reset hover styles.
                  */
                 e => {
                   e.currentTarget.style.transform = "translateY(0)";
@@ -668,8 +652,7 @@ const Posts = () => {
             ) : (
               <button
                 onClick={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
+                 * Toggle the “add gallery image” form.
                  */
                 () => {
                   return setShowGalleryForm(!showGalleryForm);
@@ -689,16 +672,14 @@ const Posts = () => {
                   transition: "all 0.3s ease",
                 }}
                 onMouseEnter={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
+                 * Hover affordance for the primary action button.
                  */
                 e => {
                   e.currentTarget.style.transform = "translateY(-2px)";
                   e.currentTarget.style.boxShadow = "0 6px 20px rgba(102, 126, 234, 0.4)";
                 }}
                 onMouseLeave={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
+                 * Reset hover styles.
                  */
                 e => {
                   e.currentTarget.style.transform = "translateY(0)";
@@ -720,8 +701,7 @@ const Posts = () => {
             </div>
             <div style={{ background: "rgba(102, 126, 234, 0.1)", border: "2px solid #667eea", borderRadius: "15px", padding: "20px", textAlign: "center" }}>
               <div style={{ fontSize: "2rem", fontWeight: "700", color: "#667eea", marginBottom: "5px" }}>{posts.filter(/**
-               * Purpose: Array filter callback (keeps items that match a condition)
-               * Plain English: What this function is used for.
+               * Count announcements that include an image.
                */
               p => {
                 return p.imageUrl;
@@ -739,8 +719,7 @@ const Posts = () => {
             </div>
             <div style={{ background: "rgba(255, 215, 61, 0.1)", border: "2px solid #FFD93D", borderRadius: "15px", padding: "20px", textAlign: "center" }}>
               <div style={{ fontSize: "2rem", fontWeight: "700", color: "#FFD93D", marginBottom: "5px" }}>{galleryImages.filter(/**
-               * Purpose: Array filter callback (keeps items that match a condition)
-               * Plain English: What this function is used for.
+               * Count gallery items that are marked active.
                */
               img => {
                 return img.isActive;
@@ -846,15 +825,13 @@ const Posts = () => {
                     transition: "all 0.3s ease",
                   }}
                   onMouseEnter={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Slight hover highlight for the “choose image” control.
                    */
                   e => {
                     return e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
                   }}
                   onMouseLeave={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Reset hover highlight.
                    */
                   e => {
                     return e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
@@ -868,8 +845,7 @@ const Posts = () => {
                     <button
                       type="button"
                       onClick={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
+                       * Remove the selected gallery image before uploading.
                        */
                       () => {
                         setGalleryImageFile(null);setGalleryImagePreview(null);
@@ -1031,15 +1007,13 @@ const Posts = () => {
                     transition: "all 0.3s ease",
                   }}
                   onMouseEnter={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Slight hover highlight for the “choose image” control.
                    */
                   e => {
                     return e.currentTarget.style.background = "rgba(255, 255, 255, 0.15)";
                   }}
                   onMouseLeave={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Reset hover highlight.
                    */
                   e => {
                     return e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
@@ -1053,8 +1027,7 @@ const Posts = () => {
                     <button
                       type="button"
                       onClick={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
+                       * Remove the selected announcement image before publishing.
                        */
                       () => {
                         setImageFile(null);setImagePreview(null);
@@ -1147,8 +1120,7 @@ const Posts = () => {
         {activeTab === "posts" && (
           <div style={{ display: "grid", gap: "20px" }}>
             {posts.map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
+             * Render each announcement card.
              */
             post => {
               return (
@@ -1162,16 +1134,14 @@ const Posts = () => {
                     transition: "all 0.3s ease",
                   }}
                   onMouseEnter={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Hover affordance for cards in the admin list.
                    */
                   e => {
                     e.currentTarget.style.transform = "translateY(-2px)";
                     e.currentTarget.style.boxShadow = "0 8px 30px rgba(0, 0, 0, 0.3)";
                   }}
                   onMouseLeave={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Reset hover styles.
                    */
                   e => {
                     e.currentTarget.style.transform = "translateY(0)";
@@ -1214,8 +1184,7 @@ const Posts = () => {
                         </span>
                         <button
                           onClick={/**
-                           * Purpose: Helper callback used inside a larger operation
-                           * Plain English: What this function is used for.
+                           * Delete this announcement.
                            */
                           () => {
                             return deletePost(post._id);
@@ -1235,16 +1204,14 @@ const Posts = () => {
                             transition: "all 0.3s ease",
                           }}
                           onMouseEnter={/**
-                           * Purpose: Helper callback used inside a larger operation
-                           * Plain English: What this function is used for.
+                           * Hover affordance for destructive action.
                            */
                           e => {
                             e.currentTarget.style.transform = "translateY(-2px)";
                             e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 107, 107, 0.4)";
                           }}
                           onMouseLeave={/**
-                           * Purpose: Helper callback used inside a larger operation
-                           * Plain English: What this function is used for.
+                           * Reset hover styles.
                            */
                           e => {
                             e.currentTarget.style.transform = "translateY(0)";
@@ -1272,8 +1239,7 @@ const Posts = () => {
         {activeTab === "gallery" && galleryImages.length > 0 && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
             {galleryImages.map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
+             * Render each gallery card.
              */
             image => {
               return (
@@ -1287,16 +1253,14 @@ const Posts = () => {
                     transition: "all 0.3s ease",
                   }}
                   onMouseEnter={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Hover affordance for gallery cards.
                    */
                   e => {
                     e.currentTarget.style.transform = "translateY(-4px)";
                     e.currentTarget.style.boxShadow = "0 8px 30px rgba(102, 126, 234, 0.3)";
                   }}
                   onMouseLeave={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Reset hover styles.
                    */
                   e => {
                     e.currentTarget.style.transform = "translateY(0)";
@@ -1347,8 +1311,7 @@ const Posts = () => {
                       </span>
                       <button
                         onClick={/**
-                         * Purpose: Helper callback used inside a larger operation
-                         * Plain English: What this function is used for.
+                         * Delete this gallery image.
                          */
                         () => {
                           return deleteGalleryImage(image._id);
@@ -1368,16 +1331,14 @@ const Posts = () => {
                           transition: "all 0.3s ease",
                         }}
                         onMouseEnter={/**
-                         * Purpose: Helper callback used inside a larger operation
-                         * Plain English: What this function is used for.
+                         * Hover affordance for destructive action.
                          */
                         e => {
                           e.currentTarget.style.transform = "translateY(-2px)";
                           e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 107, 107, 0.4)";
                         }}
                         onMouseLeave={/**
-                         * Purpose: Helper callback used inside a larger operation
-                         * Plain English: What this function is used for.
+                         * Reset hover styles.
                          */
                         e => {
                           e.currentTarget.style.transform = "translateY(0)";

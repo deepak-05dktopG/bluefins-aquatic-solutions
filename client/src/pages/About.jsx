@@ -10,13 +10,14 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import { FaFire, FaUsers, FaTrophy, FaLightbulb } from "react-icons/fa";
 /**
- * Purpose: Do About
- * Plain English: What this function is used for.
+ * Bluefins public page: “About”.
+ * Explains the academy/company story, mission, institutional reach, and key proof points
+ * (stats, values, service categories) to build trust with parents and partner institutions.
  */
 const About = () => {
   useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
+   * Initialize AOS scroll animations for hero + sections.
+   * This page relies heavily on animated cards to keep a long narrative engaging.
    */
   () => {
     AOS.init({
@@ -118,16 +119,14 @@ const About = () => {
                       boxShadow: "0 8px 25px rgba(255,230,109,0.4)",
                     }}
                     onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                     * Hero CTA hover: emphasize the primary “Our Services” button.
                      */
                     e => {
                       e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
                       e.currentTarget.style.boxShadow = "0 12px 35px rgba(255,230,109,0.6)";
                     }}
                     onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                     * Restore default hero CTA styling.
                      */
                     e => {
                       e.currentTarget.style.transform = "translateY(0) scale(1)";
@@ -152,16 +151,14 @@ const About = () => {
                       backdropFilter: "blur(10px)",
                     }}
                     onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                     * Secondary CTA hover: subtle “glass” highlight for Contact.
                      */
                     e => {
                       e.currentTarget.style.background = "rgba(255,255,255,0.25)";
                       e.currentTarget.style.transform = "scale(1.05)";
                     }}
                     onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                     * Restore default secondary CTA styling.
                      */
                     e => {
                       e.currentTarget.style.background = "rgba(255,255,255,0.15)";
@@ -286,8 +283,7 @@ const About = () => {
               { icon: "👥", number: "25+", label: "Expert Coaches", color: "#4ECDC4" },
               { icon: "🏛️", number: "50+", label: "Institutions Served", color: "#667eea" },
             ].map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
+             * Render top-level proof points (training outcomes, coach count, institutions served).
              */
             (stat, i) => {
               return (
@@ -303,16 +299,14 @@ const About = () => {
                       border: `3px solid ${stat.color}`,
                     }}
                     onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                       * Hover affordance for the stats tiles.
                      */
                     e => {
                       e.currentTarget.style.transform = "translateY(-15px) rotateY(3deg) scale(1.03)";
                       e.currentTarget.style.boxShadow = "0 20px 60px rgba(0,0,0,0.2)";
                     }}
                     onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                       * Restore default tile styling.
                      */
                     e => {
                       e.currentTarget.style.transform = "translateY(0) rotateY(0) scale(1)";
@@ -377,8 +371,7 @@ const About = () => {
               { icon: <FaTrophy />, title: "Integrity", desc: "Transparent practices and honest communication in all institutional partnerships.", color: "#667eea" },
               { icon: <FaLightbulb />, title: "Innovation", desc: "Continuously evolving our solutions to meet emerging institutional needs.", color: "#FFD93D" },
             ].map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
+             * Render Bluefins core values as cards.
              */
             (value, i) => {
               return (
@@ -461,8 +454,7 @@ const About = () => {
                 color: "#667eea",
               },
             ].map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
+             * Render the main service categories Bluefins provides to institutions.
              */
             (exp, i) => {
               return (
@@ -479,16 +471,14 @@ const About = () => {
                       cursor: "pointer",
                     }}
                     onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                     * Hover affordance: nudge and deepen shadow to feel clickable.
                      */
                     e => {
                       e.currentTarget.style.transform = "translateX(8px) translateY(-4px)";
                       e.currentTarget.style.boxShadow = `0 12px 40px ${exp.color}50`;
                     }}
                     onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                     * Restore default card styling.
                      */
                     e => {
                       e.currentTarget.style.transform = "translateX(0) translateY(0)";
@@ -522,8 +512,7 @@ const About = () => {
                     </p>
                     <div style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap" }}>
                       {exp.highlights.map(/**
-                       * Purpose: Array mapping callback (converts each item to a new value)
-                       * Plain English: What this function is used for.
+                       * Render short “what you get” highlights for the service.
                        */
                       (h, j) => {
                         return (
@@ -580,8 +569,7 @@ const About = () => {
               { number: "05", title: "Safety First", desc: "Professional protocols and certified staff." },
               { number: "06", title: "Long-term Partnership", desc: "We invest in your sustained growth." },
             ].map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
+             * Render the “Why partner with Bluefins” reasons grid.
              */
             (reason, i) => {
               return (
@@ -597,8 +585,7 @@ const About = () => {
                       backdropFilter: "blur(10px)",
                     }}
                     onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                     * Hover affordance for reasons cards.
                      */
                     e => {
                       e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)";
@@ -606,8 +593,7 @@ const About = () => {
                       e.currentTarget.style.boxShadow = "0 15px 40px rgba(0,0,0,0.2)";
                     }}
                     onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
+                     * Restore default card styling.
                      */
                     e => {
                       e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
@@ -682,8 +668,8 @@ const About = () => {
                   { location: "Kerala", centers: "12+ centers", color: "#4ECDC4" },
                   { location: "Expansion Plans", centers: "South India focus", color: "#667eea" },
                 ].map(/**
-                 * Purpose: Array mapping callback (converts each item to a new value)
-                 * Plain English: What this function is used for.
+                 * Render the region/reach list. Tamil Nadu expands into cities + institutions;
+                 * other items are summarized.
                  */
                 (branch, i) => {
                   return (
@@ -696,8 +682,7 @@ const About = () => {
                           </div>
                           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                             {branch.branches.map(/**
-                             * Purpose: Array mapping callback (converts each item to a new value)
-                             * Plain English: What this function is used for.
+                             * Render each city and its partner institutions.
                              */
                             (city, cityIdx) => {
                               return (
@@ -707,8 +692,7 @@ const About = () => {
                                   </h6>
                                   <ul style={{ margin: "0", paddingLeft: "1.2rem", fontSize: "0.85rem", color: "#555" }}>
                                     {city.centers.map(/**
-                                     * Purpose: Array mapping callback (converts each item to a new value)
-                                     * Plain English: What this function is used for.
+                                     * Render partner school/academy/resort names.
                                      */
                                     (center, centerIdx) => {
                                       return (
@@ -738,16 +722,14 @@ const About = () => {
                             boxShadow: `0 4px 15px ${branch.color}15`,
                           }}
                           onMouseEnter={/**
-                           * Purpose: Helper callback used inside a larger operation
-                           * Plain English: What this function is used for.
+                           * Hover affordance for compact reach items.
                            */
                           e => {
                             e.currentTarget.style.borderColor = branch.color;
                             e.currentTarget.style.transform = "translateX(8px)";
                           }}
                           onMouseLeave={/**
-                           * Purpose: Helper callback used inside a larger operation
-                           * Plain English: What this function is used for.
+                           * Restore default styling.
                            */
                           e => {
                             e.currentTarget.style.borderColor = `${branch.color}30`;
@@ -799,16 +781,14 @@ const About = () => {
                   cursor: "pointer",
                 }}
                 onMouseEnter={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
+                 * Highlight the “Expanding our footprint” info card on hover.
                  */
                 e => {
                   e.currentTarget.style.border = "3px solid #667eea";
                   e.currentTarget.style.transform = "translateY(-8px)";
                 }}
                 onMouseLeave={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
+                 * Restore default styling.
                  */
                 e => {
                   e.currentTarget.style.border = "3px solid transparent";
@@ -837,15 +817,13 @@ const About = () => {
                         boxShadow: "0 8px 20px rgba(102,126,234,0.3)",
                       }}
                       onMouseEnter={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
+                       * CTA hover: lift the “Find Nearest Center” button slightly.
                        */
                       e => {
                         e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
                       }}
                       onMouseLeave={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
+                       * Restore default CTA styling.
                        */
                       e => {
                         e.currentTarget.style.transform = "translateY(0) scale(1)";
@@ -905,15 +883,13 @@ const About = () => {
                     fontSize: "0.95rem",
                   }}
                   onMouseEnter={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * CTA hover: lift the “Request Proposal” button slightly.
                    */
                   e => {
                     e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
                   }}
                   onMouseLeave={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Restore default CTA styling.
                    */
                   e => {
                     e.currentTarget.style.transform = "translateY(0) scale(1)";
@@ -937,16 +913,14 @@ const About = () => {
                     backdropFilter: "blur(10px)",
                   }}
                   onMouseEnter={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Secondary CTA hover: subtle “glass” highlight for Explore Services.
                    */
                   e => {
                     e.currentTarget.style.background = "rgba(255,255,255,0.3)";
                     e.currentTarget.style.transform = "scale(1.05)";
                   }}
                   onMouseLeave={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
+                   * Restore default styling.
                    */
                   e => {
                     e.currentTarget.style.background = "rgba(255,255,255,0.2)";
