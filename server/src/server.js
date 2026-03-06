@@ -25,10 +25,7 @@ const allowedOrigins = [
 ]
 
 app.use(cors({
-  /**
-   * Purpose: Helper callback used inside a larger operation
-   * Plain English: What this function is used for.
-   */
+  // Checks if the incoming request's origin is in our whitelist (localhost dev + Netlify production)
   origin: function(origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true)
@@ -47,10 +44,7 @@ app.use(cors({
 // Capture raw body (needed for Razorpay webhook signature verification)
 app.use(
   express.json({
-    /**
-     * Purpose: Do Verify
-     * Plain English: What this function is used for.
-     */
+    // Stores the raw request body for Razorpay webhook signature verification
     verify: (req, res, buf) => {
       req.rawBody = buf
     },
@@ -58,11 +52,8 @@ app.use(
 )
 
 // Health check endpoint
-app.get('/', /**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-(req, res) => {
+// Returns a status message confirming the Bluefins API is running
+app.get('/', (req, res) => {
   res.status(200).json({
     status: 'success',
     message: 'Bluefins Aquatic Solutions API is running',
@@ -71,11 +62,8 @@ app.get('/', /**
   })
 })
 
-app.get('/health', /**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-(req, res) => {
+// Health check endpoint for deployment monitors (Netlify/Vercel)
+app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', uptime: process.uptime() })
 })
 
@@ -83,11 +71,8 @@ app.get('/health', /**
 app.use('/api', apiRoutes)
 
 // 404 handler
-app.use('*', /**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-(req, res) => {
+// Catches any unmatched routes and returns 404
+app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
     message: 'Route not found'
@@ -95,11 +80,8 @@ app.use('*', /**
 })
 
 // Error handler
-app.use(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-(err, req, res, _next) => {
+// Global error handler — hides stack traces in production
+app.use((err, req, res, _next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode
   res.status(statusCode).json({
     message: err.message,
@@ -109,10 +91,8 @@ app.use(/**
 
 const PORT = process.env.PORT || 8000
 
-app.listen(PORT, /**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
+// Start the server and log the API URL
+app.listen(PORT,
 () => {
   console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
   console.log(`📍 API available at http://localhost:${PORT}/api`)

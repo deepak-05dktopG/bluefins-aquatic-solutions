@@ -17,10 +17,7 @@ const ADMIN = {
 	role: 'admin', // 'admin' | 'superadmin'
 }
 
-/**
- * Purpose: Do Main
- * Plain English: What this function is used for.
- */
+// Connects to MongoDB and upserts the default Bluefins admin account
 const main = async () => {
     if (!ADMIN.email || !ADMIN.password) {
 		throw new Error('Seed admin requires ADMIN.email and ADMIN.password')
@@ -59,10 +56,8 @@ const main = async () => {
     process.exit(0)
 };
 
-main().catch(/**
- * Purpose: Promise error handler (runs when async work fails)
- * Plain English: What this function is used for.
- */
+main().catch(
+// Logs the error and exits if admin seeding fails
 e => {
     console.error('❌ Failed to seed admin:', e?.message || e)
     process.exit(1)

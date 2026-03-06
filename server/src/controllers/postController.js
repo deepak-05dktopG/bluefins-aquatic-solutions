@@ -8,10 +8,7 @@ import Post from '../models/Post.js';
 // @desc    Create new post
 // @route   POST /api/posts
 // @access  Private/Admin
-export /**
- * Purpose: Create Post
- * Plain English: What this function is used for.
- */
+export // Creates a new post/announcement for the website homepage
 const createPost = async (req, res) => {
   try {
     const { title, caption, content, imageUrl, cloudinaryPublicId } = req.body;
@@ -42,10 +39,8 @@ const createPost = async (req, res) => {
     console.error('Error creating post:', error);
     
     if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(/**
-       * Purpose: Array mapping callback (converts each item to a new value)
-       * Plain English: What this function is used for.
-       */
+      const messages = Object.values(error.errors).map(
+      // Extract each validation error message
       err => {
         return err.message;
       });
@@ -65,10 +60,7 @@ const createPost = async (req, res) => {
 // @desc    Get all active posts
 // @route   GET /api/posts
 // @access  Public
-export /**
- * Purpose: Get All Posts
- * Plain English: What this function is used for.
- */
+export // Returns paginated list of active posts for the public website
 const getAllPosts = async (req, res) => {
   try {
     const { limit = 50, page = 1, isActive = true } = req.query;
@@ -108,10 +100,7 @@ const getAllPosts = async (req, res) => {
 // @desc    Get single post by ID
 // @route   GET /api/posts/:id
 // @access  Public
-export /**
- * Purpose: Get Post By Id
- * Plain English: What this function is used for.
- */
+export // Returns a single post by its database ID
 const getPostById = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -139,10 +128,7 @@ const getPostById = async (req, res) => {
 // @desc    Update post
 // @route   PATCH /api/posts/:id
 // @access  Private/Admin
-export /**
- * Purpose: Do Update Post
- * Plain English: What this function is used for.
- */
+export // Updates an existing post (title, content, image, active status)
 const updatePost = async (req, res) => {
   try {
     const { title, caption, content, imageUrl, cloudinaryPublicId, isActive } = req.body;
@@ -177,10 +163,7 @@ const updatePost = async (req, res) => {
 // @desc    Delete post
 // @route   DELETE /api/posts/:id
 // @access  Private/Admin
-export /**
- * Purpose: Do Delete Post
- * Plain English: What this function is used for.
- */
+export // Permanently deletes a post from the database
 const deletePost = async (req, res) => {
   try {
     const post = await Post.findByIdAndDelete(req.params.id);
@@ -208,10 +191,7 @@ const deletePost = async (req, res) => {
 // @desc    Get posts statistics
 // @route   GET /api/posts/stats
 // @access  Private/Admin
-export /**
- * Purpose: Get Post Stats
- * Plain English: What this function is used for.
- */
+export // Returns post counts (total, active, recent) for the admin dashboard
 const getPostStats = async (req, res) => {
   try {
     const totalPosts = await Post.countDocuments();

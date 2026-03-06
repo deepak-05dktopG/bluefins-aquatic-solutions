@@ -6,10 +6,7 @@
 import jwt from 'jsonwebtoken'
 import Admin from '../models/Admin.js'
 
-/**
- * Purpose: Do Extract Bearer Token
- * Plain English: What this function is used for.
- */
+// Extracts the JWT token from the "Bearer <token>" Authorization header
 const extractBearerToken = value => {
     if (!value) return null
     const s = String(value)
@@ -17,10 +14,7 @@ const extractBearerToken = value => {
     return m ? m[1].trim() : null
 };
 
-/**
- * Purpose: Do Require Admin Auth
- * Plain English: What this function is used for.
- */
+// Verifies the admin JWT token and attaches admin info to req.admin
 const requireAdminAuth = async (req, res, next) => {
     const secret = process.env.JWT_SECRET
     if (!secret) {

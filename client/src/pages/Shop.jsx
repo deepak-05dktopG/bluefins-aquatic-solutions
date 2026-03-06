@@ -12,15 +12,10 @@ import "aos/dist/aos.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-/**
- * Purpose: Do Shop
- * Plain English: What this function is used for.
- */
+// Swimming accessories shop page — displays product categories (caps, fins, boards, etc.) in carousels
 const Shop = () => {
-  useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
-   */
+  useEffect(
+  // Initialize AOS scroll animations for product sections on page load
   () => {
     AOS.init({
       duration: 1000,
@@ -454,17 +449,11 @@ const Shop = () => {
                       transition: "all 0.3s ease",
                       boxShadow: "0 8px 25px rgba(255,255,255,0.4)",
                     }}
-                    onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseEnter={// Lift and scale the "Shop Now" CTA button on hover
                     e => {
                       e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
                     }}
-                    onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseLeave={// Reset the "Shop Now" button to default on mouse leave
                     e => {
                       e.currentTarget.style.transform = "translateY(0) scale(1)";
                     }}
@@ -526,10 +515,8 @@ const Shop = () => {
       {/* ===================== PRODUCTS CAROUSELS BY CATEGORY ===================== */}
       <section className="py-5" style={{ background: "linear-gradient(180deg, #f5f3ff 0%, #fff5f0 50%, #f0f9ff 100%)" }}>
         <div className="container">
-          {Object.entries(productCategories).map(/**
-           * Purpose: Array mapping callback (converts each item to a new value)
-           * Plain English: What this function is used for.
-           */
+          {Object.entries(productCategories).map(
+          // Render a carousel section for each product category (caps, fins, boards, etc.)
           ([key, category], categoryIndex) => {
             return (
               <div key={key} className="category-section" data-aos="fade-up" data-aos-delay={categoryIndex * 200}>
@@ -551,10 +538,8 @@ const Shop = () => {
                 </div>
                 {/* Products Carousel */}
                 <Slider {...carouselSettings}>
-                  {category.images.map(/**
-                   * Purpose: Array mapping callback (converts each item to a new value)
-                   * Plain English: What this function is used for.
-                   */
+                  {category.images.map(
+                  // Render each product image as a card slide within the category carousel
                   (imagePath, i) => {
                     return (
                       <div key={i}>
@@ -628,10 +613,8 @@ const Shop = () => {
               { icon: "💯", title: "Quality Assured", desc: "Premium brands and certified products" },
               { icon: "💰", title: "Best Prices", desc: "Competitive pricing for bulk orders" },
               { icon: "🔄", title: "Easy Returns", desc: "7-day return policy on all items" },
-            ].map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
-             */
+            ].map(
+            // Render each shop benefit card (fast delivery, quality assured, etc.)
             (item, i) => {
               return (
                 <div className="col-md-6 col-lg-3" key={i} data-aos="zoom-in" data-aos-delay={i * 100}>
@@ -647,18 +630,12 @@ const Shop = () => {
                       textAlign: "center",
                       color: "white",
                     }}
-                    onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseEnter={// Highlight benefit card border and lift on hover
                     e => {
                       e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)";
                       e.currentTarget.style.transform = "translateY(-10px)";
                     }}
-                    onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseLeave={// Reset benefit card border and position on mouse leave
                     e => {
                       e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
                       e.currentTarget.style.transform = "translateY(0)";
@@ -718,17 +695,11 @@ const Shop = () => {
                 transition: "all 0.3s ease",
                 boxShadow: "0 8px 25px rgba(255,107,107,0.3)",
               }}
-              onMouseEnter={/**
-               * Purpose: Helper callback used inside a larger operation
-               * Plain English: What this function is used for.
-               */
+              onMouseEnter={// Lift and scale the "Contact for Bulk Orders" button on hover
               e => {
                 e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
               }}
-              onMouseLeave={/**
-               * Purpose: Helper callback used inside a larger operation
-               * Plain English: What this function is used for.
-               */
+              onMouseLeave={// Reset bulk orders button to default on mouse leave
               e => {
                 e.currentTarget.style.transform = "translateY(0) scale(1)";
               }}

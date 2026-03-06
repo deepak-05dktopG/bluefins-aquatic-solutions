@@ -7,10 +7,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button, Container, Nav, Navbar as BsNavbar } from "react-bootstrap";
 
-/**
- * Purpose: Do Navbar
- * Plain English: What this function is used for.
- */
+// Main navigation bar for the Bluefins website with scroll effects and mobile menu
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -18,25 +15,17 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [clickCount, setClickCount] = useState(0);
 
-  useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
-   */
+  useEffect(
+  // Adds scroll listener to toggle transparent/solid navbar background on scroll
   () => {
-    /**
-     * Purpose: Handle Scroll
-     * Plain English: What this function is used for.
-     */
+    // Sets navbar background solid when scrolled past 60px
     const handleScroll = () => {
       return setIsScrolled(window.scrollY > 60);
     };
     window.addEventListener("scroll", handleScroll);
     handleScroll();
     return (
-      /**
-       * Purpose: Helper callback used inside a larger operation
-       * Plain English: What this function is used for.
-       */
+      // Removes scroll listener on component unmount
       () => {
         return window.removeEventListener("scroll", handleScroll);
       }
@@ -65,10 +54,7 @@ const Navbar = () => {
     transition: "all 0.4s ease",
   };
 
-  /**
-   * Purpose: Do Link Style
-   * Plain English: What this function is used for.
-   */
+  // Returns style object for nav links with active page highlighting
   const linkStyle = path => {
     return ({
       color: "#fff",
@@ -100,10 +86,7 @@ const Navbar = () => {
     transition: "all 0.4s ease",
   };
 
-  /**
-   * Purpose: Handle Hover
-   * Plain English: What this function is used for.
-   */
+  // Animates button gradient and scale on mouse hover
   const handleHover = (e, enter) => {
     e.currentTarget.style.backgroundPosition = enter ? "100% 0%" : "0% 0%";
     e.currentTarget.style.transform = enter ? "scale(1.05)" : "scale(1)";
@@ -116,10 +99,8 @@ const Navbar = () => {
     <>
       <BsNavbar
         expanded={expanded}
-        onToggle={/**
-         * Purpose: Helper callback used inside a larger operation
-         * Plain English: What this function is used for.
-         */
+        onToggle={
+        // Toggles mobile hamburger menu open/closed
         () => {
           return setExpanded(!expanded);
         }}
@@ -134,17 +115,13 @@ const Navbar = () => {
             as={Link}
             to="/"
             className="d-flex align-items-center"
-            onClick={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+            onClick={
+            // Closes mobile menu and navigates to homepage
             () => {
               return setExpanded(false);
             }}
-            onDoubleClick={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+            onDoubleClick={
+            // Secret triple-click on logo navigates to admin login page
             () => {
               setClickCount(clickCount + 1);
               if (clickCount + 1 === 3) {
@@ -207,38 +184,30 @@ const Navbar = () => {
           {/* Nav Links */}
           <BsNavbar.Collapse id="main-nav" className="mt-3 mt-lg-0">
             <Nav className="mx-auto text-center text-lg-start main-navbar__links">
-              {links.map(/**
-               * Purpose: Array mapping callback (converts each item to a new value)
-               * Plain English: What this function is used for.
-               */
+              {links.map(
+              // Renders each navigation link (Home, About, Services, etc.)
               item => {
                 return (
                   <Nav.Link
                     key={item.path}
                     as={Link}
                     to={item.path}
-                    onClick={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onClick={
+                    // Closes mobile menu when a nav link is tapped
                     () => {
                       return setExpanded(false);
                     }}
                     className="main-navbar__link"
                     style={linkStyle(item.path)}
-                    onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseEnter={
+                    // Highlights the nav link background on hover
                     e => {
                       if (location.pathname !== item.path)
                         e.currentTarget.style.background =
                           "rgba(255,255,255,0.15)";
                     }}
-                    onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseLeave={
+                    // Removes nav link hover highlight
                     e => {
                       if (location.pathname !== item.path)
                         e.currentTarget.style.background = "transparent";
@@ -253,10 +222,8 @@ const Navbar = () => {
             {/* CTA Button */}
             <div className="d-flex justify-content-center justify-content-lg-end gap-2 mt-3 mt-lg-0 main-navbar__cta">
               
-              <Link to="/admin" onClick={/**
-               * Purpose: Helper callback used inside a larger operation
-               * Plain English: What this function is used for.
-               */
+              <Link to="/admin" onClick={
+              // Closes mobile menu when Login button is tapped
               () => {
                 return setExpanded(false);
               }}>
@@ -272,19 +239,15 @@ const Navbar = () => {
                     boxShadow: "0 0 12px rgba(255, 107, 107, 0.3)",
                     transition: "all 0.4s ease",
                   }}
-                  onMouseEnter={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
-                   */
+                  onMouseEnter={
+                  // Animates Login button gradient shift and glow on hover
                   e => {
                     e.currentTarget.style.backgroundPosition = "100% 0%";
                     e.currentTarget.style.transform = "scale(1.05)";
                     e.currentTarget.style.boxShadow = "0 0 20px rgba(255, 107, 107, 0.6)";
                   }}
-                  onMouseLeave={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
-                   */
+                  onMouseLeave={
+                  // Resets Login button to default style
                   e => {
                     e.currentTarget.style.backgroundPosition = "0% 0%";
                     e.currentTarget.style.transform = "scale(1)";
@@ -295,26 +258,20 @@ const Navbar = () => {
                 </Button>
               </Link>
               
-              <Link to="/contact" onClick={/**
-               * Purpose: Helper callback used inside a larger operation
-               * Plain English: What this function is used for.
-               */
+              <Link to="/contact" onClick={
+              // Closes mobile menu when Get Quote button is tapped
               () => {
                 return setExpanded(false);
               }}>
                 <Button
                   style={buttonStyle}
-                  onMouseEnter={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
-                   */
+                  onMouseEnter={
+                  // Animates Get Quote button hover effect
                   e => {
                     return handleHover(e, true);
                   }}
-                  onMouseLeave={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
-                   */
+                  onMouseLeave={
+                  // Resets Get Quote button to default style
                   e => {
                     return handleHover(e, false);
                   }}

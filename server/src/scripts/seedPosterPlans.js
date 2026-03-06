@@ -125,10 +125,7 @@ const officialPlans = [
 	},
 ]
 
-/**
- * Purpose: Do Main
- * Plain English: What this function is used for.
- */
+// Connects to MongoDB and upserts all official Bluefins membership/coaching plans from the poster
 const main = async () => {
     await connectDB()
 
@@ -167,10 +164,8 @@ const main = async () => {
     process.exit(0)
 };
 
-main().catch(/**
- * Purpose: Promise error handler (runs when async work fails)
- * Plain English: What this function is used for.
- */
+main().catch(
+// Logs the error and exits if poster plan seeding fails
 e => {
     console.error('❌ Failed to seed poster plans:', e?.message || e)
     process.exit(1)

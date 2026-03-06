@@ -12,10 +12,7 @@ const QR_PREFIX = 'bluefins:member:'
 
 const BUSINESS_TZ_OFFSET_MINUTES = Number.parseInt(process.env.BUSINESS_TZ_OFFSET_MINUTES || '330', 10)
 
-/**
- * Purpose: Do To Date Key
- * Plain English: What this function is used for.
- */
+// Converts a Date to a YYYY-MM-DD string in the pool's local timezone (IST +5:30)
 const toDateKey = date => {
     const d = date instanceof Date ? date : new Date(date)
     if (Number.isNaN(d.getTime())) return null
@@ -28,10 +25,7 @@ const toDateKey = date => {
 
 const SHORT_ID_RE = /^[a-f0-9]{8}$/i
 
-/**
- * Purpose: Do Find Member Id By Short Suffix
- * Plain English: What this function is used for.
- */
+// Looks up a member by the last 8 hex chars of their MongoDB _id (from the QR code short ID)
 const findMemberIdByShortSuffix = async shortId => {
     const suffix = String(shortId || '').trim().toLowerCase()
     if (!SHORT_ID_RE.test(suffix)) return { ok: false, message: 'Invalid short id' }
@@ -50,10 +44,7 @@ const findMemberIdByShortSuffix = async shortId => {
     return { ok: true, memberId: String(hits[0]._id) }
 };
 
-/**
- * Purpose: Do Resolve Member Id From Payload
- * Plain English: What this function is used for.
- */
+// Extracts a valid member ID from the scanned QR payload, short ID, or raw ObjectId string
 const resolveMemberIdFromPayload = async payload => {
     const raw0 = payload == null ? '' : String(payload).trim()
     if (!raw0) return { ok: false, message: 'payload is required' }
@@ -81,20 +72,15 @@ const resolveMemberIdFromPayload = async payload => {
     return { ok: false, message: 'Invalid member id. Use QR payload, full Member ID, or last 8 characters.' }
 };
 
-/**
- * Purpose: Parse Date Only Parts
- * Plain English: What this function is used for.
- */
+// Parses a date string (YYYY-MM-DD or DD/MM/YYYY) into year, month, day parts
 const parseDateOnlyParts = value => {
     const s = value == null ? '' : String(value).trim()
     if (!s) return null
 
     // YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-		const [yy, mm, dd] = s.split('-').map(/**
-         * Purpose: Array mapping callback (converts each item to a new value)
-         * Plain English: What this function is used for.
-         */
+		const [yy, mm, dd] = s.split('-').map(
+        // Convert each date segment string to a number
         x => {
             return Number(x);
         })
@@ -104,10 +90,8 @@ const parseDateOnlyParts = value => {
 
     // DD/MM/YYYY
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
-		const [dd, mm, yy] = s.split('/').map(/**
-         * Purpose: Array mapping callback (converts each item to a new value)
-         * Plain English: What this function is used for.
-         */
+		const [dd, mm, yy] = s.split('/').map(
+        // Convert each date segment string to a number
         x => {
             return Number(x);
         })
@@ -118,10 +102,7 @@ const parseDateOnlyParts = value => {
     return null
 };
 
-/**
- * Purpose: Do End Of Utc Day From Parts
- * Plain English: What this function is used for.
- */
+// Returns a Date object set to 23:59:59.999 UTC for the given year/month/day
 const endOfUtcDayFromParts = parts => {
     if (!parts) return null
     const { y, m, d } = parts
@@ -129,10 +110,7 @@ const endOfUtcDayFromParts = parts => {
     return Number.isNaN(dt.getTime()) ? null : dt
 };
 
-/**
- * Purpose: Do End Of Utc Day From Value
- * Plain English: What this function is used for.
- */
+// Returns end-of-day (23:59:59.999 UTC) for a date value, used for expiry comparisons
 const endOfUtcDayFromValue = value => {
     const parts = parseDateOnlyParts(value)
     if (parts) return endOfUtcDayFromParts(parts)
@@ -141,10 +119,7 @@ const endOfUtcDayFromValue = value => {
     return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 23, 59, 59, 999))
 };
 
-/**
- * Purpose: Do Compute Member Status
- * Plain English: What this function is used for.
- */
+// Determines if a member's subscription is 'active' or 'expired' based on expiry/public slot date
 const computeMemberStatus = ({ expiryDate, planType, publicSlot }) => {
     const now = Date.now()
     const isPublic = String(planType || '').toLowerCase() === 'public'
@@ -155,37 +130,26 @@ const computeMemberStatus = ({ expiryDate, planType, publicSlot }) => {
     return eod.getTime() >= now ? 'active' : 'expired'
 };
 
-/**
- * Purpose: Do Clamp Int
- * Plain English: What this function is used for.
- */
+// Safely parses an integer within min/max bounds (used for pagination page/limit)
 const clampInt = (value, { min, max, fallback }) => {
     const n = Number.parseInt(value, 10)
     if (!Number.isFinite(n)) return fallback
     return Math.max(min, Math.min(max, n))
 };
 
-/**
- * Purpose: Check whether Date Only
- * Plain English: What this function is used for.
- */
+// Checks if a string is in YYYY-MM-DD format (date-only, no time)
 const isDateOnly = s => {
     return /^\d{4}-\d{2}-\d{2}$/.test(s);
 };
 
-/**
- * Purpose: Parse Date Start
- * Plain English: What this function is used for.
- */
+// Parses a date filter value into a Date at midnight (start of day) for range queries
 const parseDateStart = value => {
     if (!value) return null
     const s = String(value).trim()
     if (!s) return null
     if (isDateOnly(s)) {
-		const [y, m, d] = s.split('-').map(/**
-         * Purpose: Array mapping callback (converts each item to a new value)
-         * Plain English: What this function is used for.
-         */
+		const [y, m, d] = s.split('-').map(
+        // Convert each date segment string to a number
         x => {
             return Number(x);
         })
@@ -196,19 +160,14 @@ const parseDateStart = value => {
     return Number.isNaN(dt.getTime()) ? null : dt
 };
 
-/**
- * Purpose: Parse Date End
- * Plain English: What this function is used for.
- */
+// Parses a date filter value into a Date at 23:59:59.999 (end of day) for range queries
 const parseDateEnd = value => {
     if (!value) return null
     const s = String(value).trim()
     if (!s) return null
     if (isDateOnly(s)) {
-		const [y, m, d] = s.split('-').map(/**
-         * Purpose: Array mapping callback (converts each item to a new value)
-         * Plain English: What this function is used for.
-         */
+		const [y, m, d] = s.split('-').map(
+        // Convert each date segment string to a number
         x => {
             return Number(x);
         })
@@ -219,20 +178,14 @@ const parseDateEnd = value => {
     return Number.isNaN(dt.getTime()) ? null : dt
 };
 
-/**
- * Purpose: Do Escape Csv
- * Plain English: What this function is used for.
- */
+// Escapes special characters in a string for safe CSV cell output
 const escapeCsv = value => {
     const s = value == null ? '' : String(value)
     if (/[\n\r\t,"]/.test(s)) return `"${s.replaceAll('"', '""')}"`
     return s
 };
 
-/**
- * Purpose: Do Normalize Query For Attendance
- * Plain English: What this function is used for.
- */
+// Builds a MongoDB query from attendance list filters (date range, result, method, member search)
 const normalizeQueryForAttendance = async reqQuery => {
     const {
 		date,
@@ -287,10 +240,8 @@ const normalizeQueryForAttendance = async reqQuery => {
 		const planMembers = await Member.find({ planId: rawPlanId })
 			.select({ _id: 1 })
 			.limit(50000)
-		const planMemberIds = planMembers.map(/**
-         * Purpose: Array mapping callback (converts each item to a new value)
-         * Plain English: What this function is used for.
-         */
+		const planMemberIds = planMembers.map(
+        // Extract member _id for the $in query filter
         m => {
             return m._id;
         })
@@ -337,10 +288,8 @@ const normalizeQueryForAttendance = async reqQuery => {
 		.select({ _id: 1 })
 		.limit(2000)
 
-    const ids = memberHits.map(/**
-     * Purpose: Array mapping callback (converts each item to a new value)
-     * Plain English: What this function is used for.
-     */
+    const ids = memberHits.map(
+    // Extract member _id for the $in query filter
     m => {
         return m._id;
     })
@@ -350,11 +299,8 @@ const normalizeQueryForAttendance = async reqQuery => {
     return { ok: true, query }
 };
 
-export const scanAttendance = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Processes a QR scan or manual entry: validates member, checks expiry, prevents duplicates, records attendance
+export const scanAttendance = asyncHandler(async (req, res) => {
     const { payload, method } = req.body || {}
     const parsed = await resolveMemberIdFromPayload(payload)
     if (!parsed.ok) return res.status(400).json({ success: false, message: parsed.message })
@@ -450,11 +396,8 @@ async (req, res) => {
 	}
 })
 
-export const listAttendance = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Returns paginated attendance records with member/plan details for the admin attendance log
+export const listAttendance = asyncHandler(async (req, res) => {
     const page = clampInt(req.query?.page, { min: 1, max: 1000000, fallback: 1 })
     const limit = clampInt(req.query?.limit, { min: 1, max: 200, fallback: 25 })
 
@@ -473,33 +416,23 @@ async (req, res) => {
     res.json({ success: true, data: { items, total, page, limit } })
 })
 
-export const deleteAttendance = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Deletes a single attendance record by its ID
+export const deleteAttendance = asyncHandler(async (req, res) => {
     const { id } = req.params
     if (!mongoose.isValidObjectId(id)) return res.status(400).json({ success: false, message: 'Invalid id' })
     const deleted = await Attendance.deleteOne({ _id: id })
     res.json({ success: true, data: { deletedCount: deleted.deletedCount || 0 } })
 })
 
-export const bulkDeleteAttendance = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Deletes multiple attendance records at once by an array of IDs
+export const bulkDeleteAttendance = asyncHandler(async (req, res) => {
     const ids = Array.isArray(req.body?.ids) ? req.body.ids : []
-    const cleaned = ids.map(/**
-     * Purpose: Array mapping callback (converts each item to a new value)
-     * Plain English: What this function is used for.
-     */
+    const cleaned = ids.map(
+    // Convert each ID to string
     x => {
         return String(x);
-    }).filter(/**
-     * Purpose: Array filter callback (keeps items that match a condition)
-     * Plain English: What this function is used for.
-     */
+    }).filter(
+    // Keep only valid MongoDB ObjectIds
     x => {
         return mongoose.isValidObjectId(x);
     })
@@ -508,11 +441,8 @@ async (req, res) => {
     res.json({ success: true, data: { deletedCount: deleted.deletedCount || 0 } })
 })
 
-export const purgeAttendanceBefore = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Permanently removes all attendance records older than the specified date
+export const purgeAttendanceBefore = asyncHandler(async (req, res) => {
     const before = req.query?.before
     const d = parseDateStart(before)
     if (!d) return res.status(400).json({ success: false, message: 'before is required (YYYY-MM-DD or ISO date)' })
@@ -520,11 +450,8 @@ async (req, res) => {
     res.json({ success: true, data: { deletedCount: deleted.deletedCount || 0, before: d.toISOString() } })
 })
 
-export const exportAttendanceCsv = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Generates and streams a CSV file of filtered attendance records for admin download
+export const exportAttendanceCsv = asyncHandler(async (req, res) => {
     const maxExport = clampInt(req.query?.max, { min: 1, max: 50000, fallback: 20000 })
     const norm = await normalizeQueryForAttendance(req.query)
     if (!norm.ok) return res.status(400).json({ success: false, message: norm.message })

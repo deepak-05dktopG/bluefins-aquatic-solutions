@@ -18,10 +18,7 @@ const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
 
 
 
-/**
- * Purpose: Do Contact
- * Plain English: What this function is used for.
- */
+// Contact page — feedback form (EmailJS + DB), office hours, social links, and FAQ for Bluefins academy
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -31,10 +28,8 @@ const Contact = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
-   */
+  useEffect(
+  // Initialize AOS scroll animations for contact sections on page load
   () => {
     AOS.init({
       duration: 1000,
@@ -46,18 +41,12 @@ const Contact = () => {
     AOS.refresh();
   }, []);
 
-  /**
-   * Purpose: Handle Change
-   * Plain English: What this function is used for.
-   */
+  // Update form field value (name, email, phone, or message) as user types
   const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  /**
-   * Purpose: Handle Submit
-   * Plain English: What this function is used for.
-   */
+  // Submit feedback: save to database then send email + auto-reply via EmailJS
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
@@ -223,16 +212,10 @@ const Contact = () => {
       </div>
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px", position: "relative", zIndex: 2 }}>
         <div className="row" style={{ display: "flex", flexWrap: 'wrap', gap: "25px", marginBottom: "50px", marginTop: "30px", alignItems: 'center', justifyContent: 'center' }}>
-          <div className="col-lg-7 col-12" data-aos="fadeInUp" data-aos-delay="0" style={{ background: "rgba(255, 255, 255, 0.08)", backdropFilter: "blur(15px)", border: "1px solid rgba(255, 255, 255, 0.15)", borderRadius: "20px", padding: "40px", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)", transition: "all 0.3s ease", gridColumn: "span 2", cursor: "pointer" }} onMouseEnter={/**
-           * Purpose: Helper callback used inside a larger operation
-           * Plain English: What this function is used for.
-           */
+          <div className="col-lg-7 col-12" data-aos="fadeInUp" data-aos-delay="0" style={{ background: "rgba(255, 255, 255, 0.08)", backdropFilter: "blur(15px)", border: "1px solid rgba(255, 255, 255, 0.15)", borderRadius: "20px", padding: "40px", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)", transition: "all 0.3s ease", gridColumn: "span 2", cursor: "pointer" }} onMouseEnter={// Brighten contact form card background on hover
           e => {
             e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)";e.currentTarget.style.boxShadow = "0 12px 40px rgba(0, 0, 0, 0.4)";
-          }} onMouseLeave={/**
-           * Purpose: Helper callback used inside a larger operation
-           * Plain English: What this function is used for.
-           */
+          }} onMouseLeave={// Reset contact form card background on mouse leave
           e => {
             e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)";e.currentTarget.style.boxShadow = "0 8px 32px rgba(0, 0, 0, 0.3)";
           }}>
@@ -242,38 +225,24 @@ const Contact = () => {
               <input type="email" name="email" placeholder="Your Email" value={formData.email} onChange={handleChange} required style={{ background: "rgba(255, 255, 255, 0.1)", border: "1.5px solid rgba(255, 255, 255, 0.2)", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontSize: "0.95rem", fontWeight: "500", transition: "all 0.3s ease", marginBottom: "18px", width: "100%", boxSizing: "border-box" }} />
               <input type="number"  required pattern="[0-9]{10,14}" minLength="10" maxLength="14" name="phone" placeholder="WhatsApp Number (10 digits)" value={formData.phone} onChange={handleChange}  style={{ background: "rgba(255, 255, 255, 0.1)", border: "1.5px solid rgba(255, 255, 255, 0.2)", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontSize: "0.95rem", fontWeight: "500", transition: "all 0.3s ease", marginBottom: "18px", width: "100%", boxSizing: "border-box" }} />
               <textarea className="w-100" name="message" placeholder="Your Message" rows="5" value={formData.message} onChange={handleChange} required />
-              <button type="submit" style={{ background: "linear-gradient(135deg, #FF6B6B, #FF9FF3)", border: "none", color: "#fff", fontWeight: "700", fontSize: "1rem", padding: "14px 40px", borderRadius: "10px", cursor: "pointer", transition: "all 0.3s ease", boxShadow: "0 4px 15px rgba(255, 107, 107, 0.4)", width: "100%", marginTop: "10px", ...(submitHovered ? { transform: "translateY(-3px)", boxShadow: "0 6px 25px rgba(255, 107, 107, 0.6)" } : {}) }} onMouseEnter={/**
-               * Purpose: Helper callback used inside a larger operation
-               * Plain English: What this function is used for.
-               */
+              <button type="submit" style={{ background: "linear-gradient(135deg, #FF6B6B, #FF9FF3)", border: "none", color: "#fff", fontWeight: "700", fontSize: "1rem", padding: "14px 40px", borderRadius: "10px", cursor: "pointer", transition: "all 0.3s ease", boxShadow: "0 4px 15px rgba(255, 107, 107, 0.4)", width: "100%", marginTop: "10px", ...(submitHovered ? { transform: "translateY(-3px)", boxShadow: "0 6px 25px rgba(255, 107, 107, 0.6)" } : {}) }} onMouseEnter={// Track hover state for submit button lift effect
               () => {
                 return setSubmitHovered(true);
-              }} onMouseLeave={/**
-               * Purpose: Helper callback used inside a larger operation
-               * Plain English: What this function is used for.
-               */
+              }} onMouseLeave={// Remove submit button hover state
               () => {
                 return setSubmitHovered(false);
               }}> {loading ? "Sending..." : "Send Message"}   </button>
             </form>
           </div>
           <div className="col-lg-4 col-12" data-aos="fadeInUp" data-aos-delay="100" style={{ display: "flex", flexDirection: "column", gap: "15px", }}>
-            {contactMethods.map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
-             */
+            {contactMethods.map(
+            // Render each contact method card (phone, email, location) with hover lift effect
             (method, idx) => {
               return (
-                <Link to={method.link} key={idx} style={{ textDecoration: "none", background: "rgba(255, 255, 255, 0.08)", backdropFilter: "blur(15px)", border: `2px solid ${method.color}30`, borderRadius: "15px", padding: "25px", textAlign: "center", transition: "all 0.3s ease", cursor: "pointer", ...(hoveredCard === idx ? { transform: "translateY(-8px)", background: "rgba(255, 255, 255, 0.12)", boxShadow: "0 8px 25px rgba(0, 0, 0, 0.2)" } : {}) }} onMouseEnter={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
-                 */
+                <Link to={method.link} key={idx} style={{ textDecoration: "none", background: "rgba(255, 255, 255, 0.08)", backdropFilter: "blur(15px)", border: `2px solid ${method.color}30`, borderRadius: "15px", padding: "25px", textAlign: "center", transition: "all 0.3s ease", cursor: "pointer", ...(hoveredCard === idx ? { transform: "translateY(-8px)", background: "rgba(255, 255, 255, 0.12)", boxShadow: "0 8px 25px rgba(0, 0, 0, 0.2)" } : {}) }} onMouseEnter={// Track which contact card is hovered for lift animation
                 () => {
                   return setHoveredCard(idx);
-                }} onMouseLeave={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
-                 */
+                }} onMouseLeave={// Clear contact card hover state
                 () => {
                   return setHoveredCard(null);
                 }}>
@@ -290,10 +259,8 @@ const Contact = () => {
           <div data-aos="fadeInUp" data-aos-delay="200">
             <div style={{ background: "rgba(255, 255, 255, 0.08)", backdropFilter: "blur(15px)", border: "1px solid rgba(255, 255, 255, 0.15)", borderRadius: "15px", padding: "25px" }}>
               <h4 style={{ color: "#4ECDC4", fontSize: "1.3rem", fontWeight: "700", marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}><FaClock size={20} /> Hours of Operation</h4>
-              {officeHours.map(/**
-               * Purpose: Array mapping callback (converts each item to a new value)
-               * Plain English: What this function is used for.
-               */
+              {officeHours.map(
+              // Render each day's pool operating hours row
               (item, idx) => {
                 return (
                   <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid rgba(255, 255, 255, 0.1)", color: "#E0E0E0" }}>
@@ -310,22 +277,14 @@ const Contact = () => {
               <h4 style={{ color: "#FF9FF3", fontSize: "1.3rem", fontWeight: "700", marginBottom: "15px", display: "flex", alignItems: "center", gap: "10px" }}><FaHeadset size={20} /> Connect With Us</h4>
               <p style={{ color: "#E0E0E0", marginBottom: "15px", fontSize: "0.9rem" }}>Follow us on social media for updates, tips, and swimming content</p>
               <div style={{ display: "flex", gap: "12px", marginTop: "20px" }}>
-                {socialMedia.map(/**
-                 * Purpose: Array mapping callback (converts each item to a new value)
-                 * Plain English: What this function is used for.
-                 */
+                {socialMedia.map(
+                // Render each social media icon link (Instagram, WhatsApp, etc.)
                 (social, idx) => {
                   return (
-                    <Link to={social.link} key={idx} style={{ width: "45px", height: "45px", borderRadius: "50%", background: `${social.color}20`, border: `2px solid ${social.color}`, display: "flex", alignItems: "center", justifyContent: "center", color: social.color, cursor: "pointer", transition: "all 0.3s ease", ...(socialHovered === idx ? { background: social.color, color: "#fff", transform: "translateY(-5px)", boxShadow: `0 8px 20px ${social.color}40` } : {}) }} onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    <Link to={social.link} key={idx} style={{ width: "45px", height: "45px", borderRadius: "50%", background: `${social.color}20`, border: `2px solid ${social.color}`, display: "flex", alignItems: "center", justifyContent: "center", color: social.color, cursor: "pointer", transition: "all 0.3s ease", ...(socialHovered === idx ? { background: social.color, color: "#fff", transform: "translateY(-5px)", boxShadow: `0 8px 20px ${social.color}40` } : {}) }} onMouseEnter={// Track hovered social icon for fill-color animation
                     () => {
                       return setSocialHovered(idx);
-                    }} onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    }} onMouseLeave={// Clear social icon hover state
                     () => {
                       return setSocialHovered(null);
                     }} title={social.name}>{social.icon}</Link>

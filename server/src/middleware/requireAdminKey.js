@@ -1,12 +1,4 @@
-/**
- * Purpose: Do Safe Equal
- * Plain English: What this function is used for.
- */
-/**
- * What it is: Security middleware for protected endpoints (admin API key check).
- * Non-tech note: Blocks sensitive APIs unless the correct secret key is provided.
- */
-
+// Constant-time string comparison to prevent timing attacks on API key validation
 const safeEqual = (a, b) => {
     const sa = a == null ? '' : String(a)
     const sb = b == null ? '' : String(b)
@@ -16,10 +8,7 @@ const safeEqual = (a, b) => {
     return ok === 0
 };
 
-/**
- * Purpose: Do Require Admin Key
- * Plain English: What this function is used for.
- */
+// Validates the x-admin-key header against the server's ADMIN_API_KEY
 const requireAdminKey = (req, res, next) => {
     const expected = process.env.ADMIN_API_KEY
     if (!expected) {

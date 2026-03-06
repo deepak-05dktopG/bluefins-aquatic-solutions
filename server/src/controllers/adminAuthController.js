@@ -8,10 +8,7 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import Admin from '../models/Admin.js'
 
-/**
- * Purpose: Get Jwt Secret
- * Plain English: What this function is used for.
- */
+// Reads JWT_SECRET from env; throws if not configured
 const getJwtSecret = () => {
     const secret = process.env.JWT_SECRET
     if (!secret) {
@@ -22,11 +19,8 @@ const getJwtSecret = () => {
     return secret
 };
 
-export const adminLogin = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Authenticates admin by email/ID + password and returns a JWT token
+export const adminLogin = asyncHandler(async (req, res) => {
     const { password } = req.body || {}
     const identifier = req.body?.identifier ?? req.body?.adminId ?? req.body?.email
 
@@ -74,11 +68,8 @@ async (req, res) => {
 	})
 })
 
-export const adminMe = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Returns the currently logged-in admin's profile from the token
+export const adminMe = asyncHandler(async (req, res) => {
     return res.status(200).json({
 		success: true,
 		data: { admin: req.admin || null },

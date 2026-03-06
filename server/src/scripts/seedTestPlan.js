@@ -8,10 +8,7 @@ import '../config/env.js'
 import connectDB from '../config/db.js'
 import MembershipPlan from '../models/MembershipPlan.js'
 
-/**
- * Purpose: Do Main
- * Plain English: What this function is used for.
- */
+// Creates a ₹1 test membership plan in MongoDB for end-to-end payment testing
 // Developer-only seed.
 // Creates a ₹1 public entry plan for testing payments end-to-end.
 
@@ -39,10 +36,8 @@ const main = async () => {
     process.exit(0)
 };
 
-main().catch(/**
- * Purpose: Promise error handler (runs when async work fails)
- * Plain English: What this function is used for.
- */
+main().catch(
+// Logs the error and exits if test plan seeding fails
 e => {
     console.error('❌ Failed to seed test plan:', e?.message || e)
     process.exit(1)

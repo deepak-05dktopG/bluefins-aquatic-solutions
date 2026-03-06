@@ -34,10 +34,7 @@ import WeeklyWorksheets from './pages/AdminPanel/WeeklyWorksheets'
 
 
 
-/**
- * Purpose: Do App
- * Plain English: What this function is used for.
- */
+// Logs out admin and redirects to homepage when navigating away from the QR scanner page
 // Defined outside App so React sees a stable component type (preserves ref across renders).
 function ScannerExitRedirect() {
   const navigate = useNavigate()
@@ -59,32 +56,22 @@ function ScannerExitRedirect() {
 
 function App() {
   const appLocation = useLocation()
-  /**
-   * Purpose: Do Footer Maybe
-   * Plain English: What this function is used for.
-   */
+  // Conditionally renders the Footer only on public pages (not admin routes)
   function FooterMaybe() {
     const location = useLocation()
     if (location.pathname.startsWith('/admin')) return null
     return <Footer />
   }
 
-  /**
-   * Purpose: Do Scroll To Top
-   * Plain English: What this function is used for.
-   */
+  // Scrolls to top and refreshes AOS animations on every page navigation
   function ScrollToTop() {
     const location = useLocation();
-    React.useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
-     */
+    React.useEffect(
+    // Runs scroll-to-top and AOS refresh when the route changes
     () => {
       window.scrollTo(0, 0);
-      setTimeout(/**
-       * Purpose: Timer callback (runs once after a delay)
-       * Plain English: What this function is used for.
-       */
+      setTimeout(
+      // Briefly delays AOS refresh to let DOM updates settle after navigation
       () => {
         if (typeof AOS.refreshHard === 'function') {
           AOS.refreshHard();
@@ -110,24 +97,16 @@ function App() {
   }, [])
 
   // Initialize scroll listener for AOS refresh
-  React.useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
-   */
+  React.useEffect(
+  // Keeps AOS animations in sync by refreshing on scroll events
   () => {
-    /**
-     * Purpose: Handle Scroll
-     * Plain English: What this function is used for.
-     */
+    // Triggers AOS refresh on every scroll to detect newly visible elements
     const handleScroll = () => {
       AOS.refresh();
     };
     window.addEventListener('scroll', handleScroll);
     return (
-      /**
-       * Purpose: Helper callback used inside a larger operation
-       * Plain English: What this function is used for.
-       */
+      // Removes scroll event listener on component unmount
       () => {
         return window.removeEventListener('scroll', handleScroll);
       }

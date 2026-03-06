@@ -5,10 +5,7 @@
 
 import axios from 'axios'
 
-/**
- * Purpose: Get Admin Token
- * Plain English: What this function is used for.
- */
+// Reads the stored JWT admin token from localStorage for API authentication
 const getAdminToken = () => {
   try {
     return localStorage.getItem('adminToken')
@@ -22,10 +19,7 @@ const api = axios.create({
 })
 
 api.interceptors.request.use(
-  /**
-   * Purpose: Helper callback used inside a larger operation
-   * Plain English: What this function is used for.
-   */
+  // Attaches the admin JWT token as a Bearer header to every outgoing API request
   config => {
     const token = getAdminToken()
     if (token) {
@@ -34,10 +28,7 @@ api.interceptors.request.use(
     }
     return config
   },
-  /**
-   * Purpose: Helper callback used inside a larger operation
-   * Plain English: What this function is used for.
-   */
+  // Passes through request errors unchanged
   error => {
     return Promise.reject(error);
   }

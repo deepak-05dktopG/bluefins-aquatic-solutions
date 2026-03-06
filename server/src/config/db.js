@@ -5,10 +5,7 @@
 
 import mongoose from 'mongoose'
 
-/**
- * Purpose: Do Connect DB
- * Plain English: What this function is used for.
- */
+// Connects to MongoDB and logs the connection status
 const connectDB = async () => {
   try {
     const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/bluefins'
@@ -22,10 +19,8 @@ const connectDB = async () => {
       try {
         const members = conn.connection.db.collection('members')
         const indexes = await members.indexes()
-        const emailIndex = indexes.find(/**
-         * Purpose: Array search callback (finds the first matching item)
-         * Plain English: What this function is used for.
-         */
+        const emailIndex = indexes.find(
+        // Look for the legacy unique email index that blocks null emails
         i => {
           return i?.name === 'email_1';
         })

@@ -15,10 +15,7 @@ import {
 
 
 
-/**
- * Purpose: Do Footer
- * Plain English: What this function is used for.
- */
+// Website footer with Bluefins branding, social links, navigation, and contact info
 const Footer = () => {
   const navigate = useNavigate();
   return (
@@ -62,10 +59,8 @@ const Footer = () => {
           {/* Column 1 – Brand Info */}
           <Col md={4}>
             <div 
-              onClick={/**
-               * Purpose: Helper callback used inside a larger operation
-               * Plain English: What this function is used for.
-               */
+              onClick={
+              // Navigates to homepage when Bluefins logo is clicked
               () => {
                 navigate("/");
               }}
@@ -98,10 +93,8 @@ const Footer = () => {
                 { icon: <FaInstagram />, link: "https://www.instagram.com/bluefinsaquaticsolutions?utm_source=qr&igsh=MWNtcTlxaGphYWJiZg==" },
                 { icon: <FaWhatsapp />, link: "https://wa.me/918838407511" },
                 // { icon: <FaTwitter />, link: "https://twitter.com" },
-              ].map(/**
-               * Purpose: Array mapping callback (converts each item to a new value)
-               * Plain English: What this function is used for.
-               */
+              ].map(
+              // Renders each social media icon (Instagram, WhatsApp) as a circular link
               (social, index) => {
                 return (
                   <a
@@ -120,10 +113,8 @@ const Footer = () => {
                       boxShadow: "0 0 10px rgba(255,255,255,0.2)",
                       transition: "all 0.4s ease",
                     }}
-                    onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseEnter={
+                    // Highlights social media icon with white background on hover
                     e => {
                       e.currentTarget.style.background =
                         "linear-gradient(90deg,#ffffff,#d7faff)";
@@ -132,10 +123,8 @@ const Footer = () => {
                       e.currentTarget.style.boxShadow =
                         "0 0 20px rgba(255,255,255,0.6)";
                     }}
-                    onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseLeave={
+                    // Resets social media icon to default translucent style
                     e => {
                       e.currentTarget.style.background =
                         "rgba(255,255,255,0.15)";
@@ -165,10 +154,8 @@ const Footer = () => {
                 { text: "Shop", link: "/shop" },
                 { text: "Contact Us", link: "/contact" },
 
-              ].map(/**
-               * Purpose: Array mapping callback (converts each item to a new value)
-               * Plain English: What this function is used for.
-               */
+              ].map(
+              // Renders each quick link (Programs, About, Team, etc.) as a footer navigation item
               (link, i) => {
                 return (
                   <Link
@@ -180,18 +167,14 @@ const Footer = () => {
                       textDecoration: "none",
                       transition: "all 0.3s ease",
                     }}
-                    onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseEnter={
+                    // Adds left padding indent on quick link hover
                     e => {
                       e.currentTarget.style.opacity = "1";
                       e.currentTarget.style.paddingLeft = "8px";
                     }}
-                    onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseLeave={
+                    // Removes left padding indent when mouse leaves quick link
                     e => {
                       e.currentTarget.style.opacity = "0.9";
                       e.currentTarget.style.paddingLeft = "0";
@@ -230,10 +213,8 @@ const Footer = () => {
                   text: "bluefinsaquaticsolutions@gmail.com",
                   link: "mailto:bluefinsaquaticsolutions@gmail.com",
                 },
-              ].map(/**
-               * Purpose: Array mapping callback (converts each item to a new value)
-               * Plain English: What this function is used for.
-               */
+              ].map(
+              // Renders each contact detail (address, phone numbers, email) with icons
               (item, i) => {
                 return (
                   <div key={i} className="d-flex gap-3 align-items-start">
@@ -249,17 +230,13 @@ const Footer = () => {
                           textDecoration: "none",
                           transition: "opacity 0.3s ease",
                         }}
-                        onMouseEnter={/**
-                         * Purpose: Helper callback used inside a larger operation
-                         * Plain English: What this function is used for.
-                         */
+                        onMouseEnter={
+                        // Makes contact link fully opaque on hover
                         e => {
                           return (e.currentTarget.style.opacity = "1");
                         }}
-                        onMouseLeave={/**
-                         * Purpose: Helper callback used inside a larger operation
-                         * Plain English: What this function is used for.
-                         */
+                        onMouseLeave={
+                        // Restores contact link to slight transparency
                         e => {
                           return (e.currentTarget.style.opacity = "0.9");
                         }

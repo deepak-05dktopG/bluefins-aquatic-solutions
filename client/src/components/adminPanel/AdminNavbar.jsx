@@ -7,18 +7,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { clearAdminToken } from '../../utils/adminAuth'
 import { FaRocket, FaSignOutAlt } from 'react-icons/fa'
 
-/**
- * Purpose: Do Admin Navbar
- * Plain English: What this function is used for.
- */
+// Admin panel top navigation bar with Dashboard, Offline Membership links and Logout
 const AdminNavbar = () => {
     const location = useLocation()
     const navigate = useNavigate()
 
-    /**
-     * Purpose: Handle Logout
-     * Plain English: What this function is used for.
-     */
+    // Clears admin session token and redirects to the public homepage
     const handleLogout = () => {
         clearAdminToken()
         navigate('/', { replace: true })
@@ -27,10 +21,7 @@ const AdminNavbar = () => {
     const isDashboard = location.pathname === '/admin/dashboard'
     const isOfflineMembership = location.pathname === '/admin/offline-membership'
 
-    /**
-     * Purpose: Do Link Style
-     * Plain English: What this function is used for.
-     */
+    // Returns style object for admin nav links with active state highlighting
     const linkStyle = active => {
         return ({
             display: 'flex',

@@ -39,11 +39,8 @@ postSchema.index({ createdAt: -1 });
 postSchema.index({ isActive: 1 });
 
 // Validation: At least one field must be provided
-postSchema.pre('validate', /**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-function(next) {
+// Ensures every post has at least a title, caption, content, or image before saving
+postSchema.pre('validate', function(next) {
   if (!this.title && !this.caption && !this.content && !this.imageUrl) {
     next(new Error('Post must have at least one field (title, caption, content, or image)'));
   } else {

@@ -14,10 +14,7 @@ import Attendance from '../models/Attendance.js'
 
 const BUSINESS_TZ_OFFSET_MINUTES = Number.parseInt(process.env.BUSINESS_TZ_OFFSET_MINUTES || '330', 10)
 
-/**
- * Purpose: Get Forced Test Amount Inr
- * Plain English: What this function is used for.
- */
+// Returns the forced test payment amount (₹1 etc.) from env vars when test mode is enabled
 const getForcedTestAmountInr = () => {
     const enabledRaw = process.env.ENABLE_TEST_MODE
     const enabled = String(enabledRaw || '').trim().toLowerCase()
@@ -30,10 +27,7 @@ const getForcedTestAmountInr = () => {
     return Math.round((n + Number.EPSILON) * 100) / 100
 };
 
-/**
- * Purpose: Do Apply Forced Pricing
- * Plain English: What this function is used for.
- */
+// Overrides real pricing with the test amount when test mode is active
 const applyForcedPricing = pricing => {
     const forced = getForcedTestAmountInr()
     if (forced == null) return pricing
@@ -46,29 +40,20 @@ const applyForcedPricing = pricing => {
 	}
 };
 
-/**
- * Purpose: Do To Number Or
- * Plain English: What this function is used for.
- */
+// Safely converts a value to a number, returning fallback if not finite
 const toNumberOr = (value, fallback) => {
     const n = Number(value)
     return Number.isFinite(n) ? n : fallback
 };
 
-/**
- * Purpose: Do Round2
- * Plain English: What this function is used for.
- */
+// Rounds a number to 2 decimal places (for currency calculations in INR)
 const round2 = value => {
     const n = Number(value)
     if (!Number.isFinite(n)) return 0
     return Math.round((n + Number.EPSILON) * 100) / 100
 };
 
-/**
- * Purpose: Get Payment Charges Config
- * Plain English: What this function is used for.
- */
+// Reads Razorpay gateway commission and GST percentages from environment variables
 const getPaymentChargesConfig = () => {
     // NOTE: keep these configurable from env; default 0 so existing installs are not broken.
     // Defaults align with common Razorpay card/UPI blended fee assumptions:
@@ -82,10 +67,7 @@ const getPaymentChargesConfig = () => {
     return { commissionPct, commissionFlatInr, gstPct }
 };
 
-/**
- * Purpose: Do Compute Payable Pricing
- * Plain English: What this function is used for.
- */
+// Calculates total payable amount including Razorpay commission and GST on the commission
 const computePayablePricing = subtotalInr => {
     const subtotal = round2(subtotalInr)
     const { commissionPct, commissionFlatInr, gstPct } = getPaymentChargesConfig()
@@ -103,10 +85,7 @@ const computePayablePricing = subtotalInr => {
 	})
 };
 
-/**
- * Purpose: Do Compute Offline Pricing
- * Plain English: What this function is used for.
- */
+// Returns pricing with zero commission/GST for offline (cash/counter) memberships
 const computeOfflinePricing = subtotalInr => {
     const subtotal = round2(subtotalInr)
     return {
@@ -118,10 +97,7 @@ const computeOfflinePricing = subtotalInr => {
 	}
 };
 
-/**
- * Purpose: Do Require Razorpay Config
- * Plain English: What this function is used for.
- */
+// Throws if RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET env vars are missing
 const requireRazorpayConfig = () => {
     // IMPORTANT: do not initialize Razorpay client at import-time.
     // In ESM, controllers can be evaluated before dotenv.config() runs.
@@ -132,10 +108,7 @@ const requireRazorpayConfig = () => {
 	}
 };
 
-/**
- * Purpose: Get Razorpay Client
- * Plain English: What this function is used for.
- */
+// Creates a new Razorpay SDK client instance using env credentials
 const getRazorpayClient = () => {
     requireRazorpayConfig()
     return new Razorpay({
@@ -144,10 +117,7 @@ const getRazorpayClient = () => {
 	})
 };
 
-/**
- * Purpose: Do To Paise
- * Plain English: What this function is used for.
- */
+// Converts INR amount to paise (₹1 = 100 paise) for Razorpay API
 const toPaise = amountInInr => {
     const n = Number(amountInInr)
     if (!Number.isFinite(n)) return null
@@ -155,10 +125,7 @@ const toPaise = amountInInr => {
     return Number.isFinite(paise) && paise > 0 ? paise : null
 };
 
-/**
- * Purpose: Do Mongo Tz From Offset Minutes
- * Plain English: What this function is used for.
- */
+// Converts timezone offset minutes (e.g. 330 for IST) to MongoDB timezone string (+05:30)
 const mongoTzFromOffsetMinutes = minutes => {
     const sign = minutes >= 0 ? '+' : '-'
     const abs = Math.abs(minutes)
@@ -167,38 +134,27 @@ const mongoTzFromOffsetMinutes = minutes => {
     return `${sign}${hh}:${mm}`
 };
 
-/**
- * Purpose: Do Escape Reg Exp
- * Plain English: What this function is used for.
- */
+// Escapes regex special characters in member search queries for safe MongoDB $regex usage
 const escapeRegExp = value => {
     return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
-/**
- * Purpose: Do Clamp Int
- * Plain English: What this function is used for.
- */
+// Safely parses an integer within min/max bounds (used for pagination page/limit)
 const clampInt = (value, { min, max, fallback }) => {
     const n = Number.parseInt(value, 10)
     if (!Number.isFinite(n)) return fallback
     return Math.max(min, Math.min(max, n))
 };
 
-/**
- * Purpose: Parse Date Only Parts
- * Plain English: What this function is used for.
- */
+// Parses a date string (YYYY-MM-DD or DD/MM/YYYY) into year, month, day parts
 const parseDateOnlyParts = value => {
     const s = value == null ? '' : String(value).trim()
     if (!s) return null
 
     // YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-		const [yy, mm, dd] = s.split('-').map(/**
-         * Purpose: Array mapping callback (converts each item to a new value)
-         * Plain English: What this function is used for.
-         */
+		const [yy, mm, dd] = s.split('-').map(
+        // Convert each date segment string to a number
         x => {
             return Number(x);
         })
@@ -208,10 +164,8 @@ const parseDateOnlyParts = value => {
 
     // DD/MM/YYYY
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
-		const [dd, mm, yy] = s.split('/').map(/**
-         * Purpose: Array mapping callback (converts each item to a new value)
-         * Plain English: What this function is used for.
-         */
+		const [dd, mm, yy] = s.split('/').map(
+        // Convert each date segment string to a number
         x => {
             return Number(x);
         })
@@ -222,10 +176,7 @@ const parseDateOnlyParts = value => {
     return null
 };
 
-/**
- * Purpose: Do End Of Utc Day From Parts
- * Plain English: What this function is used for.
- */
+// Returns a Date object set to 23:59:59.999 UTC for the given year/month/day
 const endOfUtcDayFromParts = parts => {
     if (!parts) return null
     const { y, m, d } = parts
@@ -233,10 +184,7 @@ const endOfUtcDayFromParts = parts => {
     return Number.isNaN(dt.getTime()) ? null : dt
 };
 
-/**
- * Purpose: Do End Of Utc Day From Value
- * Plain English: What this function is used for.
- */
+// Returns end-of-day (23:59:59.999 UTC) for a date value, used for membership expiry comparisons
 const endOfUtcDayFromValue = value => {
     const parts = parseDateOnlyParts(value)
     if (parts) return endOfUtcDayFromParts(parts)
@@ -245,10 +193,7 @@ const endOfUtcDayFromValue = value => {
     return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 23, 59, 59, 999))
 };
 
-/**
- * Purpose: Do Compute Member Status
- * Plain English: What this function is used for.
- */
+// Determines if a member's subscription is 'active' or 'expired' based on expiry/public slot date
 const computeMemberStatus = ({ expiryDate, planType, publicSlot }) => {
     const now = Date.now()
 
@@ -263,26 +208,18 @@ const computeMemberStatus = ({ expiryDate, planType, publicSlot }) => {
     return eod.getTime() >= now ? 'active' : 'expired'
 };
  
-/**
- * Purpose: Get Category Price
- * Plain English: What this function is used for.
- */
+// Looks up per-category price (e.g. junior/senior) if the plan requires category-based pricing
 const getCategoryPrice = (plan, category) => {
     const normalized = category ? String(category).toLowerCase() : ''
-    const match = (plan.categoryPrices || []).find(/**
-     * Purpose: Array search callback (finds the first matching item)
-     * Plain English: What this function is used for.
-     */
+    const match = (plan.categoryPrices || []).find(
+    // Find the price entry matching the selected category
     p => {
         return p.category === normalized;
     })
     return match ? match.price : null
 };
 
-/**
- * Purpose: Do Compute Amount
- * Plain English: What this function is used for.
- */
+// Calculates the membership amount based on plan type, quantity, category, and coaching add-ons
 const computeAmount = ({ plan, selection }) => {
     const type = plan.type
     const normalizedCategory = selection?.category ? String(selection.category).toLowerCase() : undefined
@@ -310,18 +247,12 @@ const computeAmount = ({ plan, selection }) => {
 
 const ALLOWED_GENDERS = new Set(['male', 'female', 'other'])
 
-/**
- * Purpose: Do Normalize Text
- * Plain English: What this function is used for.
- */
+// Trims whitespace from user input field values
 const normalizeText = value => {
     return (value == null ? '' : String(value)).trim();
 };
 
-/**
- * Purpose: Do Normalize Phone10
- * Plain English: What this function is used for.
- */
+// Strips country code (91) and leading zero to normalize Indian phone numbers to 10 digits
 const normalizePhone10 = value => {
     const raw = normalizeText(value)
     if (!raw) return ''
@@ -332,18 +263,12 @@ const normalizePhone10 = value => {
     return digits
 };
 
-/**
- * Purpose: Validate Phone10
- * Plain English: What this function is used for.
- */
+// Checks if a phone number is exactly 10 digits (Indian mobile number format)
 const validatePhone10 = value => {
     return /^\d{10}$/.test(String(value || ''));
 };
 
-/**
- * Purpose: Do Normalize Gender
- * Plain English: What this function is used for.
- */
+// Normalizes gender input to 'male', 'female', or 'other'; returns null if invalid
 const normalizeGender = value => {
     const raw = normalizeText(value)
     if (!raw) return 'other'
@@ -351,10 +276,7 @@ const normalizeGender = value => {
     return ALLOWED_GENDERS.has(g) ? g : null
 };
 
-/**
- * Purpose: Do Normalize Age
- * Plain English: What this function is used for.
- */
+// Validates and normalizes member age (must be 1-120), returns undefined if not provided
 const normalizeAge = value => {
     if (value == null || value === '') return { ok: true, age: undefined }
     const n = Number(value)
@@ -363,10 +285,7 @@ const normalizeAge = value => {
     return { ok: true, age: Math.floor(n) }
 };
 
-/**
- * Purpose: Do Normalize Member Input
- * Plain English: What this function is used for.
- */
+// Validates and normalizes a single member's details (name, phone, age, gender) from form input
 const normalizeMemberInput = ({ member, label, requireName, requirePhone }) => {
     const name = normalizeText(member?.name)
     const phone = normalizePhone10(member?.phone)
@@ -390,27 +309,19 @@ const normalizeMemberInput = ({ member, label, requireName, requirePhone }) => {
 	}
 };
 
-/**
- * Purpose: Check whether Valid Time HHMM
- * Plain English: What this function is used for.
- */
+// Validates that a time string is in HH:MM 24-hour format (e.g. '14:30')
 const isValidTimeHHMM = value => {
     const raw = normalizeText(value)
     if (!/^\d{2}:\d{2}$/.test(raw)) return false
-    const [h, m] = raw.split(':').map(/**
-     * Purpose: Array mapping callback (converts each item to a new value)
-     * Plain English: What this function is used for.
-     */
+    const [h, m] = raw.split(':').map(
+    // Parse hour and minute strings to numbers
     v => {
         return Number(v);
     })
     return Number.isFinite(h) && Number.isFinite(m) && h >= 0 && h <= 23 && m >= 0 && m <= 59
 };
 
-/**
- * Purpose: Do Prepare Offline Membership Draft
- * Plain English: What this function is used for.
- */
+// Prepares an offline (cash) membership draft: validates member details, calculates pricing without gateway fees
 const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers }) => {
     const normalizedSelection = selection || {}
 
@@ -503,10 +414,7 @@ const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers 
 	}
 };
 
-/**
- * Purpose: Do Prepare Membership Draft
- * Plain English: What this function is used for.
- */
+// Prepares an online (Razorpay) membership draft: validates member details, calculates pricing with commission/GST
 const prepareMembershipDraft = ({ plan, member, selection, familyMembers }) => {
     const normalizedSelection = selection || {}
 
@@ -599,10 +507,7 @@ const prepareMembershipDraft = ({ plan, member, selection, familyMembers }) => {
 	}
 };
 
-/**
- * Purpose: Create Members For Draft
- * Plain English: What this function is used for.
- */
+// Creates Member documents in MongoDB and generates QR codes for each member's ID card
 const createMembersForDraft = async (
     { plan, amountRes, membersToCreate, joinDate, expiryDate, publicSlot, membershipGroupId }
 ) => {
@@ -634,10 +539,7 @@ const createMembersForDraft = async (
     return createdMembers
 };
 
-/**
- * Purpose: Do Finalize Payment And Create Members
- * Plain English: What this function is used for.
- */
+// Marks payment as 'paid', creates member records, and generates QR codes after successful Razorpay payment
 const finalizePaymentAndCreateMembers = async ({ paymentDoc, providerPaymentId, providerSignature }) => {
     if (!paymentDoc) throw new Error('Payment not found')
     if (paymentDoc.status === 'paid' && Array.isArray(paymentDoc.memberIds) && paymentDoc.memberIds.length) {
@@ -678,10 +580,8 @@ const finalizePaymentAndCreateMembers = async ({ paymentDoc, providerPaymentId, 
     if (providerPaymentId) paymentDoc.paymentId = providerPaymentId
     if (providerSignature) paymentDoc.providerSignature = providerSignature
     paymentDoc.memberId = createdMembers[0]?._id
-    paymentDoc.memberIds = createdMembers.map(/**
-     * Purpose: Array mapping callback (converts each item to a new value)
-     * Plain English: What this function is used for.
-     */
+    paymentDoc.memberIds = createdMembers.map(
+    // Collect created member IDs to link with the payment record
     x => {
         return x._id;
     })
@@ -690,10 +590,7 @@ const finalizePaymentAndCreateMembers = async ({ paymentDoc, providerPaymentId, 
     return { plan, payment: paymentDoc, members: createdMembers, member: createdMembers[0] || null }
 };
 
-/**
- * Purpose: Do Resolve Public Slot
- * Plain English: What this function is used for.
- */
+// Validates and normalizes a public batch time slot (date, start/end times) for pool entry
 const resolvePublicSlot = selection => {
     const slot = selection?.publicSlot
     if (!slot?.date || !slot?.startTime) {
@@ -710,10 +607,8 @@ const resolvePublicSlot = selection => {
     const endTime = slot.endTime ? String(slot.endTime) : null
 
     if (!endTime) {
-		const [h, m] = startTime.split(':').map(/**
-         * Purpose: Array mapping callback (converts each item to a new value)
-         * Plain English: What this function is used for.
-         */
+		const [h, m] = startTime.split(':').map(
+        // Parse hour and minute to numbers for computing the default end time
         v => {
             return Number(v);
         })
@@ -726,10 +621,7 @@ const resolvePublicSlot = selection => {
     return { ok: true, slot: { date: normalizedDate, startTime, endTime } }
 };
 
-/**
- * Purpose: Do Infer Legacy Type
- * Plain English: What this function is used for.
- */
+// Infers plan type (public/family/yearly/monthly/summer) for legacy plans missing the 'type' field
 const inferLegacyType = doc => {
     // Best-effort inference for older documents that may not have `type`.
     if (doc?.durationInMinutes || doc?.publicEntryWindow) return 'public'
@@ -740,10 +632,7 @@ const inferLegacyType = doc => {
     return 'monthly'
 };
 
-/**
- * Purpose: Do Normalize Plan For Client
- * Plain English: What this function is used for.
- */
+// Normalizes a plan document for the frontend with consistent field names and defaults
 const normalizePlanForClient = planDoc => {
     const raw = planDoc?.toObject ? planDoc.toObject({ virtuals: false }) : planDoc
     const type = raw?.type || inferLegacyType(raw)
@@ -758,11 +647,8 @@ const normalizePlanForClient = planDoc => {
 	}
 };
 
-export const listPlans = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Returns all membership plans with pricing, charges config, and test mode info for the frontend
+export const listPlans = asyncHandler(async (req, res) => {
     const { isActive } = req.query
     const query = {}
     if (typeof isActive !== 'undefined') query.isActive = isActive === 'true'
@@ -784,11 +670,8 @@ async (req, res) => {
 	})
 })
 
-export const seedOfficialPlans = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Seeds the official Bluefins poster plans into the database (upserts to avoid duplicates)
+export const seedOfficialPlans = asyncHandler(async (req, res) => {
     const existing = await MembershipPlan.countDocuments()
     const validExisting = await MembershipPlan.countDocuments({
 		planName: { $exists: true, $type: 'string', $ne: '' },
@@ -935,11 +818,8 @@ async (req, res) => {
     res.status(201).json({ success: true, message: 'Seed complete', data: plans.map(normalizePlanForClient), meta: { upserted } })
 })
 
-export const registerPaidMembership = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Registers a paid membership (cash/direct): creates members and records payment immediately
+export const registerPaidMembership = asyncHandler(async (req, res) => {
     const { planId, member, selection, familyMembers } = req.body
     if (!planId) return res.status(400).json({ success: false, message: 'planId is required' })
 
@@ -986,10 +866,8 @@ async (req, res) => {
 		},
 		familyMembersDraft: plan.type === 'family' ? draftRes.membersToCreate : [],
 		memberId: createdMembers[0]?._id,
-		memberIds: createdMembers.map(/**
-         * Purpose: Array mapping callback (converts each item to a new value)
-         * Plain English: What this function is used for.
-         */
+		memberIds: createdMembers.map(
+        // Collect created member IDs to link with the payment record
         x => {
             return x._id;
         }),
@@ -1006,11 +884,8 @@ async (req, res) => {
 	})
 })
 
-export const registerOfflineMembership = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Registers an offline membership (admin counter): creates members with no gateway fees, records cash payment
+export const registerOfflineMembership = asyncHandler(async (req, res) => {
     const { planId, member, selection, familyMembers, collectedBy } = req.body
     if (!planId) return res.status(400).json({ success: false, message: 'planId is required' })
     if (!collectedBy || !String(collectedBy).trim()) {
@@ -1062,10 +937,8 @@ async (req, res) => {
 		},
 		familyMembersDraft: plan.type === 'family' ? draftRes.membersToCreate : [],
 		memberId: createdMembers[0]?._id,
-		memberIds: createdMembers.map(/**
-         * Purpose: Array mapping callback (converts each item to a new value)
-         * Plain English: What this function is used for.
-         */
+		memberIds: createdMembers.map(
+        // Collect created member IDs to link with the payment record
         x => {
             return x._id;
         }),
@@ -1082,11 +955,8 @@ async (req, res) => {
 	})
 })
 
-export const createRazorpayOrder = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Creates a Razorpay order for a selected plan and stores the pending payment in the database
+export const createRazorpayOrder = asyncHandler(async (req, res) => {
     const razorpay = getRazorpayClient()
 
     const { planId, member, selection, familyMembers } = req.body
@@ -1157,11 +1027,8 @@ async (req, res) => {
 	})
 })
 
-export const verifyRazorpayPayment = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Verifies Razorpay payment signature, confirms capture, and creates member records on success
+export const verifyRazorpayPayment = asyncHandler(async (req, res) => {
     const razorpay = getRazorpayClient()
 
     const {
@@ -1210,11 +1077,8 @@ async (req, res) => {
     res.json({ success: true, data: out })
 })
 
-export const razorpayWebhook = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Handles Razorpay webhook events (payment.captured) to finalize payments server-side
+export const razorpayWebhook = asyncHandler(async (req, res) => {
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET
     if (!webhookSecret) return res.status(500).send('Webhook secret not configured')
     const signature = req.headers['x-razorpay-signature']
@@ -1252,11 +1116,8 @@ async (req, res) => {
     res.status(200).send('ok')
 })
 
-export const listMembers = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Returns paginated, searchable member list with plan details and attendance counts for admin panel
+export const listMembers = asyncHandler(async (req, res) => {
     const { q, status, planType, page, limit, sort, order } = req.query
 
     const filter = {}
@@ -1294,10 +1155,8 @@ async (req, res) => {
     // Compute visit counts (unique attendance days) for the current page.
     // IMPORTANT: This is used only as an upward backfill. We never decrease the stored
     // attendanceDaysCount, so purging attendance history does not reduce member counts.
-    const memberIds = members.map(/**
-     * Purpose: Array mapping callback (converts each item to a new value)
-     * Plain English: What this function is used for.
-     */
+    const memberIds = members.map(
+    // Extract member IDs for the attendance aggregation query
     m => {
         return m._id;
     })
@@ -1321,10 +1180,8 @@ async (req, res) => {
 		])
 		: []
 
-    const countMap = new Map(countsAgg.map(/**
-     * Purpose: Array mapping callback (converts each item to a new value)
-     * Plain English: What this function is used for.
-     */
+    const countMap = new Map(countsAgg.map(
+    // Build a memberId-to-visitCount lookup map from the aggregation result
     r => {
         return [String(r._id), Number(r.count || 0)];
     }))
@@ -1352,10 +1209,8 @@ async (req, res) => {
 		}
 	}
 
-    const items = members.map(/**
-     * Purpose: Array mapping callback (converts each item to a new value)
-     * Plain English: What this function is used for.
-     */
+    const items = members.map(
+    // Build the enriched member response object with computed status and visit counts
     m => {
         const plan = m.planId && typeof m.planId === 'object' ? m.planId : null
         const computedStatus = computeMemberStatus({ expiryDate: m.expiryDate, planType: m.planType, publicSlot: m.publicSlot })
@@ -1402,11 +1257,8 @@ async (req, res) => {
 	})
 })
 
-export const deleteMember = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Deletes a single member record by ID
+export const deleteMember = asyncHandler(async (req, res) => {
     const { id } = req.params
     if (!id) return res.status(400).json({ success: false, message: 'id is required' })
 
@@ -1418,11 +1270,8 @@ async (req, res) => {
     res.json({ success: true, message: 'Member deleted' })
 })
 
-export const bulkDeleteMembersByIds = asyncHandler(/**
- * Purpose: Helper callback used inside a larger operation
- * Plain English: What this function is used for.
- */
-async (req, res) => {
+// Deletes multiple members at once by an array of IDs (max 500 per request)
+export const bulkDeleteMembersByIds = asyncHandler(async (req, res) => {
     const ids = req.body?.ids
     if (!Array.isArray(ids) || ids.length === 0) {
 		return res.status(400).json({ success: false, message: 'ids (array) is required' })
@@ -1432,10 +1281,8 @@ async (req, res) => {
 	}
 
     const normalizedIds = ids
-		.map(/**
-     * Purpose: Array mapping callback (converts each item to a new value)
-     * Plain English: What this function is used for.
-     */
+		.map(
+    // Convert each ID to a trimmed string
     x => {
         return (x == null ? '' : String(x).trim());
     })

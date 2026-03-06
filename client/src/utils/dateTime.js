@@ -1,7 +1,4 @@
-/**
- * Purpose: Do To Date
- * Plain English: What this function is used for.
- */
+// Parses a date value into a Date object, returns null if invalid
 /**
  * What it is: Date/time formatting helpers.
  * Non-tech note: Converts dates into human-readable text (like “05 Mar 2026”).
@@ -14,11 +11,8 @@ const toDate = value => {
     return d
 };
 
-export /**
- * Purpose: Format Time
- * Plain English: What this function is used for.
- */
-const formatTime = (value, { seconds = false, locale = 'en-US' } = {}) => {
+// Formats a date value as a localized time string (e.g. '02:30 PM')
+export const formatTime = (value, { seconds = false, locale = 'en-US' } = {}) => {
     const d = toDate(value)
     if (!d) return ''
     return d.toLocaleTimeString(locale, {
@@ -29,11 +23,8 @@ const formatTime = (value, { seconds = false, locale = 'en-US' } = {}) => {
 	})
 };
 
-export /**
- * Purpose: Format Date Time
- * Plain English: What this function is used for.
- */
-const formatDateTime = (
+// Formats a date value as a localized date+time string (e.g. '05 Mar 2026, 02:30 PM')
+export const formatDateTime = (
     value,
     {
 		year = 'numeric',
@@ -58,11 +49,8 @@ const formatDateTime = (
 	})
 };
 
-export /**
- * Purpose: Format HHmm To12 Hour
- * Plain English: What this function is used for.
- */
-const formatHHmmTo12Hour = value => {
+// Converts 24-hour time string 'HH:MM' to 12-hour format (e.g. '14:30' -> '2:30 PM')
+export const formatHHmmTo12Hour = value => {
     if (!value) return ''
     const s = String(value).trim()
     const match = /^(\d{1,2}):(\d{2})$/.exec(s)

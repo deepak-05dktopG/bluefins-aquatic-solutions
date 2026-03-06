@@ -8,10 +8,7 @@ import Feedback from '../models/Feedback.js';
 // @desc    Submit new feedback
 // @route   POST /api/feedback
 // @access  Public
-export /**
- * Purpose: Create Feedback
- * Plain English: What this function is used for.
- */
+export // Saves a new contact form submission from a website visitor
 const createFeedback = async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
@@ -54,10 +51,8 @@ const createFeedback = async (req, res) => {
     
     // Handle validation errors
     if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(/**
-       * Purpose: Array mapping callback (converts each item to a new value)
-       * Plain English: What this function is used for.
-       */
+      const messages = Object.values(error.errors).map(
+      // Extract each validation error message
       err => {
         return err.message;
       });
@@ -77,10 +72,7 @@ const createFeedback = async (req, res) => {
 // @desc    Get all feedback (Admin only)
 // @route   GET /api/feedback
 // @access  Private/Admin
-export /**
- * Purpose: Get All Feedback
- * Plain English: What this function is used for.
- */
+export // Returns paginated list of all feedback for the admin panel
 const getAllFeedback = async (req, res) => {
   try {
     const { status, limit = 50, page = 1 } = req.query;
@@ -123,10 +115,7 @@ const getAllFeedback = async (req, res) => {
 // @desc    Get single feedback by ID
 // @route   GET /api/feedback/:id
 // @access  Private/Admin
-export /**
- * Purpose: Get Feedback By Id
- * Plain English: What this function is used for.
- */
+export // Returns a single feedback entry by its database ID
 const getFeedbackById = async (req, res) => {
   try {
     const feedback = await Feedback.findById(req.params.id);
@@ -154,10 +143,7 @@ const getFeedbackById = async (req, res) => {
 // @desc    Update feedback status
 // @route   PATCH /api/feedback/:id
 // @access  Private/Admin
-export /**
- * Purpose: Do Update Feedback Status
- * Plain English: What this function is used for.
- */
+export // Updates feedback status (unread/read/replied) for admin tracking
 const updateFeedbackStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -199,10 +185,7 @@ const updateFeedbackStatus = async (req, res) => {
 // @desc    Delete feedback
 // @route   DELETE /api/feedback/:id
 // @access  Private/Admin
-export /**
- * Purpose: Do Delete Feedback
- * Plain English: What this function is used for.
- */
+export // Permanently removes a feedback entry from the database
 const deleteFeedback = async (req, res) => {
   try {
     const feedback = await Feedback.findByIdAndDelete(req.params.id);
@@ -230,10 +213,7 @@ const deleteFeedback = async (req, res) => {
 // @desc    Get feedback statistics
 // @route   GET /api/feedback/stats
 // @access  Private/Admin
-export /**
- * Purpose: Get Feedback Stats
- * Plain English: What this function is used for.
- */
+export // Returns feedback counts by status (unread/read/replied) for the dashboard
 const getFeedbackStats = async (req, res) => {
   try {
     const totalFeedback = await Feedback.countDocuments();

@@ -17,17 +17,12 @@ import {
   FaUsers,
 } from "react-icons/fa";
 
-/**
- * Purpose: Do Admin Dashboard
- * Plain English: What this function is used for.
- */
+// Admin dashboard — landing page after login, shows navigation cards for all admin features
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
-  useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
-   */
+  useEffect(
+  // Redirect to login page if admin session token is missing or expired
   () => {
     if (!isAdminAuthenticated()) {
       navigate("/admin");
@@ -187,10 +182,8 @@ const AdminDashboard = () => {
             gap: "25px",
           }}
         >
-          {dashboardCards.map(/**
-           * Purpose: Array mapping callback (converts each item to a new value)
-           * Plain English: What this function is used for.
-           */
+          {dashboardCards.map(
+          // Render each admin feature as a clickable navigation card with icon and description
           (card, index) => {
             return (
               <Link
@@ -206,18 +199,12 @@ const AdminDashboard = () => {
                   position: "relative",
                   overflow: "hidden",
                 }}
-                onMouseEnter={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
-                 */
+                onMouseEnter={// Lift card up and add colored glow shadow on hover
                 e => {
                   e.currentTarget.style.transform = "translateY(-8px)";
                   e.currentTarget.style.boxShadow = `0 15px 40px rgba(${hexToRgb(card.color)}, 0.4)`;
                 }}
-                onMouseLeave={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
-                 */
+                onMouseLeave={// Reset card position and remove shadow when mouse leaves
                 e => {
                   e.currentTarget.style.transform = "translateY(0)";
                   e.currentTarget.style.boxShadow = "none";
@@ -335,11 +322,7 @@ const AdminDashboard = () => {
   );
 };
 
-/**
- * Purpose: Do Hex To Rgb
- * Plain English: What this function is used for.
- */
-// Helper function
+// Convert hex color code to RGB string for use in rgba() box-shadow on dashboard cards
 const hexToRgb = hex => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : "0, 0, 0";

@@ -9,15 +9,10 @@ import Navbar from "../components/Navbar";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { FaTrophy, FaUsers, FaChartLine, FaAward, FaShieldAlt, FaClock } from "react-icons/fa";
-/**
- * Purpose: Do Service
- * Plain English: What this function is used for.
- */
+// Services page — showcases Bluefins swimming coaching, corporate training, and institutional programs
 const Service = () => {
-  useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
-   */
+  useEffect(
+  // Initialize AOS scroll animations for service section reveals
   () => {
     AOS.init({
       duration: 1000,
@@ -143,17 +138,11 @@ const Service = () => {
                         transition: "all 0.3s ease",
                         boxShadow: "0 8px 25px rgba(255,107,107,0.3)",
                       }}
-                      onMouseEnter={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
-                       */
+                      onMouseEnter={// Lift and scale the "Get In Touch" hero button on hover
                       e => {
                         e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
                       }}
-                      onMouseLeave={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
-                       */
+                      onMouseLeave={// Reset "Get In Touch" button on mouse leave
                       e => {
                         e.currentTarget.style.transform = "translateY(0) scale(1)";
                       }}
@@ -175,18 +164,12 @@ const Service = () => {
                         transition: "all 0.3s ease",
                         backdropFilter: "blur(10px)",
                       }}
-                      onMouseEnter={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
-                       */
+                      onMouseEnter={// Brighten "View All Services" button background on hover
                       e => {
                         e.currentTarget.style.background = "rgba(255,255,255,0.25)";
                         e.currentTarget.style.transform = "scale(1.05)";
                       }}
-                      onMouseLeave={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
-                       */
+                      onMouseLeave={// Reset "View All Services" button on mouse leave
                       e => {
                         e.currentTarget.style.background = "rgba(255,255,255,0.15)";
                         e.currentTarget.style.transform = "scale(1)";
@@ -283,10 +266,8 @@ const Service = () => {
                 c1: "#FFD93D",
                 c2: "#FF9FF3",
               },
-            ].map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
-             */
+            ].map(
+            // Render each swimming service card (coaching, lifeguard, events, merchandise)
             (svc, i) => {
               return (
                 <div className="col-lg-6 col-xl-3" key={i} data-aos="zoom-in" data-aos-delay={i * 150}>
@@ -325,17 +306,11 @@ const Service = () => {
                           alignItems: "center",
                           gap: "0.5rem",
                         }}
-                        onMouseEnter={/**
-                         * Purpose: Helper callback used inside a larger operation
-                         * Plain English: What this function is used for.
-                         */
+                        onMouseEnter={// Slide service "Learn More" button right on hover
                         e => {
                           e.currentTarget.style.transform = "translateX(5px)";
                         }}
-                        onMouseLeave={/**
-                         * Purpose: Helper callback used inside a larger operation
-                         * Plain English: What this function is used for.
-                         */
+                        onMouseLeave={// Reset "Learn More" button position on mouse leave
                         e => {
                           e.currentTarget.style.transform = "translateX(0)";
                         }}
@@ -386,10 +361,8 @@ const Service = () => {
               { icon: FaClock, title: "Flexible Scheduling", desc: "Custom programs that fit your institutional calendar" },
               { icon: FaUsers, title: "Expert Team", desc: "25+ certified coaches with national experience" },
               { icon: FaTrophy, title: "Proven Results", desc: "45+ national medals and 65+ trained swimmers" },
-            ].map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
-             */
+            ].map(
+            // Render each "Why Choose Bluefins" feature card (safety, scheduling, team, results)
             (feature, i) => {
               const Icon = feature.icon;
               return (
@@ -406,19 +379,13 @@ const Service = () => {
                       textAlign: "center",
                       color: "white",
                     }}
-                    onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseEnter={// Highlight and lift feature card with glass effect on hover
                     e => {
                       e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)";
                       e.currentTarget.style.transform = "translateY(-12px) scale(1.03)";
                       e.currentTarget.style.background = "rgba(255,255,255,0.25)";
                     }}
-                    onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseLeave={// Reset feature card to default state on mouse leave
                     e => {
                       e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
                       e.currentTarget.style.transform = "translateY(0) scale(1)";
@@ -619,17 +586,11 @@ const Service = () => {
                 transition: "all 0.3s ease",
                 boxShadow: "0 8px 25px rgba(255,107,107,0.3)",
               }}
-              onMouseEnter={/**
-               * Purpose: Helper callback used inside a larger operation
-               * Plain English: What this function is used for.
-               */
+              onMouseEnter={// Lift and scale "Schedule a Consultation" CTA button on hover
               e => {
                 e.currentTarget.style.transform = "translateY(-4px) scale(1.05)";
               }}
-              onMouseLeave={/**
-               * Purpose: Helper callback used inside a larger operation
-               * Plain English: What this function is used for.
-               */
+              onMouseLeave={// Reset consultation button to default on mouse leave
               e => {
                 e.currentTarget.style.transform = "translateY(0) scale(1)";
               }}

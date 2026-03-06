@@ -13,11 +13,8 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-export /**
- * Purpose: Send Email
- * Plain English: What this function is used for.
- */
-const sendEmail = async ({ to, subject, text, html }) => {
+// Sends transactional emails (membership confirmations, payment receipts) via Nodemailer
+export const sendEmail = async ({ to, subject, text, html }) => {
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER,

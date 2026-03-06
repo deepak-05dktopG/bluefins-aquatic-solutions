@@ -24,10 +24,7 @@ const worksheetSchema = new mongoose.Schema({
     required: [true, 'Link is required'],
     trim: true,
     validate: {
-      /**
-       * Purpose: Helper callback used inside a larger operation
-       * Plain English: What this function is used for.
-       */
+      // Validates that the worksheet link is a properly formatted URL
       validator: function(v) {
         // Basic URL validation
         return /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/.test(v);

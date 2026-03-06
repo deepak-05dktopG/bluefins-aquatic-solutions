@@ -10,10 +10,7 @@ import { adminFetch, isAdminAuthenticated, clearAdminToken } from '../../utils/a
 import { formatTime } from '../../utils/dateTime'
 import { FaCamera, FaSyncAlt, FaStopCircle, FaKeyboard } from 'react-icons/fa'
 
-/**
- * Purpose: Do Safe Read Json
- * Plain English: What this function is used for.
- */
+// Read the response body safely and parse JSON (falls back to plain-text error message)
 const safeReadJson = async res => {
     const text = await res.text()
     if (!text) return { ok: false, message: 'Empty response from server' }
@@ -26,10 +23,7 @@ const safeReadJson = async res => {
 
 
 
-export default /**
- * Purpose: Do Attendance Scan
- * Plain English: What this function is used for.
- */
+export default /* Attendance scanner — scan member QR (or manual ID) to record daily check-in */
 function AttendanceScan() {
     const navigate = useNavigate()
     const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
@@ -47,27 +41,20 @@ function AttendanceScan() {
     const [activeDeviceId, setActiveDeviceId] = React.useState('')
     const [enumeratedOnce, setEnumeratedOnce] = React.useState(false)
 
-    const listVideoInputs = React.useCallback(/**
-     * Purpose: React callback memoizer (keeps function stable between renders)
-     * Plain English: What this function is used for.
-     */
+	const listVideoInputs = React.useCallback(
+	// List available camera devices so admin can switch between them
     async () => {
         if (!navigator.mediaDevices?.enumerateDevices) return []
         const all = await navigator.mediaDevices.enumerateDevices()
-        return (all || []).filter(/**
-         * Purpose: Array filter callback (keeps items that match a condition)
-         * Plain English: What this function is used for.
-         */
+		return (all || []).filter(
+		// Keep only camera devices (ignore microphones/speakers)
         d => {
             return d && d.kind === 'videoinput';
         });
     }, [])
 
-    const getEnhancedCameraConstraints = React.useCallback(
-		/**
-         * Purpose: React callback memoizer (keeps function stable between renders)
-         * Plain English: What this function is used for.
-         */
+		const getEnhancedCameraConstraints = React.useCallback(
+		// Build camera constraints (prefer selected deviceId + HD settings when available)
         ({ deviceId } = {}) => {
             const requestedDeviceId = deviceId || activeDeviceId || lastRequestedDeviceIdRef.current
             if (requestedDeviceId) {
@@ -94,10 +81,8 @@ function AttendanceScan() {
 		[activeDeviceId]
 	)
 
-    const applyBestEffortVideoTrackConstraints = React.useCallback(/**
-     * Purpose: React callback memoizer (keeps function stable between renders)
-     * Plain English: What this function is used for.
-     */
+	const applyBestEffortVideoTrackConstraints = React.useCallback(
+	// Best-effort tuning for sharper QR scans (continuous focus/exposure/white balance/zoom)
     async stream => {
         try {
 			const track = stream?.getVideoTracks?.()?.[0]
@@ -134,10 +119,8 @@ function AttendanceScan() {
     const [lastScan, setLastScan] = React.useState(null)
     const [cameraError, setCameraError] = React.useState('')
 
-    const isUserFacingTrack = React.useCallback(/**
-     * Purpose: React callback memoizer (keeps function stable between renders)
-     * Plain English: What this function is used for.
-     */
+	const isUserFacingTrack = React.useCallback(
+	// Detect whether active camera is front-facing (used to mirror preview if needed)
     track => {
         try {
 			const settings = track?.getSettings?.() || {}
@@ -151,10 +134,8 @@ function AttendanceScan() {
         return false
     }, [])
 
-    const showPopup = React.useCallback(/**
-     * Purpose: React callback memoizer (keeps function stable between renders)
-     * Plain English: What this function is used for.
-     */
+	const showPopup = React.useCallback(
+	// Centralized SweetAlert popup helper for scan success/errors/duplicate warnings
     async ({ icon, title, text, ms = 2200 }) => {
         await Swal.fire({
 			icon,
@@ -166,10 +147,7 @@ function AttendanceScan() {
 			timerProgressBar: true,
 			allowOutsideClick: true,
 			allowEscapeKey: true,
-			/**
-             * Purpose: Do Did Open
-             * Plain English: What this function is used for.
-             */
+			// Pause auto-close timer while user hovers the popup (so they can read it)
             didOpen: popup => {
                 popup.addEventListener('mouseenter', Swal.stopTimer)
                 popup.addEventListener('mouseleave', Swal.resumeTimer)
@@ -177,10 +155,8 @@ function AttendanceScan() {
 		})
     }, [])
 
-    React.useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
-     */
+	React.useEffect(
+	// Guard: if admin session is missing, redirect back to admin login
     () => {
         if (!isAdminAuthenticated()) navigate('/admin')
     }, [navigate])
@@ -192,10 +168,8 @@ function AttendanceScan() {
         return () => window.removeEventListener('beforeunload', handleBeforeUnload)
     }, [])
 
-    const stopCamera = React.useCallback(/**
-     * Purpose: React callback memoizer (keeps function stable between renders)
-     * Plain English: What this function is used for.
-     */
+	const stopCamera = React.useCallback(
+	// Stop QR scanning loop, ZXing controls, and camera stream tracks
     () => {
         if (zxingControlsRef.current) {
 			try {
@@ -220,27 +194,19 @@ function AttendanceScan() {
         setFlipPreviewX(false)
     }, [])
 
-    React.useEffect(/**
-     * Purpose: React effect callback (runs after render based on dependencies)
-     * Plain English: What this function is used for.
-     */
+	React.useEffect(
+	// Cleanup: ensure camera and timers are stopped when leaving this page
     () => {
         return (
-            /**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+			// Effect cleanup function
             () => {
                 return stopCamera();
             }
         );
     }, [stopCamera])
 
-    const submitPayload = React.useCallback(
-		/**
-         * Purpose: React callback memoizer (keeps function stable between renders)
-         * Plain English: What this function is used for.
-         */
+		const submitPayload = React.useCallback(
+		// Send scanned QR / manual member ID to server to record attendance
         async (payload, method) => {
             const trimmed = payload == null ? '' : String(payload).trim()
             if (!trimmed) return
@@ -309,10 +275,8 @@ function AttendanceScan() {
 		[apiBase, showPopup]
 	)
 
-    const startCamera = React.useCallback(/**
-     * Purpose: React callback memoizer (keeps function stable between renders)
-     * Plain English: What this function is used for.
-     */
+	const startCamera = React.useCallback(
+	// Request camera permission, start preview, and start QR detection loop
     async ({ deviceId } = {}) => {
         setCameraError('')
         setStarting(true)
@@ -335,10 +299,7 @@ function AttendanceScan() {
 				{ video: true, audio: false },
 			]
 
-			/**
-             * Purpose: Get Stream With Fallbacks
-             * Plain English: What this function is used for.
-             */
+			// Try camera access using a set of fallbacks (deviceId -> environment -> generic)
             const getStreamWithFallbacks = async () => {
                 let lastErr = null
                 for (const constraints of fallbackConstraints) {
@@ -402,10 +363,8 @@ function AttendanceScan() {
 				if (detector) {
 					setScanning(true)
 
-					scanTimerRef.current = window.setInterval(/**
-                     * Purpose: Timer callback (runs repeatedly on an interval)
-                     * Plain English: What this function is used for.
-                     */
+					scanTimerRef.current = window.setInterval(
+					// Poll video frames, run QR detection, and submit payload when a code is found
                     async () => {
                         if (detectingRef.current) return
                         try {
@@ -463,10 +422,7 @@ function AttendanceScan() {
 				const { BrowserQRCodeReader } = await import('@zxing/browser')
 				const reader = new BrowserQRCodeReader()
 				setScanning(true)
-				const controls = await reader.decodeFromVideoElement(video, /**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
-                 */
+				const controls = await reader.decodeFromVideoElement(video, // ZXing per-frame decode callback (fallback when BarcodeDetector isn't available)
                 async result => {
                     if (!result) return
                     const rawValue = typeof result.getText === 'function' ? result.getText() : String(result)
@@ -513,10 +469,7 @@ function AttendanceScan() {
 			const { BrowserQRCodeReader } = await import('@zxing/browser')
 			const reader = new BrowserQRCodeReader()
 			setScanning(true)
-			const controls = await reader.decodeFromVideoElement(video, /**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+			const controls = await reader.decodeFromVideoElement(video, // ZXing per-frame decode callback (QR scan)
             async result => {
                 if (!result) return
                 const rawValue = typeof result.getText === 'function' ? result.getText() : String(result)
@@ -553,17 +506,13 @@ function AttendanceScan() {
 
     const canSwitchCamera = scanning && !starting && videoInputs.length > 1
 
-    const switchCamera = React.useCallback(/**
-     * Purpose: React callback memoizer (keeps function stable between renders)
-     * Plain English: What this function is used for.
-     */
+	const switchCamera = React.useCallback(
+	// Switch to the next available camera device (front/back) while scanning
     async () => {
         if (!canSwitchCamera) return
         const currentId = String(activeDeviceId || lastRequestedDeviceIdRef.current || '')
-        const idx = videoInputs.findIndex(/**
-         * Purpose: Helper callback used inside a larger operation
-         * Plain English: What this function is used for.
-         */
+		const idx = videoInputs.findIndex(
+		// Find the index of the currently active camera device
         d => {
             return String(d.deviceId) === currentId;
         })
@@ -649,11 +598,8 @@ function AttendanceScan() {
 							<div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
 								{!scanning ? (
 									<button
-										onClick={/**
-                                         * Purpose: Helper callback used inside a larger operation
-                                         * Plain English: What this function is used for.
-                                         */
-                                        () => {
+										onClick={// Start camera preview and begin QR scanning
+												() => {
                                             return startCamera();
                                         }}
 										disabled={starting}
@@ -844,11 +790,8 @@ function AttendanceScan() {
 							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' }}>
 								<input
 									value={manualPayload}
-									onChange={/**
-                                     * Purpose: Helper callback used inside a larger operation
-                                     * Plain English: What this function is used for.
-                                     */
-                                    e => {
+									onChange={// Track manual member ID input (fallback if QR can't be scanned)
+									e => {
                                         return setManualPayload(e.target.value);
                                     }}
 									placeholder="Enter 8 chars"
@@ -862,11 +805,8 @@ function AttendanceScan() {
 									}}
 								/>
 								<button
-									onClick={/**
-                                     * Purpose: Helper callback used inside a larger operation
-                                     * Plain English: What this function is used for.
-                                     */
-                                    async () => {
+									onClick={// Submit manual member ID to record attendance without camera
+									async () => {
                                         await submitPayload(manualPayload, 'manual')
                                         setManualPayload('')
                                     }}

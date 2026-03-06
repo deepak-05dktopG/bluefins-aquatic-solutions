@@ -13,19 +13,14 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
-/**
- * Purpose: Do Home
- * Plain English: What this function is used for.
- */
+// Homepage — landing page with hero section, posts carousel, gallery, and academy info
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [galleryImages, setGalleryImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
-   */
+  useEffect(
+  // Init scroll animations and load posts + gallery images on first render
   () => {
     AOS.init({
       duration: 500,
@@ -39,10 +34,7 @@ const Home = () => {
     fetchGallery();
   }, []);
 
-  /**
-   * Purpose: Fetch Posts from server
-   * Plain English: What this function is used for.
-   */
+  // Load latest academy posts (achievements, events) from server for homepage carousel
   const fetchPosts = async () => {
     try {
       setLoading(true);
@@ -58,10 +50,7 @@ const Home = () => {
     }
   };
 
-  /**
-   * Purpose: Fetch Gallery from server
-   * Plain English: What this function is used for.
-   */
+  // Load active gallery images (pool photos, event pics) for the homepage gallery section
   const fetchGallery = async () => {
     try {
       const response = await fetch(`${apiBase}/gallery?isActive=true`);
@@ -128,10 +117,8 @@ const Home = () => {
         }}
       >
         {/* Floating bubbles */}
-        {[...Array(8)].map(/**
-         * Purpose: Array mapping callback (converts each item to a new value)
-         * Plain English: What this function is used for.
-         */
+        {[...Array(8)].map(
+        // Create decorative animated bubble elements for the hero background
         (_, i) => {
           return (
             <span
@@ -383,10 +370,8 @@ const Home = () => {
               pauseOnHover={true}
               cssEase="cubic-bezier(0.645, 0.045, 0.355, 1)"
             >
-              {posts.map(/**
-               * Purpose: Array mapping callback (converts each item to a new value)
-               * Plain English: What this function is used for.
-               */
+              {posts.map(
+              // Render each academy post (achievement, event) as a carousel slide card
               post => {
                 // Determine main content priority: Image > Content > Caption > Title
                 const hasImage = !!post.imageUrl;
@@ -825,10 +810,8 @@ const Home = () => {
                 title: "Performance Tracking",
                 desc: "Comprehensive reporting and progress documentation for institutional clients.",
               },
-            ].map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
-             */
+            ].map(
+            // Render each corporate swimming service card (coaching, lifeguard, tracking)
             (item, idx) => {
               return (
                 <div
@@ -846,19 +829,13 @@ const Home = () => {
                       boxShadow: "0 8px 24px rgba(0,180,216,0.15)",
                       transition: "all 0.3s ease",
                     }}
-                    onMouseEnter={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseEnter={// Lift service card and intensify shadow on hover
                     e => {
                       e.currentTarget.style.transform = "translateY(-6px)";
                       e.currentTarget.style.boxShadow =
                         "0 12px 30px rgba(0,180,216,0.25)";
                     }}
-                    onMouseLeave={/**
-                     * Purpose: Helper callback used inside a larger operation
-                     * Plain English: What this function is used for.
-                     */
+                    onMouseLeave={// Reset service card position and shadow on mouse leave
                     e => {
                       e.currentTarget.style.transform = "translateY(0)";
                       e.currentTarget.style.boxShadow =
@@ -971,10 +948,8 @@ const Home = () => {
           ) : (
             <>
               <div className="row g-3 mt-2">
-                {galleryImages.map(/**
-                 * Purpose: Array mapping callback (converts each item to a new value)
-                 * Plain English: What this function is used for.
-                 */
+                {galleryImages.map(
+                // Render each pool/event gallery image with zoom-on-hover effect
                 (image, i) => {
                   return (
                     <div
@@ -1000,18 +975,12 @@ const Home = () => {
                             height: "250px",
                             objectFit: "contain",
                           }}
-                          onMouseEnter={/**
-                           * Purpose: Helper callback used inside a larger operation
-                           * Plain English: What this function is used for.
-                           */
+                          onMouseEnter={// Zoom in gallery image slightly on hover
                           e => {
                             return (e.currentTarget.style.transform = "scale(1.08)");
                           }
                           }
-                          onMouseLeave={/**
-                           * Purpose: Helper callback used inside a larger operation
-                           * Plain English: What this function is used for.
-                           */
+                          onMouseLeave={// Reset gallery image to default scale on mouse leave
                           e => {
                             return (e.currentTarget.style.transform = "scale(1.02)");
                           }
@@ -1145,20 +1114,14 @@ const Home = () => {
               boxShadow: "0 0 25px rgba(255,255,255,0.25)",
               transition: "all 0.4s ease",
             }}
-            onMouseEnter={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+            onMouseEnter={// Animate gradient shift and glow on "Join Bluefins" CTA button
             e => {
               e.currentTarget.style.backgroundPosition = "100% 0%";
               e.currentTarget.style.boxShadow =
                 "0 0 40px rgba(255,255,255,0.45)";
               e.currentTarget.style.transform = "translateY(-4px)";
             }}
-            onMouseLeave={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+            onMouseLeave={// Reset CTA button gradient and shadow on mouse leave
             e => {
               e.currentTarget.style.backgroundPosition = "0% 0%";
               e.currentTarget.style.boxShadow =

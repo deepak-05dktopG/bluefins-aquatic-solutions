@@ -1,30 +1,19 @@
-/**
- * Purpose: Do Load Image
- * Plain English: What this function is used for.
- */
+// Loads an image from a URL and returns a Promise that resolves to the Image element
 /**
  * What it is: ID card / QR related helpers (image loading + download).
  * Non-tech note: Used when the app needs to create or download a card/QR.
  */
 
 const loadImage = src => {
-    return new Promise(/**
-     * Purpose: Helper callback used inside a larger operation
-     * Plain English: What this function is used for.
-     */
+    return new Promise(
+    // Creates an HTML Image, resolves with it on load, rejects on error
     (resolve, reject) => {
         const img = new Image()
-        /**
-         * Purpose: Helper callback used inside a larger operation
-         * Plain English: What this function is used for.
-         */
+        // Resolve the promise when the image finishes loading
         img.onload = () => {
             return resolve(img);
         }
-        /**
-         * Purpose: Helper callback used inside a larger operation
-         * Plain English: What this function is used for.
-         */
+        // Reject the promise if the QR image fails to load
         img.onerror = () => {
             return reject(new Error('Failed to load QR image'));
         }
@@ -32,10 +21,7 @@ const loadImage = src => {
     });
 };
 
-/**
- * Purpose: Do Try Load Image
- * Plain English: What this function is used for.
- */
+// Attempts to load an image, returns null instead of throwing on failure
 const tryLoadImage = async src => {
     try {
 		return await loadImage(src)
@@ -44,10 +30,7 @@ const tryLoadImage = async src => {
 	}
 };
 
-/**
- * Purpose: Do Download Data Url
- * Plain English: What this function is used for.
- */
+// Triggers a browser file download from a data URL (used for ID card PNG)
 const downloadDataUrl = (dataUrl, filename) => {
     const a = document.createElement('a')
     a.href = dataUrl
@@ -57,20 +40,14 @@ const downloadDataUrl = (dataUrl, filename) => {
     a.remove()
 };
 
-/**
- * Purpose: Do Safe Id Suffix
- * Plain English: What this function is used for.
- */
+// Extracts the last N characters of a member ID for display (e.g. 'BF-A3C2E9F1')
 const safeIdSuffix = (id, length = 8) => {
     const s = id == null ? '' : String(id)
     const n = Number.isFinite(Number(length)) ? Math.max(1, Math.min(24, Number(length))) : 8
     return s.length > n ? s.slice(-n) : s
 };
 
-/**
- * Purpose: Format Date
- * Plain English: What this function is used for.
- */
+// Formats a date as a readable string for the ID card (e.g. 'Mar 05, 2026')
 const formatDate = value => {
     if (!value) return ''
     const d = value instanceof Date ? value : new Date(value)
@@ -78,10 +55,7 @@ const formatDate = value => {
     return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: '2-digit' })
 };
 
-/**
- * Purpose: Do Rounded Rect
- * Plain English: What this function is used for.
- */
+// Draws a rectangle with rounded corners on the canvas (card background/panels)
 const roundedRect = (ctx, x, y, w, h, r) => {
     const rr = Math.min(r, w / 2, h / 2)
     ctx.beginPath()
@@ -93,10 +67,7 @@ const roundedRect = (ctx, x, y, w, h, r) => {
     ctx.closePath()
 };
 
-/**
- * Purpose: Do Ellipsize To Width
- * Plain English: What this function is used for.
- */
+// Truncates text with '...' if it exceeds the maximum pixel width on the canvas
 const ellipsizeToWidth = (ctx, text, maxWidth) => {
     const raw = text == null ? '' : String(text)
     if (!raw) return ''
@@ -114,10 +85,7 @@ const ellipsizeToWidth = (ctx, text, maxWidth) => {
     return raw.slice(0, cut) + ellipsis
 };
 
-/**
- * Purpose: Set Font
- * Plain English: What this function is used for.
- */
+// Sets the canvas font with the specified weight, size, and family
 const setFont = (
     ctx,
     { weight, size, family = 'system-ui, -apple-system, Segoe UI, Roboto, Arial' }
@@ -125,10 +93,7 @@ const setFont = (
     ctx.font = `${weight} ${size}px ${family}`
 };
 
-/**
- * Purpose: Do Fit Text Size
- * Plain English: What this function is used for.
- */
+// Finds the largest font size (down to min) where the text fits within maxWidth pixels
 const fitTextSize = ({ ctx, text, maxWidth, weight, start, min }) => {
     let size = start
     for (; size >= min; size -= 1) {
@@ -138,10 +103,7 @@ const fitTextSize = ({ ctx, text, maxWidth, weight, start, min }) => {
     return min
 };
 
-/**
- * Purpose: Do Wrap Text Lines
- * Plain English: What this function is used for.
- */
+// Wraps text into multiple lines that fit within maxWidth, ellipsizing the last line if needed
 const wrapTextLines = ({ ctx, text, maxWidth, maxLines }) => {
     const raw = text == null ? '' : String(text).trim()
     if (!raw) return ['—']
@@ -166,11 +128,8 @@ const wrapTextLines = ({ ctx, text, maxWidth, maxLines }) => {
     return lines.length ? lines : ['—']
 };
 
-export /**
- * Purpose: Build Member Id Card Png
- * Plain English: What this function is used for.
- */
-const buildMemberIdCardPng = async (
+// Generates the Bluefins member ID card as a PNG data URL with name, QR code, plan, and dates
+export const buildMemberIdCardPng = async (
     {
         name,
         memberId,
@@ -335,11 +294,8 @@ const buildMemberIdCardPng = async (
     return canvas.toDataURL('image/png')
 };
 
-export /**
- * Purpose: Do Download Member Id Card
- * Plain English: What this function is used for.
- */
-const downloadMemberIdCard = async ({ name, memberId, qrDataUrl, planName, joinDate, expiryDate }) => {
+// Downloads the generated Bluefins member ID card PNG to the user's device
+export const downloadMemberIdCard = async ({ name, memberId, qrDataUrl, planName, joinDate, expiryDate }) => {
     const png = await buildMemberIdCardPng({ name, memberId, qrDataUrl, planName, joinDate, expiryDate })
     const filename = `bluefins-id-${safeIdSuffix(memberId, 8)}.png`
     downloadDataUrl(png, filename)

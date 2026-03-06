@@ -10,10 +10,7 @@ import { isAdminAuthenticated, setAdminToken } from "../../utils/adminAuth";
 import Navbar from "../../components/Navbar";
 import { FaLock, FaRocket } from "react-icons/fa";
 
-/**
- * Purpose: Do Admin Login
- * Plain English: What this function is used for.
- */
+// Admin login page — authenticates admin/owner credentials via JWT before granting panel access
 const AdminLogin = () => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -22,21 +19,15 @@ const AdminLogin = () => {
   const navigate = useNavigate();
 
   // Check for existing authorization on component mount
-  useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
-   */
+  useEffect(
+  // Skip login screen and go straight to dashboard if admin is already authenticated
   () => {
     if (isAdminAuthenticated()) {
       navigate("/admin/dashboard");
     }
   }, [navigate]);
 
-  /**
-   * Purpose: Handle Access Submit
-   * Plain English: What this function is used for.
-   */
-  // Handle access key submission
+  // Submit admin ID/email + password to server, store JWT token on success, show error on failure
   const handleAccessSubmit = async e => {
     e.preventDefault();
     setVerifyLoading(true);
@@ -186,10 +177,7 @@ const AdminLogin = () => {
             type="text"
             placeholder="Admin ID or email"
             value={identifier}
-            onChange={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+            onChange={// Update admin ID / email input value as user types
             e => {
               return setIdentifier(e.target.value);
             }}
@@ -208,18 +196,12 @@ const AdminLogin = () => {
               fontSize: "1rem",
               transition: "all 0.3s ease",
             }}
-            onFocus={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+            onFocus={// Highlight identifier input border with teal glow on focus
             e => {
               e.currentTarget.style.border = "2px solid #00FFD4";
               e.currentTarget.style.boxShadow = "0 0 20px rgba(0, 255, 212, 0.2)";
             }}
-            onBlur={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+            onBlur={// Reset identifier input border to default when unfocused
             e => {
               e.currentTarget.style.border = "2px solid rgba(0, 255, 200, 0.3)";
               e.currentTarget.style.boxShadow = "none";
@@ -230,10 +212,7 @@ const AdminLogin = () => {
             type="password"
             placeholder="Admin password"
             value={password}
-            onChange={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+            onChange={// Update password input value as user types
             e => {
               return setPassword(e.target.value);
             }}
@@ -252,18 +231,12 @@ const AdminLogin = () => {
               fontSize: "1rem",
               transition: "all 0.3s ease",
             }}
-            onFocus={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+            onFocus={// Highlight password input border with teal glow on focus
             e => {
               e.currentTarget.style.border = "2px solid #00FFD4";
               e.currentTarget.style.boxShadow = "0 0 20px rgba(0, 255, 212, 0.2)";
             }}
-            onBlur={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+            onBlur={// Reset password input border to default when unfocused
             e => {
               e.currentTarget.style.border = "2px solid rgba(0, 255, 200, 0.3)";
               e.currentTarget.style.boxShadow = "none";
@@ -309,20 +282,14 @@ const AdminLogin = () => {
               transition: "all 0.3s ease",
               fontFamily: "Poppins, system-ui",
             }}
-            onMouseEnter={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+            onMouseEnter={// Lift login button and add glow when form is filled and not loading
             e => {
               if (!verifyLoading && identifier.trim() && password.trim()) {
                 e.currentTarget.style.transform = "translateY(-2px)";
                 e.currentTarget.style.boxShadow = "0 8px 20px rgba(0, 255, 212, 0.4)";
               }
             }}
-            onMouseLeave={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
-             */
+            onMouseLeave={// Reset login button position when mouse leaves
             e => {
               e.currentTarget.style.transform = "translateY(0)";
               e.currentTarget.style.boxShadow = "none";

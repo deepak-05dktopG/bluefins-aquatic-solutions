@@ -9,10 +9,7 @@ import bcrypt from 'bcryptjs'
 import connectDB from '../config/db.js'
 import Admin from '../models/Admin.js'
 
-/**
- * Purpose: Parse Args
- * Plain English: What this function is used for.
- */
+// Parses CLI flags (--email, --password, --role, --id, --update) from process.argv
 const parseArgs = argv => {
     const out = {}
     for (let i = 0; i < argv.length; i++) {
@@ -39,75 +36,49 @@ const parseArgs = argv => {
     return out
 };
 
-/**
- * Purpose: Do Normalize
- * Plain English: What this function is used for.
- */
+// Trims whitespace from a CLI argument value
 const normalize = value => {
     return String(value || '').trim();
 };
 
-/**
- * Purpose: Do Normalize Lower
- * Plain English: What this function is used for.
- */
+// Trims and lowercases a CLI argument (used for email, adminId, role)
 const normalizeLower = value => {
     return normalize(value).toLowerCase();
 };
 
-/**
- * Purpose: Check whether Valid Role
- * Plain English: What this function is used for.
- */
+// Checks if the role is either 'admin' or 'superadmin'
 const isValidRole = role => {
     return ['admin', 'superadmin'].includes(role);
 };
 
-/**
- * Purpose: Check whether Valid Email
- * Plain English: What this function is used for.
- */
+// Basic check that the email string contains an '@' character
 const isValidEmail = email => {
     if (!email) return false
     return email.includes('@')
 };
 
-/**
- * Purpose: Check whether Valid Admin Id
- * Plain English: What this function is used for.
- */
+// Validates adminId contains only alphanumeric, dot, underscore, dash, or @ characters
 const isValidAdminId = adminId => {
     if (!adminId) return false
     // Keep it simple: allow a-z, 0-9, dot, underscore, dash, and @ (email-like ids)
     return /^[a-z0-9._@-]+$/.test(adminId);
 };
 
-/**
- * Purpose: Do Print Help
- * Plain English: What this function is used for.
- */
+// Prints CLI usage instructions for the create-admin command
 const printHelp = () => {
     console.log(`\nCreate or update an admin user\n\nUsage:\n  npm run create-admin -- --email you@example.com --password "..." [--id adminId] [--role admin|superadmin] [--update]\n\nFlags:\n  --email      Required. Admin email.\n  --password   Required. If omitted and running in a TTY, you will be prompted.\n  --id         Optional. Admin id (defaults to email).\n  --adminId    Optional. Alias for --id.\n  --role       Optional. admin | superadmin (default: admin).\n  --update     Optional. Update existing admin if found.\n  --help       Show this message.\n`)
 };
 
-/**
- * Purpose: Do Prompt Hidden
- * Plain English: What this function is used for.
- */
+// Prompts for password input in the terminal with hidden characters (no echo)
 const promptHidden = async question => {
     if (!process.stdin.isTTY) return ''
     process.stdout.write(question)
 
-    return await new Promise(/**
-     * Purpose: Helper callback used inside a larger operation
-     * Plain English: What this function is used for.
-     */
+    return await new Promise(
+    // Reads stdin keystrokes one at a time until Enter is pressed
     resolve => {
         const stdin = process.stdin
-        /**
-         * Purpose: Run when Data happens
-         * Plain English: What this function is used for.
-         */
+        // Handles each keystroke: accumulates chars, hides echo, resolves on Enter
         const onData = buf => {
             const str = buf.toString('utf8')
             // Enter
@@ -150,10 +121,7 @@ const promptHidden = async question => {
     });
 };
 
-/**
- * Purpose: Do Main
- * Plain English: What this function is used for.
- */
+// Main: validates CLI args, connects to MongoDB, and creates or updates the admin account
 const main = async () => {
     const args = parseArgs(process.argv.slice(2))
     if (args.help || args.h) {
@@ -236,10 +204,8 @@ const main = async () => {
     process.exit(0)
 };
 
-main().catch(/**
- * Purpose: Promise error handler (runs when async work fails)
- * Plain English: What this function is used for.
- */
+main().catch(
+// Logs the error and exits if admin creation fails
 e => {
     console.error('❌ Failed to create admin:', e?.message || e)
     process.exit(1)

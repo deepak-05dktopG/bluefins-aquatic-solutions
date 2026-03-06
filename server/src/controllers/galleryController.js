@@ -8,10 +8,7 @@ import Gallery from '../models/Gallery.js';
 // @desc    Create new gallery image
 // @route   POST /api/gallery
 // @access  Admin
-export /**
- * Purpose: Create Gallery Image
- * Plain English: What this function is used for.
- */
+export // Adds a new gallery image (Cloudinary URL) to the website gallery
 const createGalleryImage = async (req, res) => {
   try {
     const { title, description, imageUrl, cloudinaryPublicId, category, displayOrder } = req.body;
@@ -51,10 +48,7 @@ const createGalleryImage = async (req, res) => {
 // @desc    Get all gallery images
 // @route   GET /api/gallery
 // @access  Public
-export /**
- * Purpose: Get All Gallery Images
- * Plain English: What this function is used for.
- */
+export // Returns all gallery images, optionally filtered by category or active status
 const getAllGalleryImages = async (req, res) => {
   try {
     const { category, isActive } = req.query;
@@ -84,10 +78,7 @@ const getAllGalleryImages = async (req, res) => {
 // @desc    Get single gallery image
 // @route   GET /api/gallery/:id
 // @access  Public
-export /**
- * Purpose: Get Gallery Image By Id
- * Plain English: What this function is used for.
- */
+export // Returns a single gallery image by database ID
 const getGalleryImageById = async (req, res) => {
   try {
     const image = await Gallery.findById(req.params.id);
@@ -116,10 +107,7 @@ const getGalleryImageById = async (req, res) => {
 // @desc    Update gallery image
 // @route   PATCH /api/gallery/:id
 // @access  Admin
-export /**
- * Purpose: Do Update Gallery Image
- * Plain English: What this function is used for.
- */
+export // Updates gallery image details (title, category, display order, active status)
 const updateGalleryImage = async (req, res) => {
   try {
     const { title, description, category, displayOrder, isActive } = req.body;
@@ -160,10 +148,7 @@ const updateGalleryImage = async (req, res) => {
 // @desc    Delete gallery image
 // @route   DELETE /api/gallery/:id
 // @access  Admin
-export /**
- * Purpose: Do Delete Gallery Image
- * Plain English: What this function is used for.
- */
+export // Permanently removes a gallery image from the database
 const deleteGalleryImage = async (req, res) => {
   try {
     const image = await Gallery.findById(req.params.id);
@@ -195,10 +180,7 @@ const deleteGalleryImage = async (req, res) => {
 // @desc    Get gallery statistics
 // @route   GET /api/gallery/stats
 // @access  Admin
-export /**
- * Purpose: Get Gallery Stats
- * Plain English: What this function is used for.
- */
+export // Returns gallery image counts (total, active, inactive, by category) for admin dashboard
 const getGalleryStats = async (req, res) => {
   try {
     const totalImages = await Gallery.countDocuments();
@@ -220,10 +202,8 @@ const getGalleryStats = async (req, res) => {
         totalImages,
         activeImages,
         inactiveImages,
-        categoryStats: categoryStats.reduce(/**
-         * Purpose: Array reduce callback (combines items into one result)
-         * Plain English: What this function is used for.
-         */
+        categoryStats: categoryStats.reduce(
+        // Build a { category: count } object from aggregation results
         (acc, stat) => {
           acc[stat._id] = stat.count;
           return acc;

@@ -9,17 +9,12 @@ import { isAdminAuthenticated } from "../../utils/adminAuth";
 import AdminNavbar from "../../components/adminPanel/AdminNavbar";
 import { FaDownload, FaEye, FaTimes } from "react-icons/fa";
 
-/**
- * Purpose: Do Lesson Plans
- * Plain English: What this function is used for.
- */
+// Lesson plans page — lets admins view and download yearly swimming curriculum PDFs
 const LessonPlans = () => {
   const navigate = useNavigate();
 
-  useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
-   */
+  useEffect(
+  // Guard: redirect unauthenticated users back to admin login
   () => {
     if (!isAdminAuthenticated()) {
       navigate("/admin");
@@ -60,10 +55,8 @@ const LessonPlans = () => {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "20px", marginBottom: "30px" }}>
-            {yearlyPlans.map(/**
-             * Purpose: Array mapping callback (converts each item to a new value)
-             * Plain English: What this function is used for.
-             */
+            {yearlyPlans.map(
+            // Render a card for each curriculum plan (annual plan, level of learning, etc.)
             plan => {
               return (
                 <div
@@ -76,18 +69,12 @@ const LessonPlans = () => {
                     transition: "all 0.3s ease",
                     cursor: "pointer",
                   }}
-                  onMouseEnter={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
-                   */
+                  onMouseEnter={// Lift plan card and add teal shadow on hover
                   e => {
                     e.currentTarget.style.transform = "translateY(-5px)";
                     e.currentTarget.style.boxShadow = "0 10px 30px rgba(0, 255, 212, 0.2)";
                   }}
-                  onMouseLeave={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
-                   */
+                  onMouseLeave={// Reset plan card position when mouse leaves
                   e => {
                     e.currentTarget.style.transform = "translateY(0)";
                     e.currentTarget.style.boxShadow = "none";
@@ -106,10 +93,7 @@ const LessonPlans = () => {
                   </div>
                   <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
                     <button
-                      onClick={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
-                       */
+                      onClick={// Toggle PDF viewer for this plan (show/hide)
                       () => {
                         return setSelectedYearlyPlan(selectedYearlyPlan?.id === plan.id ? null : plan);
                       }}
@@ -128,17 +112,11 @@ const LessonPlans = () => {
                         cursor: "pointer",
                         transition: "all 0.3s ease",
                       }}
-                      onMouseEnter={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
-                       */
+                      onMouseEnter={// Brighten view button background on hover
                       e => {
                         return e.currentTarget.style.background = "rgba(0, 255, 212, 0.3)";
                       }}
-                      onMouseLeave={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
-                       */
+                      onMouseLeave={// Reset view button background when mouse leaves
                       e => {
                         return e.currentTarget.style.background = "rgba(0, 255, 212, 0.2)";
                       }}
@@ -163,17 +141,11 @@ const LessonPlans = () => {
                         textDecoration: "none",
                         transition: "all 0.3s ease",
                       }}
-                      onMouseEnter={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
-                       */
+                      onMouseEnter={// Brighten download link background on hover
                       e => {
                         return e.currentTarget.style.background = "rgba(0, 153, 255, 0.3)";
                       }}
-                      onMouseLeave={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
-                       */
+                      onMouseLeave={// Reset download link background when mouse leaves
                       e => {
                         return e.currentTarget.style.background = "rgba(0, 153, 255, 0.2)";
                       }}
@@ -200,10 +172,7 @@ const LessonPlans = () => {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
                 <h3 style={{ color: "#00FFD4", margin: 0 }}>📄 {selectedYearlyPlan.title}</h3>
                 <button
-                  onClick={/**
-                   * Purpose: Helper callback used inside a larger operation
-                   * Plain English: What this function is used for.
-                   */
+                  onClick={// Close the PDF viewer modal
                   () => {
                     return setSelectedYearlyPlan(null);
                   }}

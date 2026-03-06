@@ -14,15 +14,16 @@ import AdminNavbar from "../../components/adminPanel/AdminNavbar";
 const apiBase = import.meta.env.VITE_API_BASE_URL || "/api";
 
 /**
- * Purpose: Do Members Feedback
- * Plain English: What this function is used for.
+ * Bluefins admin tool: Inbox-style view of feedback submitted from the public
+ * site (contact/feedback form). Staff can filter by status, mark items as read
+ * after follow-up, and delete spam/duplicates.
  */
 const MembersFeedback = () => {
   const navigate = useNavigate();
 
   useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
+   * Bluefins guard: this is an admin-only page.
+   * If the admin token/session is missing, send the user back to the admin login.
    */
   () => {
     if (!isAdminAuthenticated()) {
@@ -37,16 +38,16 @@ const MembersFeedback = () => {
 
   // Fetch feedbacks from backend
   useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
+   * Bluefins admin workflow: load the latest feedback once when the page opens
+   * so admins immediately see what needs attention.
    */
   () => {
     fetchFeedbacks();
   }, []);
 
   /**
-   * Purpose: Fetch Feedbacks from server
-   * Plain English: What this function is used for.
+   * Pull the feedback list from the API using `adminFetch` (adds admin auth).
+   * Updates loading/error state so the UI can show a spinner or an error banner.
    */
   const fetchFeedbacks = async () => {
     try {
@@ -68,8 +69,8 @@ const MembersFeedback = () => {
   };
 
   /**
-   * Purpose: Do Delete Feedback
-   * Plain English: What this function is used for.
+   * Admin action: permanently remove a feedback item.
+   * Used for spam, duplicates, or items that were resolved and no longer needed.
    */
   const deleteFeedback = async id => {
     const result = await Swal.fire({
@@ -93,10 +94,10 @@ const MembersFeedback = () => {
         const data = await response.json();
         
         if (data.success) {
-          setFeedback(feedback.filter(/**
-           * Purpose: Array filter callback (keeps items that match a condition)
-           * Plain English: What this function is used for.
-           */
+                  setFeedback(feedback.filter(/**
+                   * Local UI update: remove the deleted item from the list immediately
+                   * so the admin sees the result without a full refetch.
+                   */
           fb => {
             return fb._id !== id;
           }));
@@ -148,8 +149,8 @@ const MembersFeedback = () => {
   };
 
   /**
-   * Purpose: Do Mark As Read
-   * Plain English: What this function is used for.
+   * Admin action: mark a feedback message as read after it has been reviewed
+   * or a follow-up has been completed.
    */
   const markAsRead = async id => {
     try {
@@ -165,8 +166,8 @@ const MembersFeedback = () => {
       if (data.success) {
         setFeedback(
           feedback.map(/**
-           * Purpose: Array mapping callback (converts each item to a new value)
-           * Plain English: What this function is used for.
+           * Update just the touched feedback item so the unread highlight/badge
+           * changes immediately.
            */
           fb => {
             return (fb._id === id ? { ...fb, status: "read" } : fb);
@@ -180,8 +181,8 @@ const MembersFeedback = () => {
 
   // Filter feedback
   const filteredFeedback = feedback.filter(/**
-   * Purpose: Array filter callback (keeps items that match a condition)
-   * Plain English: What this function is used for.
+   * Apply the selected status filter from the dropdown.
+   * "all" shows everything; otherwise show only matching statuses.
    */
   fb => {
     const statusMatch = filterStatus === "all" || fb.status === filterStatus;
@@ -191,15 +192,13 @@ const MembersFeedback = () => {
   // Statistics
   const totalCount = feedback.length;
   const unreadCount = feedback.filter(/**
-   * Purpose: Array filter callback (keeps items that match a condition)
-   * Plain English: What this function is used for.
+   * Count unread items for the stats cards at the top.
    */
   fb => {
     return fb.status === "unread";
   }).length;
   const readCount = feedback.filter(/**
-   * Purpose: Array filter callback (keeps items that match a condition)
-   * Plain English: What this function is used for.
+   * Count read items for the stats cards at the top.
    */
   fb => {
     return fb.status === "read";
@@ -248,8 +247,7 @@ const MembersFeedback = () => {
           <select
             value={filterStatus}
             onChange={/**
-             * Purpose: Helper callback used inside a larger operation
-             * Plain English: What this function is used for.
+             * Update the active filter when the admin changes the dropdown.
              */
             e => {
               return setFilterStatus(e.target.value);
@@ -293,8 +291,8 @@ const MembersFeedback = () => {
 
         <div style={{ display: "grid", gap: "20px" }}>
           {filteredFeedback.map(/**
-           * Purpose: Array mapping callback (converts each item to a new value)
-           * Plain English: What this function is used for.
+           * Render each feedback message as a card.
+           * Unread messages are visually highlighted to help triage.
            */
           fb => {
             return (
@@ -309,16 +307,14 @@ const MembersFeedback = () => {
                   position: "relative",
                 }}
                 onMouseEnter={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
+                 * Small hover lift so cards feel interactive.
                  */
                 e => {
                   e.currentTarget.style.transform = "translateY(-2px)";
                   e.currentTarget.style.boxShadow = "0 8px 30px rgba(0, 0, 0, 0.3)";
                 }}
                 onMouseLeave={/**
-                 * Purpose: Helper callback used inside a larger operation
-                 * Plain English: What this function is used for.
+                 * Restore the default styling when the pointer leaves.
                  */
                 e => {
                   e.currentTarget.style.transform = "translateY(0)";
@@ -355,14 +351,12 @@ const MembersFeedback = () => {
                     <div style={{ fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", marginTop: "5px" }}>
                       <FaEnvelope style={{ color: "#FFD93D" }} />
                       <a href={`mailto:${fb.email}`} style={{ color: "#b0b0b0", textDecoration: "none", transition: "color 0.3s ease" }} onMouseEnter={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
+                       * Visual cue: highlight the email link on hover.
                        */
                       e => {
                         return e.currentTarget.style.color = "#FFD93D";
                       }} onMouseLeave={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
+                       * Restore default color on mouse out.
                        */
                       e => {
                         return e.currentTarget.style.color = "#b0b0b0";
@@ -373,14 +367,12 @@ const MembersFeedback = () => {
                     <div style={{ fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px", marginTop: "5px" }}>
                       <FaPhone style={{ color: "#FF6B6B" }} />
                       <a href={`tel:${fb.phone}`} style={{ color: "#b0b0b0", textDecoration: "none", transition: "color 0.3s ease" }} onMouseEnter={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
+                       * Visual cue: highlight the phone link on hover.
                        */
                       e => {
                         return e.currentTarget.style.color = "#FF6B6B";
                       }} onMouseLeave={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
+                       * Restore default color on mouse out.
                        */
                       e => {
                         return e.currentTarget.style.color = "#b0b0b0";
@@ -406,8 +398,7 @@ const MembersFeedback = () => {
                     {fb.status === "unread" && (
                       <button
                         onClick={/**
-                         * Purpose: Helper callback used inside a larger operation
-                         * Plain English: What this function is used for.
+                         * One-click triage: mark this message as read.
                          */
                         () => {
                           return markAsRead(fb._id);
@@ -424,16 +415,14 @@ const MembersFeedback = () => {
                           transition: "all 0.3s ease",
                         }}
                         onMouseEnter={/**
-                         * Purpose: Helper callback used inside a larger operation
-                         * Plain English: What this function is used for.
+                         * Hover affordance for the primary action button.
                          */
                         e => {
                           e.currentTarget.style.transform = "translateY(-2px)";
                           e.currentTarget.style.boxShadow = "0 4px 15px rgba(78, 205, 196, 0.4)";
                         }}
                         onMouseLeave={/**
-                         * Purpose: Helper callback used inside a larger operation
-                         * Plain English: What this function is used for.
+                         * Return to normal button styling.
                          */
                         e => {
                           e.currentTarget.style.transform = "translateY(0)";
@@ -445,8 +434,7 @@ const MembersFeedback = () => {
                     )}
                     <button
                       onClick={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
+                       * Admin cleanup: delete this feedback item (after confirmation).
                        */
                       () => {
                         return deleteFeedback(fb._id);
@@ -466,16 +454,14 @@ const MembersFeedback = () => {
                         gap: "6px",
                       }}
                       onMouseEnter={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
+                       * Hover affordance for a destructive action.
                        */
                       e => {
                         e.currentTarget.style.transform = "translateY(-2px)";
                         e.currentTarget.style.boxShadow = "0 4px 15px rgba(255, 107, 107, 0.4)";
                       }}
                       onMouseLeave={/**
-                       * Purpose: Helper callback used inside a larger operation
-                       * Plain English: What this function is used for.
+                       * Return to normal button styling.
                        */
                       e => {
                         e.currentTarget.style.transform = "translateY(0)";

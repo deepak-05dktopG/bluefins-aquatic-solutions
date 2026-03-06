@@ -6,24 +6,16 @@
 import { useState, useEffect } from 'react'
 import api from '../api/api'
 
-/**
- * Purpose: Do Use Fetch
- * Plain English: What this function is used for.
- */
+// Custom React hook that fetches data from the given API endpoint with loading/error state
 const useFetch = url => {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(/**
-   * Purpose: React effect callback (runs after render based on dependencies)
-   * Plain English: What this function is used for.
-   */
+  useEffect(
+  // Triggers the API call whenever the URL changes
   () => {
-    /**
-     * Purpose: Fetch Data from server
-     * Plain English: What this function is used for.
-     */
+    // Calls the server API and stores the response in state
     const fetchData = async () => {
       try {
         const response = await api.get(url)
