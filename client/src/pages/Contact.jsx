@@ -68,7 +68,7 @@ const Contact = () => {
       // Then send email via EmailJS
       try {
         await emailjs.send(
-          "service_rktrbwj",
+          "service_ecp1fzd",
           "template_gos1gyj",
           {
             from_name: formData.name,
@@ -81,7 +81,7 @@ const Contact = () => {
         );
         
         // Send auto-reply
-        await emailjs.send("service_rktrbwj", "template_paafjhg", {
+        await emailjs.send("service_ecp1fzd", "template_paafjhg", {
           from_name: formData.name,
           phone: formData.phone,
         }, "mbQp-0kZOmadPSjVn");

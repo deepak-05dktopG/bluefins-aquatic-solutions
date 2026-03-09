@@ -13,6 +13,10 @@ const memberSchema = new mongoose.Schema(
 		gender: { type: String, enum: ['male', 'female', 'other'], default: 'other' },
 
 		planId: { type: mongoose.Schema.Types.ObjectId, ref: 'MembershipPlan', required: true },
+		// Offline-only: when admin applies a discount during desk registration.
+		discountPct: { type: Number, min: 0, max: 100, default: 0 },
+		// Offline-only: how the member paid at the counter.
+		paymentMethod: { type: String, enum: ['cash', 'gpay', 'phonepay', 'paytm'], default: 'cash' },
 		planType: { type: String },
 		category: { type: String, enum: ['infant', 'kids', 'adult'] },
 		membershipGroupId: { type: String, index: true },

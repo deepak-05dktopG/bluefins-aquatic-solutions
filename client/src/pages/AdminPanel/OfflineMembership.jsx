@@ -28,6 +28,21 @@ const CATEGORY_LABEL = {
 const emptyMember = { name: '', phone: '', age: '', gender: 'other' }
 const emptyFamilyMember = { name: '', phone: '', age: '', gender: 'other' }
 
+const round2 = n => {
+    const x = Number(n)
+    if (!Number.isFinite(x)) return 0
+    return Math.round((x + Number.EPSILON) * 100) / 100
+}
+
+const parseDiscountPct = v => {
+    const raw = normalizeText(v)
+    if (!raw) return { ok: true, pct: 0 }
+    const n = Number(raw)
+    if (!Number.isFinite(n)) return { ok: false, message: 'Discount (%) must be a number' }
+    if (n < 0 || n > 100) return { ok: false, message: 'Discount (%) must be between 0 and 100' }
+    return { ok: true, pct: n }
+}
+
 /**
  * Normalize free-text inputs from the offline desk registration form.
  * Trims whitespace and converts null/undefined to an empty string.
@@ -114,6 +129,13 @@ const STEP = {
 	DONE: 3,
 }
 
+const OFFLINE_PAYMENT_METHOD_LABEL = {
+    cash: 'Cash',
+    gpay: 'GPay',
+    phonepay: 'PhonePe',
+    paytm: 'Paytm',
+}
+
 /**
  * Bluefins admin flow: Offline Membership Registration.
  * Used when a customer pays cash/in-hand at the pool/desk (no Razorpay).
@@ -133,6 +155,8 @@ const OfflineMembership = () => {
 		quantity: 1,
 		publicSlot: { date: '', startTime: '10:00', endTime: '' },
 	})
+    const [discountPct, setDiscountPct] = useState('')
+    const [paymentMethod, setPaymentMethod] = useState('cash')
     const [familyMembers, setFamilyMembers] = useState([emptyFamilyMember])
     const [collectedBy, setCollectedBy] = useState(/**
      * Load the last “Collected by” staff name to speed up desk workflows.
@@ -214,10 +238,26 @@ const OfflineMembership = () => {
         * Note: no Razorpay fee/GST is applied here.
      */
     () => {
-        if (testAmountInr != null) return Number(testAmountInr)
-        // Offline cash registrations do not add Razorpay fee/GST.
-        return computedSubtotal
-    }, [computedSubtotal, testAmountInr])
+        const subtotal = computedSubtotal
+        if (subtotal == null) return null
+        const disc = parseDiscountPct(discountPct)
+        const pct = disc.ok ? disc.pct : 0
+        const discountAmount = pct > 0 ? round2(Number(subtotal) * (pct / 100)) : 0
+        return round2(Math.max(0, Number(subtotal) - discountAmount))
+    }, [computedSubtotal, discountPct])
+
+    const computedDiscountAmount = useMemo(/**
+     * Amount reduced from subtotal when discount (%) is applied.
+     */
+        () => {
+            const subtotal = computedSubtotal
+            if (subtotal == null) return null
+            const disc = parseDiscountPct(discountPct)
+            const pct = disc.ok ? disc.pct : 0
+            return pct > 0 ? round2(Number(subtotal) * (pct / 100)) : 0
+        },
+        [computedSubtotal, discountPct]
+    )
 
     const peopleCount = useMemo(/**
         * Headcount summary shown in the side panel.
@@ -304,6 +344,9 @@ const OfflineMembership = () => {
     const validate = () => {
         if (!selectedPlan) return 'Please select a plan'
         if (!normalizeText(collectedBy)) return 'Collected by (admin name) is required'
+        const disc = parseDiscountPct(discountPct)
+        if (!disc.ok) return disc.message
+        if (!OFFLINE_PAYMENT_METHOD_LABEL[paymentMethod]) return 'Select a valid payment method'
 
         // Shared validations
         if (selectedPlan.categoryRequired) {
@@ -385,6 +428,8 @@ const OfflineMembership = () => {
 			const payload = {
 				collectedBy: normalizeText(collectedBy),
 				planId: selectedPlanId,
+                discountPct: parseDiscountPct(discountPct).ok ? parseDiscountPct(discountPct).pct : 0,
+                paymentMethod,
 				member: {
 					name: normalizedMember.name,
 					phone: normalizedMember.phone,
@@ -442,6 +487,8 @@ const OfflineMembership = () => {
         setError('')
         setMember(emptyMember)
         setSelection({ category: 'kids', coachingAddOn: false, quantity: 1, publicSlot: { date: '', startTime: '10:00', endTime: '' } })
+		setDiscountPct('')
+        setPaymentMethod('cash')
         setFamilyMembers([emptyFamilyMember])
         setStep(STEP.PLAN)
     };
@@ -622,6 +669,43 @@ const OfflineMembership = () => {
 							{step === STEP.DETAILS ? (
 								<div className="mt-3">
 									<div style={{ color: '#fff', fontWeight: 900, marginBottom: 8 }}>Details</div>
+
+                                    <div className="row g-2" style={{ marginBottom: 10 }}>
+                                        <div className="col-12 col-md-4">
+                                            <label className="form-label" style={{ color: '#fff' }}>Discount (%)</label>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                max={100}
+                                                step={1}
+                                                className="form-control form-control-sm"
+                                                placeholder="0"
+                                                value={discountPct}
+                                                onChange={e => setDiscountPct(e.target.value)}
+                                            />
+                                            <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12, marginTop: 6 }}>
+                                                Applied only for offline registration.
+                                            </div>
+                                        </div>
+
+                                        <div className="col-12 col-md-4">
+                                            <label className="form-label" style={{ color: '#fff' }}>Payment Method</label>
+                                            <select
+                                                className="form-select form-select-sm"
+                                                value={paymentMethod}
+                                                onChange={e => setPaymentMethod(e.target.value)}
+                                            >
+                                                {Object.keys(OFFLINE_PAYMENT_METHOD_LABEL).map(k => (
+                                                    <option key={k} value={k}>
+                                                        {OFFLINE_PAYMENT_METHOD_LABEL[k]}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12, marginTop: 6 }}>
+                                                Shown in Members list for tracking.
+                                            </div>
+                                        </div>
+                                    </div>
 
 									{selectedPlan?.type === 'family' ? (
 										<div className="row g-2">
@@ -1023,6 +1107,15 @@ const OfflineMembership = () => {
 											Select valid options to calculate amount.
 										</div>
 									)}
+
+                                                        {computedDiscountAmount != null && Number(computedDiscountAmount) > 0 && parseDiscountPct(discountPct).ok ? (
+                                                            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
+                                                                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
+                                                                    Discount ({parseDiscountPct(discountPct).pct}%)
+                                                                </div>
+                                                                <div style={{ color: '#fff', fontWeight: 900 }}>- {formatInr(computedDiscountAmount)}</div>
+                                                            </div>
+                                                        ) : null}
 
 									<div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
 										<div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>Total to collect</div>

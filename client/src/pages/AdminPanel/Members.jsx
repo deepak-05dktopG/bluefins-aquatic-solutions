@@ -60,6 +60,26 @@ const daysUntil = (expiryDate, planType) => {
     return Math.ceil(diff / (1000 * 60 * 60 * 24))
 };
 
+const formatDiscountSuffix = discountPct => {
+	const n = Number(discountPct)
+	if (!Number.isFinite(n) || n <= 0) return ''
+	const pctText = Number.isInteger(n) ? String(n) : String(n)
+	return ` (${pctText}% disc)`
+}
+
+const formatPaymentMethodSuffix = paymentMethod => {
+	const raw = paymentMethod == null ? '' : String(paymentMethod).trim().toLowerCase()
+	if (!raw) return ''
+	if (raw === 'cash' || raw === 'gpay' || raw === 'phonepay' || raw === 'paytm') return ` (${raw})`
+	return ''
+}
+
+const planNameWithDiscount = m => {
+	const base = m?.plan?.planName
+	if (!base) return ''
+	return `${base}${formatDiscountSuffix(m?.discountPct)}${formatPaymentMethodSuffix(m?.paymentMethod)}`
+}
+
 /**
  * Client-side CSV export for admin reporting.
  * Used by the Members screen “Export CSV” action.
@@ -381,7 +401,7 @@ function Members() {
                 return [
 					m.name,
 					m.phone,
-					m?.plan?.planName || '',
+					planNameWithDiscount(m) || '',
 					m.planType || '',
 					m.status,
 					formatDate(m.joinDate),
@@ -738,7 +758,7 @@ function Members() {
 												</td>
 												<td style={{ padding: '10px 12px', color: 'rgba(255,255,255,0.8)', fontWeight: 500, fontSize: '0.85rem' }}>{m.phone}</td>
 												<td style={{ padding: '10px 12px', color: 'rgba(255,255,255,0.8)', fontWeight: 500, fontSize: '0.85rem' }}>
-													<div style={{ color: '#00FFD4', fontWeight: 600 }}>{m?.plan?.planName || '—'}</div>
+													<div style={{ color: '#00FFD4', fontWeight: 600 }}>{planNameWithDiscount(m) || '—'}</div>
 													<div style={{ color: 'rgba(255,255,255,0.55)', fontWeight: 700, fontSize: '0.8rem' }}>
 														{m.planType || '—'}
 													</div>

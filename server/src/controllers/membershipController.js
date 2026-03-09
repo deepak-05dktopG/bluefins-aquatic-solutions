@@ -85,14 +85,39 @@ const computePayablePricing = subtotalInr => {
 	})
 };
 
-// Returns pricing with zero commission/GST for offline (cash/counter) memberships
-const computeOfflinePricing = subtotalInr => {
-    const subtotal = round2(subtotalInr)
-    return {
+const normalizeDiscountPct = value => {
+	if (value === undefined || value === null || String(value).trim() === '') return 0
+	const n = Number(value)
+	if (!Number.isFinite(n)) return null
+	if (n < 0 || n > 100) return null
+	return round2(n)
+}
+
+const normalizeOfflinePaymentMethod = value => {
+	const raw = value == null ? '' : String(value).trim().toLowerCase()
+	if (!raw) return 'cash'
+	if (raw === 'cash') return 'cash'
+	if (raw === 'gpay' || raw === 'googlepay' || raw === 'google pay') return 'gpay'
+	if (raw === 'phonepay' || raw === 'phonepe' || raw === 'phone pe') return 'phonepay'
+	if (raw === 'paytm') return 'paytm'
+	return null
+}
+
+// Returns pricing with zero commission/GST for offline (cash/counter) memberships.
+// Supports an optional percentage discount applied to the subtotal.
+const computeOfflinePricing = (subtotalInr, discountPct = 0) => {
+	const subtotal = round2(subtotalInr)
+	const pct = Number.isFinite(Number(discountPct)) ? Number(discountPct) : 0
+	const normalizedPct = pct < 0 ? 0 : pct > 100 ? 100 : round2(pct)
+	const discountAmount = normalizedPct > 0 ? round2(subtotal * (normalizedPct / 100)) : 0
+	const total = round2(Math.max(0, subtotal - discountAmount))
+	return {
 		subtotal,
+		discountPct: normalizedPct,
+		discountAmount,
 		commission: 0,
 		gst: 0,
-		total: subtotal,
+		total,
 		config: { commissionPct: 0, commissionFlatInr: 0, gstPct: 0 },
 	}
 };
@@ -322,13 +347,16 @@ const isValidTimeHHMM = value => {
 };
 
 // Prepares an offline (cash) membership draft: validates member details, calculates pricing without gateway fees
-const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers }) => {
+const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers, discountPct }) => {
     const normalizedSelection = selection || {}
+
+	const normalizedDiscountPct = normalizeDiscountPct(discountPct)
+	if (normalizedDiscountPct === null) return { ok: false, message: 'discountPct must be a number between 0 and 100' }
 
     const baseAmountRes = computeAmount({ plan, selection: normalizedSelection })
     if (!baseAmountRes.ok) return { ok: false, message: baseAmountRes.message }
 
-    const pricing = computeOfflinePricing(baseAmountRes.amount)
+	const pricing = computeOfflinePricing(baseAmountRes.amount, normalizedDiscountPct)
     const amountRes = {
 		...baseAmountRes,
 		amount: pricing.total,
@@ -411,6 +439,7 @@ const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers 
 		joinDate,
 		expiryDate,
 		publicSlot,
+		discountPct: normalizedDiscountPct,
 	}
 };
 
@@ -509,9 +538,11 @@ const prepareMembershipDraft = ({ plan, member, selection, familyMembers }) => {
 
 // Creates Member documents in MongoDB and generates QR codes for each member's ID card
 const createMembersForDraft = async (
-    { plan, amountRes, membersToCreate, joinDate, expiryDate, publicSlot, membershipGroupId }
+	{ plan, amountRes, membersToCreate, joinDate, expiryDate, publicSlot, membershipGroupId, discountPct, paymentMethod }
 ) => {
     const createdMembers = []
+	const normalizedDiscountPct = Number.isFinite(Number(discountPct)) ? Number(discountPct) : 0
+	const normalizedPaymentMethod = normalizeOfflinePaymentMethod(paymentMethod) || 'cash'
     for (const m of membersToCreate) {
 		const doc = await Member.create({
 			name: m.name,
@@ -519,6 +550,8 @@ const createMembersForDraft = async (
 			age: m.age,
 			gender: m.gender,
 			planId: plan._id,
+			discountPct: normalizedDiscountPct > 0 ? normalizedDiscountPct : 0,
+			paymentMethod: normalizedPaymentMethod,
 			planType: plan.type,
 			category: amountRes.computed?.category,
 			membershipGroupId: plan.type === 'family' ? membershipGroupId : undefined,
@@ -886,10 +919,14 @@ export const registerPaidMembership = asyncHandler(async (req, res) => {
 
 // Registers an offline membership (admin counter): creates members with no gateway fees, records cash payment
 export const registerOfflineMembership = asyncHandler(async (req, res) => {
-    const { planId, member, selection, familyMembers, collectedBy } = req.body
+	const { planId, member, selection, familyMembers, collectedBy, discountPct, paymentMethod } = req.body
     if (!planId) return res.status(400).json({ success: false, message: 'planId is required' })
     if (!collectedBy || !String(collectedBy).trim()) {
 		return res.status(400).json({ success: false, message: 'collectedBy (admin name) is required' })
+	}
+	const normalizedPaymentMethod = normalizeOfflinePaymentMethod(paymentMethod)
+	if (!normalizedPaymentMethod) {
+		return res.status(400).json({ success: false, message: 'paymentMethod must be one of: cash, gpay, phonepay, paytm' })
 	}
 
     const plan = await MembershipPlan.findById(planId)
@@ -897,7 +934,7 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 		return res.status(404).json({ success: false, message: 'Plan not found' })
 	}
 
-    const draftRes = prepareOfflineMembershipDraft({ plan, member, selection, familyMembers })
+	const draftRes = prepareOfflineMembershipDraft({ plan, member, selection, familyMembers, discountPct })
     if (!draftRes.ok) return res.status(400).json({ success: false, message: draftRes.message })
 
     const orderId = `cash_${crypto.randomUUID().replaceAll('-', '')}`
@@ -911,17 +948,21 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 		expiryDate: draftRes.expiryDate,
 		publicSlot: draftRes.publicSlot,
 		membershipGroupId: draftRes.membershipGroupId,
+		discountPct: draftRes.discountPct,
+		paymentMethod: normalizedPaymentMethod,
 	})
 
     const payment = await Payment.create({
 		planId: plan._id,
 		orderId,
 		paymentId,
+		amountOriginal: draftRes.amountRes.computed?.pricing?.subtotal,
 		amount: draftRes.amountRes.amount,
 		pricing: draftRes.amountRes.computed?.pricing,
 		currency: 'INR',
 		status: 'paid',
 		provider: 'cash',
+		paymentMethod: normalizedPaymentMethod,
 		collectedBy: collectedBy ? String(collectedBy).trim() : undefined,
 		membershipGroupId: plan.type === 'family' ? draftRes.membershipGroupId : undefined,
 		selection: {
@@ -1224,6 +1265,8 @@ export const listMembers = asyncHandler(async (req, res) => {
 			age: m.age,
 			gender: m.gender,
 			planType: m.planType,
+			discountPct: Number(m.discountPct || 0),
+			paymentMethod: m.paymentMethod || 'cash',
 			plan: plan
 				? {
 						_id: plan._id,

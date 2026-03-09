@@ -285,6 +285,13 @@ const Membership = () => {
     return computedPricing?.total ?? computedSubtotal
   }, [computedPricing, computedSubtotal])
 
+  const hasOnlineCharges = useMemo(/**
+   * Used to show a clear note that online checkout includes gateway fee + GST.
+   */
+  () => {
+    return Boolean(computedPricing && (computedPricing.commission > 0 || computedPricing.gst > 0))
+  }, [computedPricing])
+
   const computedExpiryPreview = useMemo(/**
    * Preview of the end time/expiry shown before checkout.
    * Public Batch uses slot end-time; memberships use durationInDays from today.
@@ -1436,6 +1443,31 @@ const Membership = () => {
                       <div style={{ color: 'rgba(255,255,255,0.82)', fontSize: 13, marginTop: 6 }}>
                         You will be redirected to Razorpay to complete the payment.
                       </div>
+
+              {hasOnlineCharges ? (
+              <div
+                className="mt-3"
+                style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.14)',
+                  borderRadius: 12,
+                  padding: 12,
+                  color: 'rgba(255,255,255,0.88)',
+                  fontSize: 13,
+                  lineHeight: 1.4,
+                }}
+              >
+                <div style={{ fontWeight: 900, color: '#fff' }}>Note about online charges</div>
+                <div style={{ marginTop: 6 }}>
+                  Online payments include payment gateway charges and applicable GST, so the total payable may be
+                  higher than the base plan amount.
+                </div>
+                <div style={{ marginTop: 6 }}>
+                  If you prefer to pay only the plan amount, please choose <b>offline registration</b> at the Bluefins desk.
+                  If you need help, <Link to="/contact" style={{ color: '#00FFD4', fontWeight: 800 }}>contact us</Link>.
+                </div>
+              </div>
+              ) : null}
 
                       <div className="membership-pay-surface mt-3">
                         <div className="membership-pay-actions">
