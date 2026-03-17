@@ -357,6 +357,7 @@ function Members() {
 			if (!member?.qrCode) throw new Error('QR not available for this member')
 			await downloadMemberIdCard({
 				name: member.name,
+				phone: member.phone,
 				memberId: member._id,
 				qrDataUrl: member.qrCode,
 				planName: member?.plan?.planName,

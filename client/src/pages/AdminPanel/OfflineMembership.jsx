@@ -1038,6 +1038,7 @@ const OfflineMembership = () => {
                                                             () => {
                                                                 return downloadMemberIdCard({
                                                                     name: m.name,
+                                                                    phone: m.phone,
                                                                     memberId: m._id,
                                                                     qrDataUrl: m.qrCode,
                                                                     planName: result?.plan?.planName || selectedPlan?.planName || 'Membership',
