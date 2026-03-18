@@ -9,6 +9,9 @@ const loadImage = src => {
     // Creates an HTML Image, resolves with it on load, rejects on error
     (resolve, reject) => {
         const img = new Image()
+        // Allow drawing remote images onto canvas without tainting it (when server sends CORS headers).
+        // Needed so `canvas.toDataURL()` still works with online backgrounds.
+        img.crossOrigin = 'anonymous'
         // Resolve the promise when the image finishes loading
         img.onload = () => {
             return resolve(img);
@@ -196,7 +199,10 @@ export const buildMemberIdCardPng = async (
         joinDate,
         expiryDate,
         logoSrc = '/assets/poolimages/idlogo.png',
-        backgroundSrc = '/assets/poolimages/pool1.jpg',
+        // Online swimming-themed background (free photo CDN). If it fails to load, we fall back to gradients.
+        // Tip: If your deployment blocks CORS for remote images, download this image and serve it from /public instead.
+        // Local background (fast + reliable + no CORS/network issues)
+        backgroundSrc = '/assets/poolimages/chair-background-hotel-summer-sky.jpeg',
         academyName = 'KUBERALAXMI SPORTS ACADEMY',
         rightStripText: _rightStripText = 'MEMBER',
     }
@@ -290,7 +296,7 @@ export const buildMemberIdCardPng = async (
 
     // Right MEMBER strip removed per requirement.
 
-    // Header area with curved divider (white/grey gradient like the reference)
+    // Header area with curved divider
     const innerLeft = cardX + 22
     const innerRight = cardX + cardW - 22
     const innerTop = cardY + 22
@@ -331,10 +337,10 @@ export const buildMemberIdCardPng = async (
     )
     ctx.closePath()
     const hdr = ctx.createLinearGradient(innerLeft, innerTop, innerLeft, headerBottomY + 40)
-    // Pool-themed blue header
-    hdr.addColorStop(0, 'rgba(10, 154, 206, 0.95)')
-    hdr.addColorStop(0.55, 'rgba(10, 126, 184, 0.90)')
-    hdr.addColorStop(1, 'rgba(8, 83, 140, 0.92)')
+    // Swimming pool blue header background
+    hdr.addColorStop(0, 'rgba(8, 35, 57, 1)')
+    hdr.addColorStop(0.55, 'rgba(8, 83, 140, 1)')
+    hdr.addColorStop(1, 'rgba(10, 54, 120, 1)')
     ctx.fillStyle = hdr
     ctx.fill()
     ctx.restore()
@@ -390,7 +396,7 @@ export const buildMemberIdCardPng = async (
         ctx.restore()
     }
 
-    // Academy title (gold, two lines like the reference)
+    // Academy title (blue, two lines)
     const academyRaw = String(academyName || '').trim() || 'SWIMMING ACADEMY'
     const parts = academyRaw.split(/\s+/).filter(Boolean)
     const line1 = (parts[0] || academyRaw).toUpperCase()
@@ -402,20 +408,29 @@ export const buildMemberIdCardPng = async (
     ctx.shadowColor = 'rgba(0,0,0,0.15)'
     ctx.shadowBlur = 2
     ctx.shadowOffsetY = 1
-    ctx.fillStyle = gold
-    const s1 = fitTextSize({ ctx, text: line1, maxWidth: titleMaxW, weight: 900, start: 54, min: 22 })
-    setFont(ctx, { weight: 900, size: s1 })
-    ctx.fillText(line1, titleX, innerTop + 76)
+    // Gold title with white border
+    ctx.fillStyle = gold;
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 6;
+    const s1 = fitTextSize({ ctx, text: line1, maxWidth: titleMaxW, weight: 900, start: 54, min: 22 });
+    setFont(ctx, { weight: 900, size: s1 });
+    ctx.strokeText(line1, titleX, innerTop + 76);
+    ctx.fillText(line1, titleX, innerTop + 76);
     if (line2) {
-        const s2 = fitTextSize({ ctx, text: line2, maxWidth: titleMaxW, weight: 900, start: 42, min: 18 })
-        setFont(ctx, { weight: 900, size: s2 })
+        const s2 = fitTextSize({ ctx, text: line2, maxWidth: titleMaxW, weight: 900, start: 42, min: 18 });
+        setFont(ctx, { weight: 900, size: s2 });
         // Wrap to 2 lines if needed instead of truncating.
         if (ctx.measureText(line2).width > titleMaxW) {
-            const lines = wrapTextLines(ctx, line2, titleMaxW, 2)
-            ctx.fillText(lines[0] || '', titleX, innerTop + 118)
-            if (lines[1]) ctx.fillText(lines[1], titleX, innerTop + 118 + Math.round(s2 * 1.05))
+            const lines = wrapTextLines(ctx, line2, titleMaxW, 2);
+            ctx.strokeText(lines[0] || '', titleX, innerTop + 118);
+            ctx.fillText(lines[0] || '', titleX, innerTop + 118);
+            if (lines[1]) {
+                ctx.strokeText(lines[1], titleX, innerTop + 118 + Math.round(s2 * 1.05));
+                ctx.fillText(lines[1], titleX, innerTop + 118 + Math.round(s2 * 1.05));
+            }
         } else {
-            ctx.fillText(line2, titleX, innerTop + 118)
+            ctx.strokeText(line2, titleX, innerTop + 118);
+            ctx.fillText(line2, titleX, innerTop + 118);
         }
     }
     ctx.restore()
@@ -463,19 +478,7 @@ export const buildMemberIdCardPng = async (
     const bodyRight = splitX - 2
     const leftTextW = bodyRight - bodyLeft
 
-    // Dark left details panel (back to previous design)
-    ctx.save()
-    const panel = ctx.createLinearGradient(bodyLeft, bodyTop, bodyLeft + leftTextW, innerBottom)
-    panel.addColorStop(0, 'rgba(8,35,57,0.86)')
-    panel.addColorStop(1, 'rgba(8,35,57,0.78)')
-    ctx.fillStyle = panel
-    roundedRect(ctx, bodyLeft, bodyTop, leftTextW, innerBottom - bodyTop, 22)
-    ctx.fill()
-    ctx.strokeStyle = 'rgba(217,180,92,0.85)'
-    ctx.lineWidth = 3
-    roundedRect(ctx, bodyLeft, bodyTop, leftTextW, innerBottom - bodyTop, 22)
-    ctx.stroke()
-    ctx.restore()
+    // Member details background removed per requirement.
 
     // Member data (match sizes/colors)
     const joinedText = (formatDate(joinDate) || '—').toUpperCase()
@@ -496,7 +499,7 @@ export const buildMemberIdCardPng = async (
     const linesToDraw = [
         { label: 'MEMBER NAME:', value: displayName, valueColorOverride: valueColor },
         { label: 'MEMBER ID:', value: fullId, valueColorOverride: valueColor },
-        { label: 'PLAN:', value: planText, valueColorOverride: gold2 },
+        { label: 'PLAN:', value: planText, valueColorOverride: valueColor },
         { label: 'JOINED:', value: joinedText, valueColorOverride: valueColor },
         { label: 'EXPIRES:', value: expiryText, valueColorOverride: valueColor },
     ]
@@ -570,50 +573,76 @@ export const buildMemberIdCardPng = async (
 
     // Text shadow should be black (readability)
     const applyTextShadow = () => {
-        ctx.shadowColor = 'rgba(0,0,0,0.85)'
-        ctx.shadowBlur = 8
-        ctx.shadowOffsetY = 2
+        ctx.shadowColor = 'rgba(0,0,0,0.92)'
+        ctx.shadowBlur = 12
+        ctx.shadowOffsetY = 3
     }
 
     const drawLine = ({ label, value, valueColorOverride = valueColor }) => {
         ctx.save()
         applyTextShadow()
-        ctx.fillStyle = labelColor
-        setFont(ctx, { weight: 700, size: detailLabelSize })
-        ctx.fillText(label, leftX, ty)
-
-        ctx.fillStyle = valueColorOverride
-
+        // All text gets a black border (stroke)
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+        // Member name: bigger, always on its own line (label above, value below)
         if (label === 'MEMBER NAME:') {
-            // Same size as other values; wrap if long.
-            setFont(ctx, { weight: 600, size: detailStart })
-            if (ctx.measureText(value).width > maxValueW) {
-                const lines = wrapTextLines(ctx, value, maxValueW, 2)
-                const lh = Math.round(detailStart * 1.2)
-                ctx.fillText(lines[0] || '', valueX, ty)
-                if (lines[1]) ctx.fillText(lines[1], valueX, ty + lh)
-                ty += lh
-            } else {
-                ctx.fillText(value, valueX, ty)
-            }
-            ctx.restore()
-            ty += rowSpacing
-            return
-        }
+            // Label (smaller, bold, left-aligned)
+            ctx.fillStyle = labelColor;
+            setFont(ctx, { weight: 700, size: detailLabelSize });
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 3;
+            ctx.strokeText(label, leftX, ty);
+            ctx.fillText(label, leftX, ty);
+            ty += Math.round(detailLabelSize * 1.1) + 16; // Larger gap for clear separation
 
-        const vSize = fitTextSize({ ctx, text: value, maxWidth: maxValueW, weight: 600, start: detailStart, min: detailMin })
-        setFont(ctx, { weight: 600, size: vSize })
-        if (ctx.measureText(value).width > maxValueW && vSize === detailMin) {
-            const lines = wrapTextLines(ctx, value, maxValueW, 2)
-            const lh = Math.round(vSize * 1.2)
-            ctx.fillText(lines[0] || '', valueX, ty)
-            if (lines[1]) ctx.fillText(lines[1], valueX, ty + lh)
-            ty += lh
-        } else {
-            ctx.fillText(value, valueX, ty)
+            // Value (bigger, full width, always new line)
+            const nameFontSize = Math.round(detailStart * 1.45);
+            setFont(ctx, { weight: 800, size: nameFontSize });
+            ctx.fillStyle = valueColorOverride;
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 4;
+            // Use full width (leftX to bodyRight) for wrapping and left alignment
+            const nameMaxW = bodyRight - leftX;
+            const lines = ctx.measureText(value).width > nameMaxW
+                ? wrapTextLines(ctx, value, nameMaxW, 2)
+                : [value];
+            const lh = Math.round(nameFontSize * 1.18);
+            for (let i = 0; i < lines.length; ++i) {
+                ctx.strokeText(lines[i] || '', leftX, ty);
+                ctx.fillText(lines[i] || '', leftX, ty);
+                ty += lh;
+            }
+            ctx.restore();
+            ty += rowSpacing - Math.round(nameFontSize * 0.5) - 12; // Reduce gap after name for even spacing
+            return;
         }
-        ctx.restore()
-        ty += rowSpacing
+        // Other details: label and value, both with black border
+        ctx.fillStyle = labelColor;
+        setFont(ctx, { weight: 700, size: detailLabelSize });
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        ctx.strokeText(label, leftX, ty);
+        ctx.fillText(label, leftX, ty);
+
+        ctx.fillStyle = valueColorOverride;
+        const vSize = fitTextSize({ ctx, text: value, maxWidth: maxValueW, weight: 600, start: detailStart, min: detailMin });
+        setFont(ctx, { weight: 600, size: vSize });
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        if (ctx.measureText(value).width > maxValueW && vSize === detailMin) {
+            const lines = wrapTextLines(ctx, value, maxValueW, 2);
+            const lh = Math.round(vSize * 1.2);
+            for (let i = 0; i < lines.length; ++i) {
+                ctx.strokeText(lines[i] || '', valueX, ty);
+                ctx.fillText(lines[i] || '', valueX, ty);
+                ty += lh;
+            }
+        } else {
+            ctx.strokeText(value, valueX, ty);
+            ctx.fillText(value, valueX, ty);
+        }
+        ctx.restore();
+        ty += rowSpacing;
     }
 
     for (const line of linesToDraw) drawLine(line)
@@ -630,30 +659,34 @@ export const buildMemberIdCardPng = async (
     // Tight QR frame: center it within the right-half area.
     // Transparent outside the yellow line (no big white panel).
     const scanX = qrBoxX + Math.floor(qrBoxW / 2)
-    const framePad = 8
-    const labelFontSize = 16
-    const labelTopPad = 10
-    const labelBottomPad = 10
+    // Shrink white gap around QR (keep QR size unchanged)
+    const frameOuterPad = 1
+    const gapLabelToQr = 1
+    const gapQrToId = 1
+
+    const labelFontSize = 13
+    const labelTopPad = 2
+    const labelBottomPad = 1
     const labelBlockH = labelTopPad + labelFontSize + labelBottomPad
 
-    const idFontSize = 12
-    const idTopPad = 10
-    const idBottomPad = 10
+    const idFontSize = 10
+    const idTopPad = 1
+    const idBottomPad = 2
     const idBlockH = idTopPad + idFontSize + idBottomPad
 
-    const frameW = qrSize + framePad * 2
-    const frameH = labelBlockH + framePad + qrSize + framePad + idBlockH
+    const frameW = qrSize + frameOuterPad * 2
+    const frameH = labelBlockH + gapLabelToQr + qrSize + gapQrToId + idBlockH
     const frameX = qrBoxX + Math.floor((qrBoxW - frameW) / 2)
     const frameY = qrBoxY + Math.floor((qrBoxH - frameH) / 2)
 
     // White background ONLY inside the yellow border.
     ctx.save()
     ctx.fillStyle = 'rgba(255,255,255,0.98)'
-    roundedRect(ctx, frameX, frameY, frameW, frameH, 22)
+    roundedRect(ctx, frameX, frameY, frameW, frameH, 18)
     ctx.fill()
     ctx.strokeStyle = gold2
     ctx.lineWidth = 6
-    roundedRect(ctx, frameX, frameY, frameW, frameH, 22)
+    roundedRect(ctx, frameX, frameY, frameW, frameH, 18)
     ctx.stroke()
     ctx.restore()
 
@@ -670,7 +703,7 @@ export const buildMemberIdCardPng = async (
 
     // QR under the label
     const qrDrawX = frameX + Math.floor((frameW - qrSize) / 2)
-    const qrDrawY = frameY + labelBlockH + framePad
+    const qrDrawY = frameY + labelBlockH + gapLabelToQr
     ctx.drawImage(qrImg, qrDrawX, qrDrawY, qrSize, qrSize)
 
     // Full member ID INSIDE the yellow line (below QR)
@@ -681,7 +714,7 @@ export const buildMemberIdCardPng = async (
     ctx.shadowOffsetY = 1
     ctx.fillStyle = 'rgba(10,10,10,0.82)'
     ctx.textAlign = 'center'
-    const idMaxW = frameW - 20
+    const idMaxW = frameW - 12
     const idSize = fitTextSize({ ctx, text: fullMemberId, maxWidth: idMaxW, weight: 700, start: idFontSize, min: 10 })
     setFont(ctx, { weight: 700, size: idSize })
     ctx.fillText(fullMemberId, scanX, idBaselineY)
