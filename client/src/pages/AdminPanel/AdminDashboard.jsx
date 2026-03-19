@@ -87,6 +87,14 @@ const AdminDashboard = () => {
       count: "",
     },
     {
+      title: "Daily Tracker",
+      description: "Track all daily entries, expenses, and download records",
+      icon: <FaClipboard />,
+      path: "/admin/daily-tracker",
+      color: "#00BFFF",
+      count: "",
+    },
+    {
       title: "Posts & Updates",
       description: "Create and manage announcements",
       icon: <FaFileAlt />,

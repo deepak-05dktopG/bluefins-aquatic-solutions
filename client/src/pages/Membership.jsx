@@ -1,3 +1,5 @@
+// Add Daily Tracker entry utility
+import { addDailyTrackerEntry } from '../api/dailyTracker';
 /**
  * What it is: Website page (Membership screen).
  * Non-tech note: This is where users view/buy membership and related actions.
@@ -698,6 +700,20 @@ const Membership = () => {
             setResult(verifyJson?.data)
             setStep(STEP.DONE)
             if (selectedPlan.type !== 'family') setMember(emptyMember)
+
+            // Add to Daily Tracker
+            try {
+              const now = new Date();
+              await addDailyTrackerEntry({
+                type: 'Registration',
+                name: member?.name || 'New Member',
+                paymentType: 'Online',
+                amount: computedAmount,
+                date: now.toISOString().slice(0, 10),
+                time: now.toTimeString().slice(0, 5),
+                notes: `Plan: ${selectedPlan?.planName || selectedPlan?.name || ''}`
+              });
+            } catch {}
           } catch (e) {
             setError(e.message)
           } finally {

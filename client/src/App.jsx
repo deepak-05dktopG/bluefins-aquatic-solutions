@@ -28,6 +28,7 @@ import LessonPlans from './pages/AdminPanel/LessonPlans'
 import Members from './pages/AdminPanel/Members'
 import MembersFeedback from './pages/AdminPanel/MembersFeedback'
 import OfflineMembership from './pages/AdminPanel/OfflineMembership'
+import DailyTracker from './pages/AdminPanel/DailyTracker'
 import Posts from './pages/AdminPanel/Posts'
 import WeeklyWorksheets from './pages/AdminPanel/WeeklyWorksheets'
 
@@ -140,7 +141,9 @@ function App() {
             <Route path="/admin/posts" element={<Posts />} />
 		    <Route path="/admin/attendance" element={<AttendanceRecords />} />
 		    <Route path="/admin/attendance/scan" element={<AttendanceScan />} />
-		    <Route path="/admin/offline-membership" element={<OfflineMembership />} />
+      {/* OfflineMembership route is now admin-only, not public. Only accessible via admin panel UI. */}
+      <Route path="/admin/offline-membership" element={<OfflineMembership />} />
+      <Route path="/admin/daily-tracker" element={<DailyTracker />} />
 
             {/* Fallbacks to avoid blank pages on removed/unknown routes */}
             <Route path="/admin/*" element={<Navigate to="/admin/dashboard" replace />} />

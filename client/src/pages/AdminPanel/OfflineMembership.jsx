@@ -1,3 +1,5 @@
+// Add Daily Tracker entry utility
+import { addDailyTrackerEntry } from '../../api/dailyTracker';
 /**
  * What it is: Admin panel page (Offline membership / cash registration).
  * Non-tech note: Admins can register members and generate their ID cards.
@@ -470,8 +472,22 @@ const OfflineMembership = () => {
 				// ignore
 			}
 
-			setResult(data?.data || null)
-			setStep(STEP.DONE)
+                        setResult(data?.data || null)
+                        setStep(STEP.DONE)
+
+                        // Add to Daily Tracker
+                        try {
+                            const now = new Date();
+                            await addDailyTrackerEntry({
+                                type: 'Registration',
+                                name: member?.name || 'New Member',
+                                paymentType: paymentMethod ? paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1) : 'Cash',
+                                amount: computedTotal,
+                                date: now.toISOString().slice(0, 10),
+                                time: now.toTimeString().slice(0, 5),
+                                notes: `Plan: ${selectedPlan?.planName || selectedPlan?.name || ''}`
+                            });
+                        } catch {}
 		} catch (e) {
 			setError(e.message)
 		} finally {
