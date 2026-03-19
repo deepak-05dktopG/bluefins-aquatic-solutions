@@ -39,6 +39,11 @@ import {
   deleteGalleryImage,
   getGalleryStats
 } from '../controllers/galleryController.js';
+import {
+  getDailyTrackerByDate,
+  addDailyTrackerEntry,
+  deleteDailyTrackerByDate
+} from '../controllers/dailyTrackerController.js';
 
 import {
   listPlans,
@@ -126,5 +131,10 @@ router.get('/attendance/export', requireAdminAuth, exportAttendanceCsv);
 router.delete('/attendance/purge', requireAdminAuth, purgeAttendanceBefore);
 router.delete('/attendance/:id', requireAdminAuth, deleteAttendance);
 router.post('/attendance/bulk-delete', requireAdminAuth, bulkDeleteAttendance);
+
+// Daily Tracker routes
+router.get('/daily-tracker', requireAdminAuth, getDailyTrackerByDate);
+router.post('/daily-tracker', requireAdminAuth, addDailyTrackerEntry);
+router.delete('/daily-tracker', requireAdminAuth, deleteDailyTrackerByDate);
 
 export default router;
