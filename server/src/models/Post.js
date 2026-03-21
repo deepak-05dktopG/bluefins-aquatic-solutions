@@ -1,10 +1,9 @@
 /**
  * What it is: Database model for posts/announcements.
- * Non-tech note: Stores the updates/news items shown in the app.
+ * Non-tech note: Stores the updates/nes items shown in the app.
  */
 
 import mongoose from 'mongoose';
-
 const postSchema = new mongoose.Schema({
   title: {
     type: String,

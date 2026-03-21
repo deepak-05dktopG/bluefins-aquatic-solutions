@@ -134,8 +134,6 @@ const STEP = {
 const OFFLINE_PAYMENT_METHOD_LABEL = {
     cash: 'Cash',
     gpay: 'GPay',
-    phonepay: 'PhonePe',
-    paytm: 'Paytm',
 }
 
 /**
@@ -235,31 +233,20 @@ const OfflineMembership = () => {
         return base
     }, [selectedPlan, selection, testAmountInr])
 
-    const computedTotal = useMemo(/**
-        * Total to collect for offline cash registrations.
-        * Note: no Razorpay fee/GST is applied here.
-     */
-    () => {
-        const subtotal = computedSubtotal
-        if (subtotal == null) return null
-        const disc = parseDiscountPct(discountPct)
-        const pct = disc.ok ? disc.pct : 0
-        const discountAmount = pct > 0 ? round2(Number(subtotal) * (pct / 100)) : 0
-        return round2(Math.max(0, Number(subtotal) - discountAmount))
-    }, [computedSubtotal, discountPct])
+    // Unified discount calculation to ensure consistency
+    const { discountPctValue, discountAmount, totalAfterDiscount } = useMemo(() => {
+        const subtotal = computedSubtotal;
+        if (subtotal == null) return { discountPctValue: 0, discountAmount: 0, totalAfterDiscount: null };
+        const disc = parseDiscountPct(discountPct);
+        const pct = disc.ok ? disc.pct : 0;
+        const discountAmt = pct > 0 ? round2(Number(subtotal) * (pct / 100)) : 0;
+        const total = round2(Math.max(0, Number(subtotal) - discountAmt));
+        return { discountPctValue: pct, discountAmount: discountAmt, totalAfterDiscount: total };
+    }, [computedSubtotal, discountPct]);
 
-    const computedDiscountAmount = useMemo(/**
-     * Amount reduced from subtotal when discount (%) is applied.
-     */
-        () => {
-            const subtotal = computedSubtotal
-            if (subtotal == null) return null
-            const disc = parseDiscountPct(discountPct)
-            const pct = disc.ok ? disc.pct : 0
-            return pct > 0 ? round2(Number(subtotal) * (pct / 100)) : 0
-        },
-        [computedSubtotal, discountPct]
-    )
+    // For compatibility with existing code
+    const computedTotal = totalAfterDiscount;
+    const computedDiscountAmount = discountAmount;
 
     const peopleCount = useMemo(/**
         * Headcount summary shown in the side panel.
@@ -1012,10 +999,10 @@ const OfflineMembership = () => {
 											className="p-2"
 											style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.05)' }}
 										>
-											<div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>Total collected</div>
-											<div style={{ color: '#fff', fontWeight: 900, fontSize: 18 }}>
-												{formatInr(result?.payment?.amount ?? computedTotal)}
-											</div>
+                                            <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>Total collected</div>
+                                            <div style={{ color: '#fff', fontWeight: 900, fontSize: 18 }}>
+                                                {formatInr(result?.payment?.pricing?.total ?? computedTotal)}
+                                            </div>
 											<div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 4 }}>
 												Payment type: {paymentTypeLabel(result?.payment?.provider || 'cash')}
 											</div>

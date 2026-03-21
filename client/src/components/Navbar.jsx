@@ -276,7 +276,7 @@ const Navbar = () => {
                     return handleHover(e, false);
                   }}
                 >
-                  Get Quote
+                  GetQuote
                 </Button>
               </Link>
             </div>

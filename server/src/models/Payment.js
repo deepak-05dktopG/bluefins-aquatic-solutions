@@ -36,10 +36,10 @@ const paymentSchema = new mongoose.Schema(
 		currency: { type: String, default: 'INR' },
 
 		status: { type: String, enum: ['created', 'paid', 'failed'], default: 'created', index: true },
-		// `mock` is kept for legacy documents. New documents should use `cash` for offline/manual payments.
-		provider: { type: String, enum: ['cash', 'mock', 'razorpay'], default: 'cash' },
-		// Offline-only detail: how the customer paid at the counter (Cash, GPay, PhonePe, Paytm).
-		paymentMethod: { type: String, enum: ['cash', 'gpay', 'phonepay', 'paytm'], default: 'cash', index: true },
+		// Only allow 'cash' and 'gpay' as providers for new documents.
+		provider: { type: String, enum: ['cash', 'gpay'], default: 'cash' },
+		// Only allow 'cash' and 'gpay' as payment methods for new documents.
+		paymentMethod: { type: String, enum: ['cash', 'gpay'], default: 'cash', index: true },
 		collectedBy: { type: String, trim: true },
 
 		membershipGroupId: { type: String, index: true },
