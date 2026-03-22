@@ -31,6 +31,7 @@ import OfflineMembership from './pages/AdminPanel/OfflineMembership'
 import DailyTracker from './pages/AdminPanel/DailyTracker'
 import Posts from './pages/AdminPanel/Posts'
 import WeeklyWorksheets from './pages/AdminPanel/WeeklyWorksheets'
+import PublicMemberCard from './pages/PublicMemberCard'
 
 
 
@@ -130,6 +131,9 @@ function App() {
             {/* <Route path="/admin" element={<Admin />} /> */}
             <Route path="/team" element={<Team />} />
             <Route path="/shop" element={<Shop />} />
+
+            {/* Public Member ID Card Route */}
+            <Route path="/member/id/:memberId" element={<PublicMemberCard />} />
 
             {/* Admin Panel Routes */}
             <Route path="/admin" element={<AdminLogin />} />

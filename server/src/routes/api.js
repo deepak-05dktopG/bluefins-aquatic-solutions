@@ -56,6 +56,7 @@ import {
   listMembers,
   bulkDeleteMembersByIds,
   deleteMember,
+  getPublicMemberData,
 } from '../controllers/membershipController.js';
 
 import { scanAttendance, listAttendance, exportAttendanceCsv, deleteAttendance, bulkDeleteAttendance, purgeAttendanceBefore } from '../controllers/attendanceController.js';
@@ -109,6 +110,7 @@ router.delete('/gallery/:id', requireAdminAuth, deleteGalleryImage);
 
 // Membership registration (Payment integration later)
 router.get('/membership/plans', listPlans);
+router.get('/membership/public-id/:id', getPublicMemberData);
 router.post('/membership/plans/seed', requireAdminAuth, seedOfficialPlans);
 router.post('/membership/register', registerPaidMembership);
 

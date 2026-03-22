@@ -100,6 +100,7 @@ function exportToCSV(rows, cashBox) {
 
 const DailyTracker = () => {
   const [rows, setRows] = useState([]);
+  const [printData, setPrintData] = useState(null);
   const [cashBox, setCashBox] = useState({ hardCash: 0, gpayCash: 0 });
   const [filter, setFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -147,13 +148,24 @@ const DailyTracker = () => {
         if (res.cashBox) setCashBox(res.cashBox);
         setLoading(false);
         closeModal();
-        Swal.fire({
-          title: 'Success!',
-          text: 'Entry added successfully',
-          icon: 'success',
-          timer: 1500,
-          showConfirmButton: false
-        });
+        
+        const payload = { ...data, date: data.date || date, time: data.time || getNow().time, amount: Number(data.amount) };
+        
+        if (payload.type === 'Order' || payload.type === 'Registration') {
+          setPrintData(payload);
+          setTimeout(() => {
+            window.print();
+            setPrintData(null);
+          }, 400); // Allow DOM to render thermal layout before triggering the print menu
+        } else {
+          Swal.fire({
+            title: 'Success!',
+            text: 'Entry added successfully',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+          });
+        }
       } catch (err) {
         setLoading(false);
         const msg = err?.response?.data?.message || err.message || 'Failed to add entry';
@@ -191,7 +203,27 @@ const DailyTracker = () => {
   const totalCount = orderCount + regCount;
 
   return (
-    <div style={{ padding: '32px 24px', maxWidth: 1250, margin: '0 auto', background: '#f8fafc', minHeight: '100vh' }}>
+    <>
+      <style>{`
+        @media print {
+          .no-print { display: none !important; }
+          .print-only {
+            display: block !important;
+            width: 58mm;
+            font-family: monospace;
+            font-size: 13px;
+            margin: 0;
+            padding: 0;
+            color: #000;
+          }
+          @page { margin: 0; }
+        }
+        @media screen {
+          .print-only { display: none !important; }
+        }
+      `}</style>
+
+    <div className="no-print" style={{ padding: '32px 24px', maxWidth: 1250, margin: '0 auto', background: '#f8fafc', minHeight: '100vh' }}>
       <div style={{
         background: '#ffffff',
         borderRadius: 20,
@@ -354,6 +386,41 @@ const DailyTracker = () => {
         </div>
       )}
     </div>
+
+    {/* Hidden Thermal Printer Container (Compact Layout) */}
+    <div className="print-only">
+      {printData && (
+        <div style={{ width: '100%', padding: '0 4px', boxSizing: 'border-box' }}>
+          <h3 style={{ margin: '0 0 2px 0', fontSize: '15px', textAlign: 'center', fontWeight: '900' }}>BLUE FINS AQUATICS</h3>
+          <p style={{ margin: '0 0 4px 0', textAlign: 'center', fontSize: '11px' }}>bluefinsaquaticsolutions.com</p>
+          
+          <p style={{ margin: '2px 0', textAlign: 'center', fontSize: '12px' }}>----------------------------</p>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '2px' }}>
+            <span>{printData.date}</span>
+            <span>{printData.time}</span>
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%' }}>
+              <b>{printData.name}</b>
+            </span>
+            <span><b>{printData.paymentType.toUpperCase()}</b></span>
+          </div>
+          
+          <p style={{ margin: '2px 0', textAlign: 'center', fontSize: '12px' }}>----------------------------</p>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 'bold', margin: '4px 0' }}>
+            <span>{printData.type === 'Order' ? 'Pool(1Hr)' : printData.type}</span>
+            <span>₹ {printData.amount}</span>
+          </div>
+          
+          <p style={{ margin: '2px 0', textAlign: 'center', fontSize: '12px' }}>----------------------------</p>
+          <p style={{ margin: '4px 0 0 0', textAlign: 'center', fontSize: '12px', fontWeight: 'bold' }}>Thank You!</p>
+        </div>
+      )}
+    </div>
+    </>
   );
 };
 

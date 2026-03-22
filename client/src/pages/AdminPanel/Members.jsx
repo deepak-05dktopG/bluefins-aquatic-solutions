@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { downloadMemberIdCard } from '../../utils/idCard'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
-import { FaSyncAlt, FaDownload, FaTrash, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import { FaSyncAlt, FaDownload, FaTrash, FaChevronLeft, FaChevronRight, FaWhatsapp } from 'react-icons/fa'
 import AdminNavbar from '../../components/adminPanel/AdminNavbar'
 
 /**
@@ -842,6 +842,32 @@ function Members() {
 															}}
 														>
 														<FaDownload style={{ fontSize: 13 }} />
+														</button>
+
+														<button
+															onClick={() => {
+																const url = `https://bluefinsaquaticsolutions.com/member/id/${m._id}`
+																const message = `Welcome to Blue Fins Aquatic Solutions! 🏊‍♂️ Thank you for registering.\n\nHere is the secure link to view and download your Official Member ID Card:\n${url}`
+																const whatsappUrl = `https://wa.me/91${m.phone}?text=${encodeURIComponent(message)}`
+																window.open(whatsappUrl, '_blank')
+															}}
+															disabled={loading || !m.qrCode}
+															title="Send ID via WhatsApp"
+															aria-label={`Send ID via WhatsApp for ${m.name}`}
+															style={{
+																display: 'inline-flex',
+																alignItems: 'center',
+																justifyContent: 'center',
+																width: 28,
+																height: 28,
+																background: 'rgba(37, 211, 102, 0.15)',
+																color: '#25D366',
+																border: '1px solid rgba(37, 211, 102, 0.35)',
+																borderRadius: '9px',
+																cursor: loading || !m.qrCode ? 'not-allowed' : 'pointer',
+															}}
+														>
+															<FaWhatsapp style={{ fontSize: 16 }} />
 														</button>
 													</div>
 												</td>

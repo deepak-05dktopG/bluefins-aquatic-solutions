@@ -1383,3 +1383,26 @@ export const bulkDeleteMembersByIds = asyncHandler(async (req, res) => {
     const out = await Member.deleteMany({ _id: { $in: normalizedIds } })
     res.json({ success: true, message: 'Members deleted', data: { deletedCount: Number(out?.deletedCount || 0) } })
 })
+
+// Publicly fetch limited member data for ID card generation (unauthenticated)
+export const getPublicMemberData = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ success: false, message: 'Member ID is required' });
+
+    const member = await Member.findById(id).populate('planId', 'planName type categoryRequired categoryPrices');
+    if (!member) return res.status(404).json({ success: false, message: 'Member not found' });
+
+    res.json({
+        success: true,
+        data: {
+            _id: member._id,
+            name: member.name,
+            phone: member.phone,
+            joinDate: member.joinDate,
+            expiryDate: member.expiryDate,
+            status: member.status,
+            qrCode: member.qrCode,
+            planName: member.planId ? member.planId.planName : 'Membership'
+        }
+    });
+});

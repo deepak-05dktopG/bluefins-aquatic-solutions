@@ -1033,26 +1033,39 @@ const OfflineMembership = () => {
                                                             <div style={{ color: '#fff', fontWeight: 900 }}>{m.name}</div>
                                                             <div style={{ color: 'rgba(255,255,255,0.70)', fontSize: 12 }}>ID: {m._id}</div>
                                                         </div>
-                                                        <button
-                                                            className="btn btn-outline-light btn-sm"
-                                                            onClick={/**
-                                                             * Download the member ID card (includes QR used for attendance scans).
-                                                             */
-                                                            () => {
-                                                                return downloadMemberIdCard({
-                                                                    name: m.name,
-                                                                    phone: m.phone,
-                                                                    memberId: m._id,
-                                                                    qrDataUrl: m.qrCode,
-                                                                    planName: result?.plan?.planName || selectedPlan?.planName || 'Membership',
-                                                                        joinDate: m.joinDate,
-                                                                    expiryDate: m.expiryDate,
-                                                                });
-                                                            }
-                                                            }
-                                                        >
-                                                            Download ID Card
-                                                        </button>
+                                                        <div className="d-flex gap-2">
+                                                            <button
+                                                                className="btn btn-outline-success btn-sm"
+                                                                onClick={() => {
+                                                                    const url = `https://bluefinsaquaticsolutions.com/member/id/${m._id}`;
+                                                                    const message = `Welcome to Blue Fins Aquatic Solutions! 🏊‍♂️ Thank you for registering.\n\nHere is the secure link to view and download your Official Member ID Card:\n${url}`;
+                                                                    const whatsappUrl = `https://wa.me/91${m.phone}?text=${encodeURIComponent(message)}`;
+                                                                    window.open(whatsappUrl, '_blank');
+                                                                }}
+                                                            >
+                                                                Send via WhatsApp
+                                                            </button>
+                                                            <button
+                                                                className="btn btn-outline-light btn-sm"
+                                                                onClick={/**
+                                                                 * Download the member ID card (includes QR used for attendance scans).
+                                                                 */
+                                                                () => {
+                                                                    return downloadMemberIdCard({
+                                                                        name: m.name,
+                                                                        phone: m.phone,
+                                                                        memberId: m._id,
+                                                                        qrDataUrl: m.qrCode,
+                                                                        planName: result?.plan?.planName || selectedPlan?.planName || 'Membership',
+                                                                            joinDate: m.joinDate,
+                                                                        expiryDate: m.expiryDate,
+                                                                    });
+                                                                }
+                                                                }
+                                                            >
+                                                                Download Offline
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             );
