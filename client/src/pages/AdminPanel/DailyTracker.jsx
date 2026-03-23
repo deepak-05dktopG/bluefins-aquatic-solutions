@@ -17,8 +17,8 @@ const getNow = () => {
 
 
 
-const typeOptions = ['Order', 'Expense', 'Withdrawal'];
-const filterTypeOptions = ['Order', 'Expense','Registration', 'Withdrawal'];
+const typeOptions = ['Order', 'Registration', 'Expense', 'Withdrawal'];
+const filterTypeOptions = ['Order', 'Registration', 'Expense', 'Withdrawal'];
 const paymentOptions = ['Cash', 'GPay'];
 
 const Badge = ({ children, color }) => {
@@ -106,6 +106,7 @@ const DailyTracker = () => {
   const [typeFilter, setTypeFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalData, setModalData] = useState(null);
+  const [formType, setFormType] = useState('');
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState(() => getNow().date);
 
@@ -124,6 +125,7 @@ const DailyTracker = () => {
   // Add Entry
   const openModal = (row = null) => {
     setModalData(row);
+    setFormType(row?.type || '');
     setShowModal(true);
   };
   const closeModal = () => {
@@ -132,6 +134,7 @@ const DailyTracker = () => {
   };
   const saveModal = async (e) => {
     e.preventDefault();
+    const action = e.nativeEvent?.submitter?.value || 'save';
     const form = e.target;
     const data = Object.fromEntries(new FormData(form));
     // Ensure paymentType is lowercase for backend compatibility
@@ -151,7 +154,7 @@ const DailyTracker = () => {
         
         const payload = { ...data, date: data.date || date, time: data.time || getNow().time, amount: Number(data.amount) };
         
-        if (payload.type === 'Order' || payload.type === 'Registration') {
+        if ((payload.type === 'Order' || payload.type === 'Registration') && action === 'print') {
           setPrintData(payload);
           setTimeout(() => {
             window.print();
@@ -340,7 +343,7 @@ const DailyTracker = () => {
               <div style={{ display: 'flex', gap: 12 }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>Type <span style={{ color: '#ef4444' }}>*</span></label>
-                  <select name="type" defaultValue={modalData?.type || ''} required style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 15 }}>
+                  <select name="type" value={formType} onChange={e => setFormType(e.target.value)} required style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 15 }}>
                     <option value="">Select type</option>
                     {typeOptions.map(t => <option key={t}>{t}</option>)}
                   </select>
@@ -379,8 +382,11 @@ const DailyTracker = () => {
               </div>
             </div>
             <div style={{ marginTop: 28, display: 'flex', gap: 14, justifyContent: 'flex-end' }}>
-              <button type="submit" style={{ background: '#2563eb', color: '#fff', padding: '10px 28px', borderRadius: 7, border: 'none', fontWeight: 800, fontSize: 16, letterSpacing: 1, boxShadow: '0 1px 4px #2563eb22' }}>Save</button>
               <button type="button" onClick={closeModal} style={{ background: '#f1f5f9', color: '#333', padding: '10px 28px', borderRadius: 7, border: 'none', fontWeight: 700, fontSize: 16 }}>Cancel</button>
+              <button type="submit" name="action" value="save" style={{ background: '#2563eb', color: '#fff', padding: '10px 20px', borderRadius: 7, border: 'none', fontWeight: 800, fontSize: 16, letterSpacing: 1, boxShadow: '0 4px 6px -1px #2563eb44' }}>Save</button>
+              {formType === 'Order' && (
+                <button type="submit" name="action" value="print" style={{ background: '#059669', color: '#fff', padding: '10px 20px', borderRadius: 7, border: 'none', fontWeight: 800, fontSize: 16, letterSpacing: 1, boxShadow: '0 4px 6px -1px #05966944' }}>Save & Print</button>
+              )}
             </div>
           </form>
         </div>
