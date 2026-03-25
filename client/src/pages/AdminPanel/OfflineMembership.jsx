@@ -1035,7 +1035,7 @@ const OfflineMembership = () => {
                                                                     className="btn btn-outline-success btn-sm"
                                                                     onClick={() => {
                                                                         const url = `https://bluefinsaquaticsolutions.com/member/id/${m._id}`;
-                                                                        const message = `Hello *${m.name}* 👋\n\nWelcome to *Blue Fins Aquatic Solutions*! 🏊‍♂️ Thank you for registering with us.\n\nYour Official Digital Member ID Card is ready. 🪪\nPlease use the secure link below to view and download your ID card for attendance and entry:\n\n👉 ${url}\n\nWe look forward to seeing you at the pool! 🌊\nRegards,\n*Team Blue Fins* 💙`;
+                                                                        const message = `Hello *${m.name.toUpperCase()}* 👋\n\nWelcome to *Kuberalaxmi Sports Academy*! 🏊‍♂️ Thank you for registering with us.\n\nYour Official Digital Member ID Card is ready. 🪪\nPlease use the secure link below to view and download your ID card for attendance and entry:\n\n👉 ${url}\n\nWe look forward to seeing you at the pool! 🌊\n\nRegards,\n*Team Kuberalaxmi Sports Academy* 💙`;
                                                                         const whatsappUrl = `https://wa.me/91${m.phone}?text=${encodeURIComponent(message)}`;
                                                                         window.open(whatsappUrl, '_blank');
                                                                     }}
