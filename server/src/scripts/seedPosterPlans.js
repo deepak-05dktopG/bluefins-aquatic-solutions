@@ -13,16 +13,6 @@ import MembershipPlan from '../models/MembershipPlan.js'
 
 const officialPlans = [
 	{
-		planName: 'Public Batch (Per Session)',
-		type: 'public',
-		categoryRequired: false,
-		durationInMinutes: 60,
-		basePrice: 150,
-		publicEntryWindow: { startTime: '10:00', endTime: '15:00' },
-		isRecurring: false,
-		isActive: true,
-	},
-	{
 		planName: 'Monthly Membership',
 		type: 'monthly',
 		categoryRequired: false,

@@ -1,7 +1,14 @@
 
 import { useEffect, useState } from 'react';
-// import * as XLSX from 'xlsx';
-import { fetchDailyTracker, addDailyTrackerEntry, deleteDailyTrackerByDate } from '../../api/dailyTracker';
+import { 
+  fetchDailyTracker, 
+  fetchAllTrackerEntries, 
+  addDailyTrackerEntry, 
+  updateDailyTrackerEntry, 
+  deleteDailyTrackerById, 
+  deleteDailyTrackerByDate, 
+  deleteAllTrackerEntries 
+} from '../../api/dailyTracker';
 import Swal from 'sweetalert2';
 
 
@@ -21,6 +28,7 @@ const getNow = () => {
 
 
 const typeOptions = ['Order','Expense', 'Withdrawal'];
+const totalsTypeOptions = ['Order', 'Registration', 'Expense', 'Withdrawal'];
 const filterTypeOptions = ['Order', 'Registration', 'Expense', 'Withdrawal'];
 const paymentOptions = ['Cash', 'GPay'];
 
@@ -113,17 +121,76 @@ const DailyTracker = () => {
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState(() => getNow().date);
 
-  // Fetch tracker entries for the selected date
-  useEffect(() => {
+  // "All Entries" view mode
+  const [viewMode, setViewMode] = useState('date'); // 'date' | 'all'
+  const [allRows, setAllRows] = useState([]);
+
+  // Inline editing
+  const [editingId, setEditingId] = useState(null);
+  const [editDraft, setEditDraft] = useState({});
+
+  const fetchData = async () => {
     setLoading(true);
-    fetchDailyTracker(date)
-      .then(res => {
+    try {
+      if (viewMode === 'date') {
+        const res = await fetchDailyTracker(date);
         setRows(res.data || []);
         if (res.cashBox) setCashBox(res.cashBox);
-      })
-      .catch(() => setRows([]))
-      .finally(() => setLoading(false));
-  }, [date]);
+      } else {
+        const res = await fetchAllTrackerEntries();
+        setAllRows(res.data || []);
+        if (res.cashBox) setCashBox(res.cashBox);
+      }
+    } catch (e) {
+      console.error('Fetch error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startEdit = (row) => {
+    setEditingId(row._id);
+    setEditDraft({ name: row.name, paymentType: row.paymentType, amount: row.amount, notes: row.notes || '' });
+  };
+  const cancelEdit = () => { setEditingId(null); setEditDraft({}); };
+  const saveEdit = async (id) => {
+    try {
+      setLoading(true);
+      await updateDailyTrackerEntry(id, editDraft);
+      setEditingId(null);
+      setEditDraft({});
+      await fetchData();
+      Swal.fire({ title: 'Updated!', icon: 'success', timer: 1200, showConfirmButton: false });
+    } catch (err) {
+      setLoading(false);
+      Swal.fire('Error', err?.response?.data?.message || 'Failed to update', 'error');
+    }
+  };
+  const deleteRow = async (id) => {
+    const result = await Swal.fire({
+      title: 'Delete this entry?',
+      text: 'This will also adjust the Grocer Box balance.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      confirmButtonText: 'Yes, delete it'
+    });
+    if (!result.isConfirmed) return;
+    try {
+      setLoading(true);
+      await deleteDailyTrackerById(id);
+      await fetchData();
+      Swal.fire({ title: 'Deleted!', icon: 'success', timer: 1000, showConfirmButton: false });
+    } catch (e) {
+      setLoading(false);
+      Swal.fire('Error', 'Failed to delete entry.', 'error');
+    }
+  };
+
+  // Fetch entries when date or viewMode changes
+  useEffect(() => {
+    fetchData();
+  }, [date, viewMode]);
 
   // Add Entry
   const openModal = (row = null) => {
@@ -182,24 +249,53 @@ const DailyTracker = () => {
     }
   };
 
-  // Delete all (after download)
-  const deleteAll = async () => {
-    if (window.confirm('Delete all tracker data for today?')) {
+
+  // Download CSV then delete all entries (either for the selected day or fully)
+  const downloadAndClear = async () => {
+    const dataToExport = viewMode === 'all' ? allRows : rows;
+    if (dataToExport.length === 0) {
+      Swal.fire('Nothing to clear', 'There are no entries to process.', 'info');
+      return;
+    }
+    // Step 1: Download CSV first
+    exportToCSV(dataToExport, cashBox);
+    // Step 2: Confirm deletion
+    const isFullPurge = viewMode === 'all';
+    const result = await Swal.fire({
+      title: isFullPurge ? 'Clear ALL history?' : 'Clear all entries for today?',
+      text: `CSV downloaded. ${isFullPurge ? 'THE ENTIRE HISTORY' : `All ${rows.length} entries for ${date}`} will be permanently deleted.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: isFullPurge ? 'Yes, PURGE ALL DATA' : 'Yes, delete all',
+      cancelButtonText: 'Keep data'
+    });
+    if (result.isConfirmed) {
       setLoading(true);
-      await deleteDailyTrackerByDate(date);
-      setRows([]);
+      if (isFullPurge) {
+        await deleteAllTrackerEntries();
+        setAllRows([]);
+      } else {
+        await deleteDailyTrackerByDate(date);
+        setRows([]);
+      }
+      setCashBox({ hardCash: 0, gpayCash: 0 });
       setLoading(false);
+      Swal.fire({ title: 'Cleared!', text: 'Entries deleted successfully.', icon: 'success', timer: 1500, showConfirmButton: false });
     }
   };
 
-  // Filtered rows
-  const filtered = rows.filter(r =>
-    (!filter || Object.values(r).some(v => String(v).toLowerCase().includes(filter.toLowerCase()))) &&
-    (!typeFilter || r.type === typeFilter)
-  );
+  // Filtered rows (only for date mode)
+  const filtered = viewMode === 'all'
+    ? allRows
+    : rows.filter(r =>
+        (!filter || Object.values(r).some(v => String(v).toLowerCase().includes(filter.toLowerCase()))) &&
+        (!typeFilter || r.type === typeFilter)
+      );
 
   // Running totals
-  const totals = typeOptions.reduce((acc, type) => {
+  const totals = totalsTypeOptions.reduce((acc, type) => {
     acc[type] = filtered.filter(r => r.type === type).reduce((sum, r) => sum + Number(r.amount), 0);
     return acc;
   }, {});
@@ -238,40 +334,64 @@ const DailyTracker = () => {
         marginBottom: 32,
         border: '1px solid rgba(226, 232, 240, 0.8)',
       }}>
-        <h2 style={{ fontWeight: 900, fontSize: '2.4rem', marginBottom: 10, color: '#0f172a', letterSpacing: -0.5 }}>Daily Tracker</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <h2 style={{ fontWeight: 900, fontSize: '2.4rem', color: '#0f172a', letterSpacing: -0.5, margin: 0 }}>Daily Tracker</h2>
+          {/* View Mode Toggle */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={() => setViewMode('date')}
+              style={{ padding: '8px 20px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                background: viewMode === 'date' ? '#2563eb' : '#f1f5f9',
+                color: viewMode === 'date' ? '#fff' : '#475569' }}
+            >📅 By Date</button>
+            <button
+              onClick={() => setViewMode('all')}
+              style={{ padding: '8px 20px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                background: viewMode === 'all' ? '#7c3aed' : '#f1f5f9',
+                color: viewMode === 'all' ? '#fff' : '#475569' }}
+            >📊 All Entries</button>
+          </div>
+        </div>
         {/* <div style={{ color: '#FF5252', fontWeight: 600, marginBottom: 18, fontSize: 15 }}>
           <span style={{ verticalAlign: 'middle', marginRight: 6 }}>⚠️</span>
           For one-hour/Rupees 150 entries, use <b>Order</b> type here. Do <b>not</b> register as a member.
         </div> */}
         <div style={{ display: 'flex', gap: 16, marginBottom: 32, flexWrap: 'wrap', alignItems: 'center' }}>
-          <input
-            type="date"
-            value={date}
-            onChange={e => setDate(e.target.value)}
-            style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', minWidth: 140, fontSize: 15 }}
-            title="Select date"
-          />
-          <input
-            placeholder="Search by name, notes, etc."
-            value={filter}
-            onChange={e => setFilter(e.target.value)}
-            style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', minWidth: 220, fontSize: 15 }}
-            title="Search entries"
-          />
-          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ padding: 10, borderRadius: 8, fontSize: 15, border: '1px solid #cbd5e1' }} title="Filter by type">
-            <option value="">All Types</option>
-            {filterTypeOptions.map(t => <option key={t}>{t}</option>)}
-          </select>
-          <button onClick={() => openModal()} style={{ padding: '10px 22px', borderRadius: 8, background: '#2563eb', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }} title="Add new entry">
-            <span style={{ fontSize: 18 }}>➕</span> Add Entry
-          </button>
-          <button onClick={() => exportToCSV(filtered, cashBox)} style={{ padding: '10px 22px', borderRadius: 8, background: '#059669', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }} title="Download as CSV">
-            <span style={{ fontSize: 18 }}>⬇️</span> Download CSV
-          </button>
-
-          <button onClick={deleteAll} style={{ padding: '10px 22px', borderRadius: 8, background: '#ef4444', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }} title="Delete all entries for this day">
-            <span style={{ fontSize: 18 }}>🗑️</span> Delete All
-          </button>
+          {viewMode === 'date' ? (
+            <>
+              <input
+                type="date"
+                value={date}
+                onChange={e => setDate(e.target.value)}
+                style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', minWidth: 140, fontSize: 15 }}
+                title="Select date"
+              />
+              <input
+                placeholder="Search by name, notes, etc."
+                value={filter}
+                onChange={e => setFilter(e.target.value)}
+                style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', minWidth: 220, fontSize: 15 }}
+                title="Search entries"
+              />
+              <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ padding: 10, borderRadius: 8, fontSize: 15, border: '1px solid #cbd5e1' }} title="Filter by type">
+                <option value="">All Types</option>
+                {filterTypeOptions.map(t => <option key={t}>{t}</option>)}
+              </select>
+              <button onClick={() => openModal()} style={{ padding: '10px 22px', borderRadius: 8, background: '#2563eb', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }} title="Add new entry">
+                <span style={{ fontSize: 18 }}>➕</span> Add Entry
+              </button>
+              <button onClick={downloadAndClear} style={{ padding: '10px 22px', borderRadius: 8, background: '#dc2626', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }} title="Download CSV then delete all entries">
+                <span style={{ fontSize: 18 }}>⬇️🗑️</span> Download &amp; Clear
+              </button>
+            </>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%', justifyContent: 'space-between' }}>
+              <span style={{ color: '#7c3aed', fontWeight: 700, fontSize: 16 }}>Showing all history ({allRows.length} entries)</span>
+              <button onClick={downloadAndClear} style={{ padding: '10px 22px', borderRadius: 8, background: '#dc2626', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }} title="Download ALL CSV then PURGE database">
+                <span style={{ fontSize: 18 }}>⬇️🗑️</span> Download &amp; Clear All
+              </button>
+            </div>
+          )}
         </div>
         {loading ? (
           <div style={{ color: '#2563eb', margin: 24, textAlign: 'center', fontSize: 18, fontWeight: 600 }}>
@@ -285,7 +405,7 @@ const DailyTracker = () => {
               <tr style={{ background: '#f1f5f9', fontWeight: 900, fontSize: 15, color: '#1e293b' }}>
                 <th colSpan={3} style={{ padding: '14px 14px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>Totals <span style={{ color: '#2563eb', fontSize: 13, marginLeft: 8 }}>(Orders({orderCount}) + Registration({regCount}) = {totalCount})</span></th>
                 <th colSpan={4} style={{ padding: '14px 14px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>
-                  {typeOptions.map(t => `${t}: Rupees ${totals[t] || 0}`).join(' | ')}
+                  {totalsTypeOptions.map(t => `${t}: Rupees ${totals[t] || 0}`).join(' | ')}
                 </th>
               </tr>
               <tr style={{ background: '#e2e8f0', fontWeight: 900, fontSize: 16, color: '#0f172a' }}>
@@ -302,31 +422,68 @@ const DailyTracker = () => {
                 <th style={{ padding: '16px 14px', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>Date</th>
                 <th style={{ padding: '16px 14px', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>Time</th>
                 <th style={{ padding: '16px 14px', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>Details/Notes</th>
+                <th style={{ padding: '16px 14px', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', color: '#888', padding: 24, fontSize: 16 }}>No entries found for this day.</td>
+                  <td colSpan={8} style={{ textAlign: 'center', color: '#888', padding: 24, fontSize: 16 }}>No entries found.</td>
                 </tr>
-              ) : filtered.map((row, idx) => (
-                <tr key={idx} style={{
-                  background: idx % 2 === 0 ? '#f8fafc' : '#ffffff',
-                  transition: 'all 0.2s',
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
-                onMouseLeave={(e) => e.currentTarget.style.background = idx % 2 === 0 ? '#f8fafc' : '#ffffff'}
-                >
-                  <td style={{ padding: '14px 14px', verticalAlign: 'middle', borderBottom: '1px solid #e2e8f0' }}><Badge color={getTypeColor(row.type)}>{row.type}</Badge></td>
-                  <td style={{ padding: '14px 14px', verticalAlign: 'middle', fontWeight: 600, color: '#1e293b', borderBottom: '1px solid #e2e8f0' }}>{row.name}</td>
-                  <td style={{ padding: '14px 14px', verticalAlign: 'middle', borderBottom: '1px solid #e2e8f0' }}><Badge color={getPaymentColor(row.paymentType)}>{row.paymentType}</Badge></td>
-                  <td style={{ padding: '14px 14px', verticalAlign: 'middle', fontWeight: 800, color: '#0f172a', borderBottom: '1px solid #e2e8f0' }}>₹ {Number(row.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                  <td style={{ padding: '14px 14px', verticalAlign: 'middle', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>{row.date}</td>
-                  <td style={{ padding: '14px 14px', verticalAlign: 'middle', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>{row.time}</td>
-                  <td style={{ padding: '14px 14px', verticalAlign: 'middle', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>{row.notes}</td>
-                </tr>
-              ))}
+              ) : filtered.map((row, idx) => {
+                const isEditing = editingId === row._id;
+                return (
+                  <tr key={row._id || idx} style={{
+                    background: isEditing ? '#eff6ff' : (idx % 2 === 0 ? '#f8fafc' : '#ffffff'),
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseEnter={(e) => !isEditing && (e.currentTarget.style.background = '#f1f5f9')}
+                  onMouseLeave={(e) => !isEditing && (e.currentTarget.style.background = idx % 2 === 0 ? '#f8fafc' : '#ffffff')}
+                  >
+                    <td style={{ padding: '14px 14px', verticalAlign: 'middle', borderBottom: '1px solid #e2e8f0' }}>
+                      <Badge color={getTypeColor(row.type)}>{row.type}</Badge>
+                    </td>
+                    <td style={{ padding: '14px 14px', verticalAlign: 'middle', fontWeight: 600, color: '#1e293b', borderBottom: '1px solid #e2e8f0' }}>
+                      {isEditing
+                        ? <input value={editDraft.name} onChange={e => setEditDraft(d => ({ ...d, name: e.target.value }))} style={{ padding: '5px 8px', borderRadius: 6, border: '1.5px solid #2563eb', width: '100%', fontSize: 14 }} />
+                        : row.name}
+                    </td>
+                    <td style={{ padding: '14px 14px', verticalAlign: 'middle', borderBottom: '1px solid #e2e8f0' }}>
+                      {isEditing
+                        ? <select value={editDraft.paymentType} onChange={e => setEditDraft(d => ({ ...d, paymentType: e.target.value }))} style={{ padding: '5px 8px', borderRadius: 6, border: '1.5px solid #2563eb', fontSize: 14 }}>
+                            <option value="cash">Cash</option>
+                            <option value="gpay">GPay</option>
+                          </select>
+                        : <Badge color={getPaymentColor(row.paymentType)}>{row.paymentType}</Badge>}
+                    </td>
+                    <td style={{ padding: '14px 14px', verticalAlign: 'middle', fontWeight: 800, color: '#0f172a', borderBottom: '1px solid #e2e8f0' }}>
+                      {isEditing
+                        ? <input type="number" value={editDraft.amount} onChange={e => setEditDraft(d => ({ ...d, amount: Number(e.target.value) }))} style={{ padding: '5px 8px', borderRadius: 6, border: '1.5px solid #2563eb', width: 90, fontSize: 14 }} />
+                        : <>₹ {Number(row.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>}
+                    </td>
+                    <td style={{ padding: '14px 14px', verticalAlign: 'middle', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>{row.date}</td>
+                    <td style={{ padding: '14px 14px', verticalAlign: 'middle', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>{row.time}</td>
+                    <td style={{ padding: '14px 14px', verticalAlign: 'middle', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>
+                      {isEditing
+                        ? <input value={editDraft.notes} onChange={e => setEditDraft(d => ({ ...d, notes: e.target.value }))} style={{ padding: '5px 8px', borderRadius: 6, border: '1.5px solid #2563eb', width: '100%', fontSize: 14 }} />
+                        : row.notes}
+                    </td>
+                    <td style={{ padding: '14px 14px', verticalAlign: 'middle', borderBottom: '1px solid #e2e8f0', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      {isEditing ? (
+                        <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                          <button onClick={() => saveEdit(row._id)} title="Save" style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>✅ Save</button>
+                          <button onClick={cancelEdit} title="Cancel" style={{ background: '#64748b', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>✕</button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                          <button onClick={() => startEdit(row)} title="Edit" style={{ background: 'none', border: '1px solid #cbd5e1', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', fontSize: 16 }}>✏️</button>
+                          <button onClick={() => deleteRow(row._id)} title="Delete" style={{ background: 'none', border: '1px solid #fecaca', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', fontSize: 16 }}>🗑️</button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -372,7 +529,7 @@ const DailyTracker = () => {
               <div style={{ display: 'flex', gap: 12 }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>Date <span style={{ color: '#ef4444' }}>*</span></label>
-                  <input name="date" type="date" defaultValue={modalData?.date || getNow().date} required style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 15 }} />
+                  <input name="date" type="date" defaultValue={modalData?.date || date} readOnly required style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 15, opacity: 0.7, cursor: 'not-allowed', backgroundColor: '#f9fafb' }} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>Time <span style={{ color: '#ef4444' }}>*</span></label>

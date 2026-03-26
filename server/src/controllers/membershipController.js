@@ -1236,14 +1236,16 @@ export const razorpayWebhook = asyncHandler(async (req, res) => {
 
 // Returns paginated, searchable member list with plan details and attendance counts for admin panel
 export const listMembers = asyncHandler(async (req, res) => {
-	const { q, status, planType, page, limit, sort, order } = req.query
-
+	const { q, status, planType, planId, page, limit, sort, order } = req.query
 	const filter = {}
 	if (status && ['active', 'expired'].includes(String(status))) {
 		filter.status = String(status)
 	}
 	if (planType && String(planType).trim()) {
 		filter.planType = String(planType).trim()
+	}
+	if (planId && String(planId).trim()) {
+		filter.planId = String(planId).trim()
 	}
 
 	if (q && String(q).trim()) {
