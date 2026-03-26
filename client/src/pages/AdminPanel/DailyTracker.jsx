@@ -9,15 +9,18 @@ import Swal from 'sweetalert2';
 // Utility to format date/time
 const getNow = () => {
   const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
   return {
-    date: d.toISOString().slice(0, 10),
+    date: `${year}-${month}-${day}`,
     time: d.toTimeString().slice(0, 5),
   };
 };
 
 
 
-const typeOptions = ['Order', 'Registration', 'Expense', 'Withdrawal'];
+const typeOptions = ['Order','Expense', 'Withdrawal'];
 const filterTypeOptions = ['Order', 'Registration', 'Expense', 'Withdrawal'];
 const paymentOptions = ['Cash', 'GPay'];
 

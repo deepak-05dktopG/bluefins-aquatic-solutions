@@ -57,6 +57,7 @@ import {
   bulkDeleteMembersByIds,
   deleteMember,
   getPublicMemberData,
+  updateMember,
 } from '../controllers/membershipController.js';
 
 import { scanAttendance, listAttendance, exportAttendanceCsv, deleteAttendance, bulkDeleteAttendance, purgeAttendanceBefore } from '../controllers/attendanceController.js';
@@ -118,6 +119,7 @@ router.post('/membership/register', registerPaidMembership);
 router.post('/admin/membership/offline-register', requireAdminAuth, registerOfflineMembership);
 
 router.get('/membership/members', requireAdminAuth, listMembers);
+router.put('/admin/membership/members/:id', requireAdminAuth, updateMember);
 router.post('/membership/members/bulk-delete', requireAdminAuth, bulkDeleteMembersByIds);
 router.delete('/membership/members/:id', requireAdminAuth, deleteMember);
 

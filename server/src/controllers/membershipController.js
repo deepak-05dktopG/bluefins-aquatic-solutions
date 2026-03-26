@@ -28,6 +28,19 @@ const getForcedTestAmountInr = () => {
 	return Math.round((n + Number.EPSILON) * 100) / 100
 };
 
+/**
+ * Returns the current date (YYYY-MM-DD) and time (HH:mm) adjusted to India timezone (UTC+5.5).
+ */
+const getIndiaNow = () => {
+	const now = new Date()
+	const offset = BUSINESS_TZ_OFFSET_MINUTES * 60 * 1000
+	const india = new Date(now.getTime() + offset)
+	return {
+		date: india.toISOString().slice(0, 10),
+		time: india.toISOString().slice(11, 16),
+	}
+}
+
 // Overrides real pricing with the test amount when test mode is active
 const applyForcedPricing = pricing => {
 	const forced = getForcedTestAmountInr()
@@ -323,7 +336,7 @@ const isValidTimeHHMM = value => {
 };
 
 // Prepares an offline (cash) membership draft: validates member details, calculates pricing without gateway fees
-const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers }) => {
+const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers, joinDateOverride, expiryDateOverride }) => {
 	const normalizedSelection = selection || {}
 
 	const baseAmountRes = computeAmount({ plan, selection: normalizedSelection })
@@ -379,7 +392,14 @@ const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers 
 		})
 	}
 
-	let joinDate = new Date()
+	// Resolve join date — use admin override if provided and valid, else default to now
+	const parseOverrideDate = (value) => {
+		if (!value) return null
+		const d = new Date(String(value).trim())
+		return isNaN(d.getTime()) ? null : d
+	}
+
+	let joinDate = parseOverrideDate(joinDateOverride) || new Date()
 	let expiryDate = new Date(joinDate)
 	let publicSlot = undefined
 
@@ -399,8 +419,17 @@ const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers 
 		joinDate = new Date(`${publicSlot.date}T${publicSlot.startTime}:00`)
 		expiryDate = new Date(`${publicSlot.date}T${publicSlot.endTime}:00`)
 	} else {
-		const days = plan.durationInDays || 30
-		expiryDate.setDate(expiryDate.getDate() + days)
+		// Use admin-provided expiry if valid; otherwise compute from join + plan duration
+		const overrideExpiry = parseOverrideDate(expiryDateOverride)
+		if (overrideExpiry) {
+			// Set to end of that day so active-check doesn't cut off mid-day
+			overrideExpiry.setUTCHours(23, 59, 59, 999)
+			expiryDate = overrideExpiry
+		} else {
+			const days = plan.durationInDays || 30
+			expiryDate.setDate(expiryDate.getDate() + days - 1)  // -1 so the join day counts as day 1
+			expiryDate.setUTCHours(23, 59, 59, 999)
+		}
 	}
 
 	return {
@@ -414,6 +443,7 @@ const prepareOfflineMembershipDraft = ({ plan, member, selection, familyMembers 
 		publicSlot,
 	}
 };
+
 
 // Prepares an online (Razorpay) membership draft: validates member details, calculates pricing with commission/GST
 const prepareMembershipDraft = ({ plan, member, selection, familyMembers }) => {
@@ -881,7 +911,7 @@ export const registerPaidMembership = asyncHandler(async (req, res) => {
 
 	// Add to DailyTracker (use discounted/final price)
 	try {
-		const now = new Date();
+		const indiaNow = getIndiaNow();
 		// Use the final price after discount (if available)
 		const finalAmount = (payment.pricing && typeof payment.pricing.total === 'number')
 			? payment.pricing.total
@@ -889,10 +919,10 @@ export const registerPaidMembership = asyncHandler(async (req, res) => {
 		await DailyTracker.create({
 			type: 'Registration',
 			name: member?.name || 'New Member',
-			paymentType: payment.provider,
+			paymentType: (payment.provider || 'cash').toLowerCase(),
 			amount: finalAmount,
-			date: now.toISOString().slice(0, 10),
-			time: now.toTimeString().slice(0, 5),
+			date: indiaNow.date,
+			time: indiaNow.time,
 			notes: `Plan: ${plan?.planName || plan?.name || ''}`,
 			memberId: createdMembers[0]?._id,
 			paymentId: payment._id,
@@ -912,7 +942,7 @@ export const registerPaidMembership = asyncHandler(async (req, res) => {
 import { incrementCashBox } from './grocerCashBoxController.js';
 // Registers an offline membership (admin counter): creates members with no gateway fees, records cash payment
 export const registerOfflineMembership = asyncHandler(async (req, res) => {
-	const { planId, member, selection, familyMembers, collectedBy, paymentMethod, discountPct } = req.body;
+	const { planId, member, selection, familyMembers, collectedBy, paymentMethod, discountPct, joinDate: joinDateOverride, expiryDate: expiryDateOverride } = req.body;
 	if (!planId) return res.status(400).json({ success: false, message: 'planId is required' });
 	if (!collectedBy || !String(collectedBy).trim()) {
 		return res.status(400).json({ success: false, message: 'collectedBy (admin name) is required' });
@@ -933,8 +963,8 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 	// Parse discount percentage (from frontend, default 0)
 	const discountPercent = Number(discountPct) || 0;
 
-	// Prepare draft and apply discount logic
-	let draftRes = prepareOfflineMembershipDraft({ plan, member, selection, familyMembers });
+	// Prepare draft and apply discount logic (pass date overrides for backdating existing members)
+	let draftRes = prepareOfflineMembershipDraft({ plan, member, selection, familyMembers, joinDateOverride, expiryDateOverride });
 	if (!draftRes.ok) return res.status(400).json({ success: false, message: draftRes.message });
 
 	// Apply discount to pricing if needed
@@ -991,7 +1021,7 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 
 	// Add to DailyTracker (use discounted/final price)
 	try {
-		const now = new Date();
+		const indiaNow = getIndiaNow();
 		// Use the final price after discount (if available)
 		const finalAmount = (payment.pricing && typeof payment.pricing.total === 'number')
 			? payment.pricing.total
@@ -999,10 +1029,10 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 		await DailyTracker.create({
 			type: 'Registration',
 			name: member?.name || 'New Member',
-			paymentType: payment.provider,
+			paymentType: (payment.provider || 'cash').toLowerCase(),
 			amount: finalAmount,
-			date: now.toISOString().slice(0, 10),
-			time: now.toTimeString().slice(0, 5),
+			date: indiaNow.date,
+			time: indiaNow.time,
 			notes: `Plan: ${plan?.planName || plan?.name || ''}`,
 			memberId: createdMembers[0]?._id,
 			paymentId: payment._id,
@@ -1146,17 +1176,17 @@ export const verifyRazorpayPayment = asyncHandler(async (req, res) => {
 	})
 	// Add to DailyTracker (online registration, use final amount if available)
 	try {
-		const now = new Date();
+		const indiaNow = getIndiaNow();
 		const finalAmount = (paymentDoc.pricing && typeof paymentDoc.pricing.total === 'number')
 			? paymentDoc.pricing.total
 			: paymentDoc.amount;
 		await DailyTracker.create({
 			type: 'Registration',
 			name: paymentDoc?.memberDraft?.name || 'New Member',
-			paymentType: paymentDoc.provider,
+			paymentType: (paymentDoc.provider || 'gpay').toLowerCase(),
 			amount: finalAmount,
-			date: now.toISOString().slice(0, 10),
-			time: now.toTimeString().slice(0, 5),
+			date: indiaNow.date,
+			time: indiaNow.time,
 			notes: `Plan: ${out?.plan?.planName || out?.plan?.name || ''}`,
 			memberId: out?.member?._id,
 			paymentId: paymentDoc._id,
@@ -1357,6 +1387,78 @@ export const deleteMember = asyncHandler(async (req, res) => {
 
 	res.json({ success: true, message: 'Member deleted' })
 })
+
+// Updates an existing member's details directly from the Admin members list
+export const updateMember = asyncHandler(async (req, res) => {
+	const { id } = req.params;
+	if (!id) return res.status(400).json({ success: false, message: 'Member ID is required' });
+
+	const { name, phone, planId, joinDate, expiryDate } = req.body;
+
+	const member = await Member.findById(id);
+	if (!member) return res.status(404).json({ success: false, message: 'Member not found' });
+
+	// Validate inputs
+	if (name !== undefined) member.name = normalizeText(name);
+	if (phone !== undefined) {
+		const normPhone = normalizePhone10(phone);
+		if (normPhone && !validatePhone10(normPhone)) {
+			return res.status(400).json({ success: false, message: 'Phone must be a valid 10-digit number' });
+		}
+		member.phone = normPhone;
+	}
+
+	// Update Plan if provided
+	if (planId && String(planId) !== String(member.planId)) {
+		const plan = await MembershipPlan.findById(planId);
+		if (!plan) return res.status(404).json({ success: false, message: 'Target plan not found' });
+		member.planId = plan._id;
+		member.planType = plan.type;
+	} else if (!member.planType && member.planId) {
+		// Just in case it's a legacy record missing planType, infer it
+		const plan = await MembershipPlan.findById(member.planId);
+		if (plan) {
+			member.planType = plan.type || inferLegacyType(plan);
+		}
+	}
+
+	// Update dates if provided
+	if (joinDate !== undefined && joinDate !== null) {
+		const d = new Date(String(joinDate).trim());
+		if (!isNaN(d.getTime())) {
+			member.joinDate = d;
+		}
+	}
+
+	if (expiryDate !== undefined && expiryDate !== null) {
+		const d = new Date(String(expiryDate).trim());
+		if (!isNaN(d.getTime())) {
+			// For non-public plans we want expiry at 23:59:59.999 UTC
+			if (member.planType !== 'public') {
+				d.setUTCHours(23, 59, 59, 999);
+			}
+			member.expiryDate = d;
+		}
+	}
+
+	// Recalculate status based on new dates
+	const newStatus = computeMemberStatus({
+		expiryDate: member.expiryDate,
+		planType: member.planType,
+		publicSlot: undefined // public slotted edits aren't specifically handled here beyond standard expiryDate UI
+	});
+	member.status = newStatus;
+
+	await member.save();
+
+	// Return the populated member back so the frontend can update its state
+	const updated = await Member.findById(member._id).populate('planId', 'planName type categoryRequired');
+	
+	const mObj = updated.toObject();
+	mObj.plan = mObj.planId ? { planName: mObj.planId.planName } : null; // map for frontend format match
+
+	res.json({ success: true, message: 'Member updated', data: mObj });
+});
 
 // Deletes multiple members at once by an array of IDs (max 500 per request)
 export const bulkDeleteMembersByIds = asyncHandler(async (req, res) => {

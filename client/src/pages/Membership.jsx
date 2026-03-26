@@ -147,9 +147,19 @@ const normalizeAge = v => {
   if (v == null || v === '') return { ok: true, age: undefined }
   const n = Number(v)
   if (!Number.isFinite(n)) return { ok: false, message: 'Age must be a number' }
-  if (n < 1 || n > 120) return { ok: false, message: 'Age must be between 1 and 120' }
   return { ok: true, age: Math.floor(n) }
 };
+
+/**
+ * Convert a date to YYYY-MM-DD in local time for input[type="date"]
+ */
+const formatDateYMD = d => {
+  if (!d || isNaN(d.getTime())) return ''
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
 /**
  * Human-friendly payment method label for the Result panel.
@@ -701,24 +711,11 @@ const Membership = () => {
             setStep(STEP.DONE)
             if (selectedPlan.type !== 'family') setMember(emptyMember)
 
-            // Add to Daily Tracker
-            try {
-              const now = new Date();
-              await addDailyTrackerEntry({
-                type: 'Registration',
-                name: member?.name || 'New Member',
-                paymentType: 'Online',
-                amount: computedAmount,
-                date: now.toISOString().slice(0, 10),
-                time: now.toTimeString().slice(0, 5),
-                notes: `Plan: ${selectedPlan?.planName || selectedPlan?.name || ''}`
-              });
-            } catch {}
-          } catch (e) {
-            setError(e.message)
-          } finally {
-            setBusy(false)
-          }
+            } catch (e) {
+              setError(e.message)
+            } finally {
+              setBusy(false)
+            }
         },
         modal: {
           /**

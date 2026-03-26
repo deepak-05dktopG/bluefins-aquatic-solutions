@@ -168,6 +168,25 @@ const OfflineMembership = () => {
     const [error, setError] = useState('')
     const [result, setResult] = useState(null)
 
+    // Join/Expiry date overrides — let admin backdate existing members
+    const todayStr = () => {
+        const d = new Date()
+        const year = d.getFullYear()
+        const month = String(d.getMonth() + 1).padStart(2, '0')
+        const day = String(d.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+    }
+    const formatDateYMD = (d) => {
+        if (!d || isNaN(d.getTime())) return ''
+        const year = d.getFullYear()
+        const month = String(d.getMonth() + 1).padStart(2, '0')
+        const day = String(d.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+    }
+    const [joinDate, setJoinDate] = useState(todayStr())
+    const [expiryDate, setExpiryDate] = useState('')
+    const [expiryManuallyEdited, setExpiryManuallyEdited] = useState(false)
+
     useEffect(/**
      * Admin-only guard: redirect to login if session is missing.
      */
@@ -264,6 +283,27 @@ const OfflineMembership = () => {
         () => {
             if (selectedPlan?.type !== 'family') setFamilyMembers([emptyFamilyMember])
         }, [selectedPlan?.type])
+
+    useEffect(/**
+     * Auto-compute the expiry date when the join date or plan changes,
+     * but only if the admin hasn't manually overridden the expiry date.
+     */
+        () => {
+            if (expiryManuallyEdited) return
+            if (!selectedPlan || !joinDate) { setExpiryDate(''); return }
+            const days = selectedPlan.durationInDays
+            if (!days || selectedPlan.type === 'public') { setExpiryDate(''); return }
+            const d = new Date(joinDate)
+            if (isNaN(d.getTime())) { setExpiryDate(''); return }
+            d.setDate(d.getDate() + days)
+            setExpiryDate(formatDateYMD(d))
+        }, [joinDate, selectedPlan, expiryManuallyEdited])
+
+    useEffect(() => {
+        if (selectedPlanId) {
+            setJoinDate(todayStr())
+        }
+    }, [selectedPlanId])
 
     /**
      * Fetch active membership plans so staff can pick a plan for offline signup.
@@ -423,6 +463,8 @@ const OfflineMembership = () => {
                     gender: normalizedMember.gender,
                 },
                 selection,
+                joinDate: joinDate || todayStr(),
+                expiryDate: expiryDate || undefined,
                 familyMembers: selectedPlan?.type === 'family'
                     ? familyMembers.map(/**
                  * Normalize each family member record for storage.
@@ -450,28 +492,8 @@ const OfflineMembership = () => {
             const data = parsed.data
             if (!res.ok) throw new Error(data?.message || `Registration failed (${res.status})`)
 
-            try {
-                localStorage.setItem('offlineCollectedBy', normalizeText(collectedBy))
-            } catch {
-                // ignore
-            }
-
             setResult(data?.data || null)
             setStep(STEP.DONE)
-
-            // Add to Daily Tracker
-            try {
-                const now = new Date();
-                await addDailyTrackerEntry({
-                    type: 'Registration',
-                    name: member?.name || 'New Member',
-                    paymentType: paymentMethod ? paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1) : 'Cash',
-                    amount: computedTotal,
-                    date: now.toISOString().slice(0, 10),
-                    time: now.toTimeString().slice(0, 5),
-                    notes: `Plan: ${selectedPlan?.planName || selectedPlan?.name || ''}`
-                });
-            } catch { }
         } catch (e) {
             setError(e.message)
         } finally {
@@ -490,6 +512,9 @@ const OfflineMembership = () => {
         setDiscountPct('')
         setPaymentMethod('cash')
         setFamilyMembers([emptyFamilyMember])
+        setJoinDate(todayStr())
+        setExpiryDate('')
+        setExpiryManuallyEdited(false)
         setStep(STEP.PLAN)
     };
 
@@ -703,6 +728,65 @@ const OfflineMembership = () => {
                                             </select>
                                             <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12, marginTop: 6 }}>
                                                 Shown in Members list for tracking.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* ── Membership Date Overrides ── */}
+                                    <div style={{
+                                        background: 'rgba(56,189,248,0.07)',
+                                        border: '1px solid rgba(56,189,248,0.25)',
+                                        borderRadius: 10,
+                                        padding: '14px 16px',
+                                        marginBottom: 14,
+                                    }}>
+                                        <div style={{ color: '#38bdf8', fontWeight: 700, fontSize: 13, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                            📅 Membership Dates
+                                            <span style={{ color: 'rgba(255,255,255,0.45)', fontWeight: 400, fontSize: 11 }}>
+                                                — pre-filled automatically · edit to add existing members
+                                            </span>
+                                        </div>
+                                        <div className="row g-2">
+                                            <div className="col-12 col-md-5">
+                                                <label className="form-label" style={{ color: '#fff', fontSize: 13 }}>Join Date</label>
+                                                <input
+                                                    type="date"
+                                                    className="form-control form-control-sm"
+                                                    value={joinDate}
+                                                    onChange={e => {
+                                                        setJoinDate(e.target.value)
+                                                        // if expiry was manually edited, keep it; otherwise let effect recalculate
+                                                    }}
+                                                    style={{ background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', colorScheme: 'dark' }}
+                                                />
+                                            </div>
+                                            <div className="col-12 col-md-5">
+                                                <label className="form-label" style={{ color: '#fff', fontSize: 13 }}>
+                                                    Expiry Date
+                                                    {expiryManuallyEdited && (
+                                                        <span
+                                                            onClick={() => setExpiryManuallyEdited(false)}
+                                                            style={{ marginLeft: 8, fontSize: 10, color: '#f87171', cursor: 'pointer', textDecoration: 'underline' }}
+                                                        >
+                                                            (manual · click to auto-reset)
+                                                        </span>
+                                                    )}
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    className="form-control form-control-sm"
+                                                    value={expiryDate}
+                                                    onChange={e => {
+                                                        setExpiryDate(e.target.value)
+                                                        setExpiryManuallyEdited(true)
+                                                    }}
+                                                    style={{ background: 'rgba(255,255,255,0.08)', color: '#fff', border: `1px solid ${expiryManuallyEdited ? 'rgba(248,113,113,0.5)' : 'rgba(255,255,255,0.2)'}`, colorScheme: 'dark' }}
+                                                />
+                                            </div>
+                                            <div className="col-12" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 2 }}>
+                                                {selectedPlan?.durationInDays
+                                                    ? `Plan duration: ${selectedPlan.durationInDays} days · Change Join Date to auto-update Expiry`
+                                                    : 'Set dates manually for this plan type'}
                                             </div>
                                         </div>
                                     </div>

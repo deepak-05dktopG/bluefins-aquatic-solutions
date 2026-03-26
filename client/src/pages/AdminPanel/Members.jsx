@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { downloadMemberIdCard } from '../../utils/idCard'
 import { adminFetch, isAdminAuthenticated } from '../../utils/adminAuth'
-import { FaSyncAlt, FaDownload, FaTrash, FaChevronLeft, FaChevronRight, FaWhatsapp } from 'react-icons/fa'
+import { FaSyncAlt, FaDownload, FaTrash, FaChevronLeft, FaChevronRight, FaWhatsapp, FaEdit } from 'react-icons/fa'
 import AdminNavbar from '../../components/adminPanel/AdminNavbar'
 
 /**
@@ -49,15 +49,37 @@ const endOfLocalDay = value => {
 
 /**
  * Calculate remaining days until a member’s plan expires.
- * Some plan types store timestamps; others are treated as valid until end-of-day.
+ * For future subscriptions, calculate relative to join date.
  */
-const daysUntil = (expiryDate, planType) => {
-	if (!expiryDate) return null
-	const isPublic = String(planType || '').toLowerCase() === 'public'
-	const d = isPublic ? new Date(expiryDate) : endOfLocalDay(expiryDate)
-	if (!d || Number.isNaN(d.getTime())) return null
-	const diff = d.getTime() - Date.now()
-	return Math.ceil(diff / (1000 * 60 * 60 * 24))
+const daysUntil = (expiryDate, planType, joinDate) => {
+	if (!expiryDate) return null;
+	const isPublic = String(planType || '').toLowerCase() === 'public';
+	const expiryD = new Date(expiryDate);
+	if (Number.isNaN(expiryD.getTime())) return null;
+
+	const now = new Date();
+	
+	if (isPublic) {
+		const diff = expiryD.getTime() - now.getTime();
+		return Math.ceil(diff / (1000 * 60 * 60 * 24));
+	}
+
+	// Compare UTC midnight of the start reference point to UTC midnight of expiry
+	const expiryUTC = Date.UTC(expiryD.getUTCFullYear(), expiryD.getUTCMonth(), expiryD.getUTCDate());
+	
+    // If the join date is in the future, the clock hasn't started ticking yet.
+    // Show the total days they WILL have, rather than inflating it with the waiting days.
+    let startD = now;
+    if (joinDate) {
+        const jd = new Date(joinDate);
+        if (!Number.isNaN(jd.getTime()) && jd.getTime() > now.getTime()) {
+            startD = jd;
+        }
+    }
+	const startUTC = Date.UTC(startD.getUTCFullYear(), startD.getUTCMonth(), startD.getUTCDate());
+	
+	const diff = expiryUTC - startUTC;
+	return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 };
 
 const formatDiscountSuffix = discountPct => {
@@ -141,6 +163,9 @@ export default /**
 		() => {
 			return new Set();
 		})
+	const [allPlans, setAllPlans] = React.useState([])
+	const [editingMember, setEditingMember] = React.useState(null)
+	const [isEditModalOpen, setIsEditModalOpen] = React.useState(false)
 
 	React.useEffect(/**
 	 * Admin-only guard: redirect to login if there is no valid admin session.
@@ -192,6 +217,23 @@ export default /**
 				setLoading(false)
 			}
 		}, [buildUrl])
+
+	const fetchAllPlans = React.useCallback(async () => {
+		try {
+			const res = await adminFetch(`${apiBase}/membership/plans?isActive=true`)
+			const parsed = await safeReadJson(res)
+			if (res.ok && parsed.success) {
+				setAllPlans(parsed.data || [])
+			}
+		} catch (e) {
+			console.error('Failed to fetch plans for editing:', e)
+		}
+	}, [apiBase])
+
+	React.useEffect(() => {
+		load()
+		fetchAllPlans()
+	}, [load, fetchAllPlans])
 
 	const selectedCount = selectedIds.size
 	const pageIds = React.useMemo(/**
@@ -374,13 +416,6 @@ export default /**
 	};
 
 	React.useEffect(/**
-	 * Load the table on mount and whenever filters/sorting/pagination changes.
-     */
-		() => {
-			load()
-		}, [load])
-
-	React.useEffect(/**
 	 * Keep `page` in range when total/limit changes reduce the page count.
      */
 		() => {
@@ -398,7 +433,7 @@ export default /**
 			 * Convert each member record into a flat CSV row.
              */
 				m => {
-					const daysLeft = daysUntil(m.expiryDate, m.planType)
+					const daysLeft = daysUntil(m.expiryDate, m.planType, m.joinDate)
 					return [
 						m.name,
 						m.phone,
@@ -422,7 +457,7 @@ export default /**
 	 * Highlights expired members and those expiring soon.
 	 */
 	const badgeFor = m => {
-		const daysLeft = daysUntil(m.expiryDate, m.planType)
+		const daysLeft = daysUntil(m.expiryDate, m.planType, m.joinDate)
 		if (m.status === 'expired' || (daysLeft != null && daysLeft <= 0)) {
 			return { label: 'Expired', color: '#FF6B9D', bg: 'rgba(255, 107, 157, 0.15)', border: 'rgba(255, 107, 157, 0.35)' }
 		}
@@ -716,7 +751,7 @@ export default /**
                                  */
 									m => {
 										const b = badgeFor(m)
-										const daysLeft = daysUntil(m.expiryDate, m.planType)
+										const daysLeft = daysUntil(m.expiryDate, m.planType, m.joinDate)
 										const rowBorder = b.border
 										const id = String(m._id)
 										const isSelected = selectedIds.has(id)
@@ -817,6 +852,30 @@ export default /**
 																	</div>
 																)}
 															</div>
+
+															<button
+																onClick={() => {
+																	setEditingMember(m)
+																	setIsEditModalOpen(true)
+																}}
+																disabled={loading}
+																title="Edit Member"
+																aria-label={`Edit ${m.name}`}
+																style={{
+																	display: 'inline-flex',
+																	alignItems: 'center',
+																	justifyContent: 'center',
+																	width: 28,
+																	height: 28,
+																	background: 'rgba(255, 193, 7, 0.15)',
+																	color: '#FFC107',
+																	border: '1px solid rgba(255, 193, 7, 0.35)',
+																	borderRadius: '9px',
+																	cursor: loading ? 'not-allowed' : 'pointer',
+																}}
+															>
+																<FaEdit size={14} />
+															</button>
 
 															<button
 																onClick={/**
@@ -957,6 +1016,30 @@ export default /**
 							>
 								<FaChevronLeft /> Prev
 							</button>
+
+							{isEditModalOpen && editingMember && (
+								<EditMemberModal
+									member={editingMember}
+									plans={allPlans}
+									onClose={() => setIsEditModalOpen(false)}
+									onUpdate={(updated) => {
+										setItems(prev => prev.map(m => m._id === updated._id ? { ...m, ...updated } : m))
+										setIsEditModalOpen(false)
+										setEditingMember(null)
+										Swal.fire({
+											icon: 'success',
+											title: 'Updated!',
+											text: 'Member details updated successfully.',
+											timer: 2000,
+											showConfirmButton: false,
+											background: '#1a1f3a',
+											color: '#fff'
+										})
+									}}
+									apiBase={apiBase}
+								/>
+							)}
+
 							<button
 								onClick={/**
 								 * Pagination: go to next page.
@@ -992,4 +1075,155 @@ export default /**
 			</div>
 		</div>
 	);
+}
+
+/**
+ * Sub-component for editing a member's details.
+ */
+function EditMemberModal({ member, plans, onClose, onUpdate, apiBase }) {
+	const [name, setName] = React.useState(member.name || '')
+	const [phone, setPhone] = React.useState(member.phone || '')
+	const [planId, setPlanId] = React.useState(String(member.planId?._id || member.planId || ''))
+	const [joinDate, setJoinDate] = React.useState(member.joinDate ? (function(d){ const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0'); const dy = String(d.getDate()).padStart(2, '0'); return `${y}-${m}-${dy}` })(new Date(member.joinDate)) : '')
+	const [expiryDate, setExpiryDate] = React.useState(member.expiryDate ? (function(d){ const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0'); const dy = String(d.getDate()).padStart(2, '0'); return `${y}-${m}-${dy}` })(new Date(member.expiryDate)) : '')
+	const [busy, setBusy] = React.useState(false)
+	const [error, setError] = React.useState('')
+	const [expiryManuallyEdited, setExpiryManuallyEdited] = React.useState(false)
+
+	const selectedPlan = React.useMemo(() => plans.find(p => String(p._id) === planId), [plans, planId])
+
+	// Smart date calculation matching the Offline Registration flow
+	React.useEffect(() => {
+		if (expiryManuallyEdited) return
+		if (!selectedPlan || !joinDate) return
+		const days = selectedPlan.durationInDays
+		if (!days || selectedPlan.type === 'public') return
+		const d = new Date(joinDate)
+		if (isNaN(d.getTime())) return
+		d.setDate(d.getDate() + days)
+		const year = d.getFullYear()
+		const month = String(d.getMonth() + 1).padStart(2, '0')
+		const day = String(d.getDate()).padStart(2, '0')
+		setExpiryDate(`${year}-${month}-${day}`)
+	}, [joinDate, selectedPlan, expiryManuallyEdited])
+
+	const handleSave = async () => {
+		if (!name.trim()) return setError('Name is required')
+		if (!phone.trim()) return setError('Phone is required')
+		
+		setBusy(true)
+		setError('')
+		try {
+			const res = await adminFetch(`${apiBase}/admin/membership/members/${member._id}`, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ name, phone, planId, joinDate, expiryDate })
+			})
+			const parsed = await safeReadJson(res)
+			if (!res.ok) throw new Error(parsed?.message || 'Update failed')
+			onUpdate(parsed.data)
+		} catch (e) {
+			setError(e.message)
+		} finally {
+			setBusy(false)
+		}
+	}
+
+	return (
+		<div style={{
+			position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+			zIndex: 9999, display: 'grid', placeItems: 'center',
+			background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)'
+		}}>
+			<div style={{
+				width: '100%', maxWidth: 500, background: '#1a1f3a',
+				borderRadius: 20, padding: 25, border: '1px solid rgba(255,255,255,0.1)',
+				boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+			}}>
+				<h4 style={{ color: '#fff', fontWeight: 800, marginBottom: 20 }}>Edit Member Details</h4>
+
+				{error && <div className="alert alert-danger py-2" style={{ fontSize: '0.9rem' }}>{error}</div>}
+
+				<div className="mb-3">
+					<label style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>Full Name</label>
+					<input
+						className="form-control"
+						value={name}
+						onChange={e => setName(e.target.value)}
+						style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
+					/>
+				</div>
+
+				<div className="mb-3">
+					<label style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>Phone Number</label>
+					<input
+						className="form-control"
+						value={phone}
+						onChange={e => setPhone(e.target.value)}
+						style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
+					/>
+				</div>
+
+				<div className="mb-3">
+					<label style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>Membership Plan</label>
+					<select
+						className="form-select"
+						value={planId}
+						onChange={e => setPlanId(e.target.value)}
+						style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
+					>
+						{plans.map(p => (
+							<option key={p._id} value={p._id} style={{ background: '#1a1f3a' }}>
+								{p.planName} ({p.type})
+							</option>
+						))}
+					</select>
+				</div>
+
+				<div className="row g-2 mb-4">
+					<div className="col-6">
+						<label style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>Join Date</label>
+						<input
+							type="date"
+							className="form-control"
+							value={joinDate}
+							onChange={e => setJoinDate(e.target.value)}
+							style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', colorScheme: 'dark' }}
+						/>
+					</div>
+					<div className="col-6">
+						<label style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>Expiry Date</label>
+						<input
+							type="date"
+							className="form-control"
+							value={expiryDate}
+							onChange={e => {
+								setExpiryDate(e.target.value)
+								setExpiryManuallyEdited(true)
+							}}
+							style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', colorScheme: 'dark' }}
+						/>
+					</div>
+				</div>
+
+				<div className="d-flex gap-2 justify-content-end mt-4">
+					<button
+						className="btn btn-link link-light text-decoration-none"
+						onClick={onClose}
+						disabled={busy}
+					>
+						Cancel
+					</button>
+					<button
+						className="btn btn-primary px-4"
+						style={{ borderRadius: 10, fontWeight: 700 }}
+						onClick={handleSave}
+						disabled={busy}
+					>
+						{busy ? 'Saving...' : 'Save Changes'}
+					</button>
+				</div>
+			</div>
+		</div>
+	)
 }
