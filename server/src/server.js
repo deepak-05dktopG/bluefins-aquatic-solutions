@@ -27,16 +27,7 @@ const allowedOrigins = [
 ]
 
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin) return callback(null, true) // Allow curl, mobile apps, Postman
-    
-    // Normalize origin by removing trailing slash if present
-    const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
-    
-    if (allowedOrigins.includes(normalizedOrigin)) return callback(null, true)
-    if (process.env.NODE_ENV !== 'production') return callback(null, true) // Dev: allow all
-    return callback(new Error(`CORS: Origin ${origin} not allowed`), false)
-  },
+  origin: process.env.NODE_ENV === 'production' ? allowedOrigins : true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
