@@ -1,23 +1,32 @@
 /**
- * What it is: WhatsApp Web client service.
+ * What it is: WhatsApp client service using Baileys (no Chrome needed!).
  * Non-tech note: Connects to WhatsApp via QR scan, then sends messages automatically.
+ *               Uses direct WebSocket connection — no browser, minimal RAM usage.
  */
 
-import pkg from 'whatsapp-web.js';
-const { Client, LocalAuth } = pkg;
-import qrcode from 'qrcode-terminal';
+import { default as makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, makeCacheableSignalKeyStore } from '@whiskeysockets/baileys';
+import qrcodeTerminal from 'qrcode-terminal';
 import qrcodeImg from 'qrcode';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import pino from 'pino';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-let client = null;
+// Silent logger for production (Baileys is very verbose by default)
+const logger = pino({ level: 'silent' });
+
+let sock = null;
 let currentStatus = 'initializing'; // 'initializing' | 'disconnected' | 'qr_pending' | 'connected'
 let currentQR = null;
 let connectedPhone = null;
+let retryCount = 0;
+const MAX_RETRIES = 5;
+
+// Auth state directory
+const AUTH_DIR = path.join(__dirname, '../../.wwebjs_auth/baileys_auth');
 
 /**
  * Initialize the WhatsApp client.
@@ -25,131 +34,97 @@ let connectedPhone = null;
  */
 export const initWhatsApp = async () => {
 	try {
-		console.log('⏳ Starting WhatsApp client initialization...');
-		// Build a list of candidate Chrome paths to check
-		const chromePaths = [
-			// 1. Explicit env override (set this in Render environment variables)
-			process.env.CHROMIUM_PATH,
-			// 2. Project-local puppeteer cache (set PUPPETEER_CACHE_DIR to this path in Render)
-			//    Render project lives at /opt/render/project/src/
-			...(() => {
-				const cacheDir = process.env.PUPPETEER_CACHE_DIR
-					|| path.join(__dirname, '../../../.puppeteer_cache');
-				// Scan for the chrome binary inside the versioned subfolder
-				try {
-					if (fs.existsSync(cacheDir)) {
-						const found = [];
-						const scan = (dir, depth = 0) => {
-							if (depth > 5) return;
-							for (const entry of fs.readdirSync(dir)) {
-								const full = path.join(dir, entry);
-								if (entry === 'chrome' && fs.statSync(full).isFile()) found.push(full);
-								else if (fs.statSync(full).isDirectory()) scan(full, depth + 1);
-							}
-						};
-						scan(cacheDir);
-						return found;
-					}
-				} catch (_) {}
-				return [];
-			})(),
-			// 3. Common system paths on Linux cloud servers
-			'/usr/bin/google-chrome-stable',
-			'/usr/bin/google-chrome',
-			'/usr/bin/chromium-browser',
-			'/usr/bin/chromium',
-			'/snap/bin/chromium',
-		];
+		console.log('⏳ Starting WhatsApp client initialization (Baileys - no Chrome needed!)...');
 
-		const foundChrome = chromePaths.find(p => p && fs.existsSync(p));
-		const puppeteerConfig = {
-			headless: true,
-			...(foundChrome && { executablePath: foundChrome }),
-			args: [
-				'--no-sandbox',
-				'--disable-setuid-sandbox',
-				'--disable-dev-shm-usage',
-				'--disable-accelerated-2d-canvas',
-				'--no-first-run',
-				'--disable-gpu',
-				'--disable-software-rasterizer',
-				'--disable-extensions',
-				'--disable-background-networking',
-				'--disable-default-apps',
-				'--disable-sync',
-				'--hide-scrollbars',
-				'--mute-audio',
-				'--safebrowsing-disable-auto-update',
-				'--disable-background-timer-throttling',
-				'--disable-renderer-backgrounding',
-				'--disable-features=IsolateOrigins,site-per-process,DialMediaRouteProvider',
-				'--disable-web-security',
-				'--window-size=800,600',
-				'--disk-cache-size=1',
-				'--media-cache-size=1',
-				'--aggressive-cache-discard',
-				'--disable-cache',
-				'--blink-settings=imagesEnabled=false',
-				'--disable-gl-drawing-for-tests'
-			],
-		};
-		console.log(`🔍 Chrome path: ${foundChrome || 'puppeteer bundled (auto)'}`);
+		// Ensure auth directory exists
+		if (!fs.existsSync(AUTH_DIR)) {
+			fs.mkdirSync(AUTH_DIR, { recursive: true });
+		}
 
-		// Use lightweight LocalAuth to completely avoid Render RAM limits.
-		client = new Client({
-			authStrategy: new LocalAuth({
-				dataPath: path.join(__dirname, '../../.wwebjs_auth')
-			}),
-			puppeteer: puppeteerConfig,
+		// Load saved session (if any)
+		const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
+
+		// Get the latest WhatsApp Web version
+		const { version } = await fetchLatestBaileysVersion();
+		console.log(`📱 Using WhatsApp Web version: ${version.join('.')}`);
+
+		// Create the socket connection
+		sock = makeWASocket({
+			version,
+			auth: {
+				creds: state.creds,
+				keys: makeCacheableSignalKeyStore(state.keys, logger),
+			},
+			printQRInTerminal: false, // We handle QR ourselves
+			logger,
+			browser: ['BlueFins Academy', 'Chrome', '120.0.0'],
+			generateHighQualityLinkPreview: false,
+			syncFullHistory: false, // Don't sync old messages — saves huge RAM
+			markOnlineOnConnect: false, // Don't mark as online
 		});
 
-		client.on('qr', (qr) => {
-			currentStatus = 'qr_pending';
-			currentQR = qr;
-			console.log('\n📱 WhatsApp QR Code — Scan this with your phone:');
-			qrcode.generate(qr, { small: true });
-			console.log('Or visit /api/whatsapp/qr in your admin panel.\n');
+		// Handle connection updates (QR, connected, disconnected)
+		sock.ev.on('connection.update', async (update) => {
+			const { connection, lastDisconnect, qr } = update;
+
+			if (qr) {
+				// New QR code received — display it
+				currentStatus = 'qr_pending';
+				currentQR = qr;
+				retryCount = 0;
+				console.log('\n📱 WhatsApp QR Code — Scan this with your phone:');
+				qrcodeTerminal.generate(qr, { small: true });
+				console.log('Or visit /api/whatsapp/qr in your admin panel.\n');
+			}
+
+			if (connection === 'close') {
+				currentQR = null;
+				const statusCode = lastDisconnect?.error?.output?.statusCode;
+				const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+
+				if (statusCode === DisconnectReason.loggedOut) {
+					// User explicitly logged out — clear session
+					console.log('🚪 WhatsApp logged out. Clearing session...');
+					currentStatus = 'disconnected';
+					connectedPhone = null;
+					// Clear auth files so a fresh QR appears next time
+					try {
+						fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+						fs.mkdirSync(AUTH_DIR, { recursive: true });
+					} catch (_) {}
+				} else if (shouldReconnect && retryCount < MAX_RETRIES) {
+					// Connection lost — auto-reconnect
+					retryCount++;
+					const delay = Math.min(retryCount * 2000, 10000);
+					console.log(`⚠️ WhatsApp disconnected (code: ${statusCode}). Reconnecting in ${delay / 1000}s... (Attempt ${retryCount}/${MAX_RETRIES})`);
+					currentStatus = 'disconnected';
+					connectedPhone = null;
+					setTimeout(() => initWhatsApp(), delay);
+				} else {
+					console.error('❌ WhatsApp connection failed permanently. Please restart the server.');
+					currentStatus = 'disconnected';
+					connectedPhone = null;
+				}
+			}
+
+			if (connection === 'open') {
+				// Successfully connected!
+				currentStatus = 'connected';
+				currentQR = null;
+				retryCount = 0;
+
+				// Extract the connected phone number
+				const user = sock.user;
+				connectedPhone = user?.id?.split(':')[0] || user?.id?.split('@')[0] || 'unknown';
+				console.log(`\n✅ WhatsApp connected! Logged in as: ${connectedPhone}\n`);
+			}
 		});
 
-		client.on('ready', () => {
-			currentStatus = 'connected';
-			currentQR = null;
-			const info = client.info;
-			connectedPhone = info?.wid?.user || 'unknown';
-			console.log(`\n✅ WhatsApp connected! Logged in as: ${connectedPhone}\n`);
-		});
-
-		client.on('authenticated', () => {
-			console.log('🔐 WhatsApp session authenticated locally.');
-		});
-
-		client.on('auth_failure', (msg) => {
-			currentStatus = 'disconnected';
-			currentQR = null;
-			console.error('❌ WhatsApp auth failed:', msg);
-		});
-
-		client.on('disconnected', (reason) => {
-			currentStatus = 'disconnected';
-			currentQR = null;
-			connectedPhone = null;
-			console.log('⚠️ WhatsApp disconnected:', reason);
-			// Attempt to reconnect after 30 seconds
-			setTimeout(() => {
-				console.log('🔄 Attempting to reconnect WhatsApp...');
-				client.initialize().catch(err => {
-					console.error('❌ WhatsApp reconnect failed:', err.message);
-				});
-			}, 30000);
-		});
-
-		client.initialize().catch(err => {
-			console.error('❌ WhatsApp initialization error:', err.message);
-			currentStatus = 'disconnected';
-		});
+		// Save credentials whenever they update (keeps session alive)
+		sock.ev.on('creds.update', saveCreds);
 
 		currentStatus = 'initializing';
-		console.log('📱 WhatsApp client initializing... waiting for QR or auto-reconnect (this can take 30-60 seconds with Cloud sessions).');
+		console.log('📱 WhatsApp client initializing... waiting for QR or auto-reconnect.');
 	} catch (err) {
 		console.error('❌ Failed to create WhatsApp client:', err.message);
 		currentStatus = 'disconnected';
@@ -180,7 +155,7 @@ export const getQRDataURL = async () => {
 /**
  * Format a phone number for WhatsApp API.
  * Accepts: "9876543210", "+919876543210", "919876543210"
- * Returns: "919876543210@c.us"
+ * Returns: "919876543210@s.whatsapp.net"
  */
 const formatPhone = (phone) => {
 	if (!phone) return null;
@@ -191,7 +166,7 @@ const formatPhone = (phone) => {
 	}
 	// Remove leading + if present
 	if (cleaned.startsWith('+')) cleaned = cleaned.slice(1);
-	return cleaned + '@c.us';
+	return cleaned + '@s.whatsapp.net';
 };
 
 /**
@@ -201,32 +176,31 @@ const formatPhone = (phone) => {
  * @returns {{ success: boolean, error?: string }}
  */
 export const sendMessage = async (phone, message) => {
-	if (currentStatus !== 'connected' || !client) {
+	if (currentStatus !== 'connected' || !sock) {
 		return { success: false, error: 'WhatsApp is not connected' };
 	}
 
-	const chatId = formatPhone(phone);
-	if (!chatId) {
+	const jid = formatPhone(phone);
+	if (!jid) {
 		return { success: false, error: 'Invalid phone number' };
 	}
 
 	let lastError = null;
 	for (let attempt = 1; attempt <= 3; attempt++) {
 		try {
-			// Check if the number is registered on WhatsApp
-			const isRegistered = await client.isRegisteredUser(chatId);
-			if (!isRegistered) {
+			// Check if number exists on WhatsApp
+			const [result] = await sock.onWhatsApp(jid.replace('@s.whatsapp.net', ''));
+			if (!result?.exists) {
 				return { success: false, error: `${phone} is not registered on WhatsApp` };
 			}
 
-			await client.sendMessage(chatId, message);
+			await sock.sendMessage(result.jid, { text: message });
 			return { success: true };
 		} catch (err) {
 			lastError = err.message;
-			// If it's a critical Puppeteer error like Detached Frame, wait and retry
-			if (err.message.includes('detached Frame') || err.message.includes('Target closed') || err.message.includes('Execution context was destroyed')) {
-				console.log(`⚠️ Frame detached or closed. Retrying send to ${phone} (Attempt ${attempt}/3)...`);
-				await new Promise(res => setTimeout(res, 2500)); // Wait 2.5s before retry
+			if (attempt < 3) {
+				console.log(`⚠️ Send failed to ${phone}. Retrying (Attempt ${attempt}/3)...`);
+				await new Promise(res => setTimeout(res, 2000));
 				continue;
 			}
 			return { success: false, error: err.message };
@@ -241,10 +215,9 @@ export const sendMessage = async (phone, message) => {
  * Use this if you want to switch to a different number.
  */
 export const disconnectWhatsApp = async () => {
-	if (client) {
+	if (sock) {
 		try {
-			await client.logout();
-			await client.destroy();
+			await sock.logout();
 		} catch (err) {
 			console.error('Error disconnecting WhatsApp:', err.message);
 		}
@@ -252,4 +225,9 @@ export const disconnectWhatsApp = async () => {
 	currentStatus = 'disconnected';
 	currentQR = null;
 	connectedPhone = null;
+	// Clear auth directory for fresh QR on next connect
+	try {
+		fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+		fs.mkdirSync(AUTH_DIR, { recursive: true });
+	} catch (_) {}
 };
