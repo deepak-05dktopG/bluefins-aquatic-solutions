@@ -150,9 +150,9 @@ const WhatsAppStatus = () => {
             <div style={{ padding: '32px 24px', maxWidth: '1100px', margin: '0 auto' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                     <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a', letterSpacing: -0.5 }}>WhatsApp Control Center</h1>
-                    <div style={{ padding: '8px 16px', borderRadius: '30px', background: status === 'connected' ? '#dcfce7' : '#fee2e2', color: status === 'connected' ? '#166534' : '#991b1b', fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: status === 'connected' ? '#22c55e' : '#ef4444' }} />
-                        {status === 'connected' ? 'ACTIVE' : status === 'qr_pending' ? 'LINK PENDING' : 'DISCONNECTED'}
+                    <div style={{ padding: '8px 16px', borderRadius: '30px', background: status === 'connected' ? '#dcfce7' : status === 'initializing' ? '#fef3c7' : '#fee2e2', color: status === 'connected' ? '#166534' : status === 'initializing' ? '#92400e' : '#991b1b', fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: status === 'connected' ? '#22c55e' : status === 'initializing' ? '#f59e0b' : '#ef4444' }} />
+                        {status === 'connected' ? 'ACTIVE' : status === 'qr_pending' ? 'LINK PENDING' : status === 'initializing' ? 'INITIALIZING' : 'DISCONNECTED'}
                     </div>
                 </div>
 
@@ -172,8 +172,14 @@ const WhatsAppStatus = () => {
                                 <div style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>+{phone}</div>
                                 <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, marginTop: '4px' }}>Linked & Ready to Send</div>
                             </div>
+                        ) : status === 'initializing' ? (
+                            <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8' }}>
+                                <div style={{ marginBottom: 8, fontSize: 24 }}>⏳</div>
+                                <div style={{ fontSize: 14, fontWeight: 600, color: '#475569' }}>Connecting to WhatsApp...</div>
+                                <div style={{ fontSize: 12, marginTop: 4 }}>This can take up to 60 seconds.</div>
+                            </div>
                         ) : (
-                            <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8' }}>Initializing WhatsApp engine...</div>
+                            <div style={{ padding: '24px', textAlign: 'center', color: '#ef4444', fontWeight: 600 }}>WhatsApp is disconnected. Check logs.</div>
                         )}
 
                         {status === 'connected' && (
