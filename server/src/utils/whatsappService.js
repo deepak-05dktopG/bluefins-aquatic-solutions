@@ -4,7 +4,7 @@
  *               Uses direct WebSocket connection — no browser, minimal RAM usage.
  */
 
-import { default as makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, makeCacheableSignalKeyStore } from '@whiskeysockets/baileys';
+import { default as makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from '@whiskeysockets/baileys';
 import qrcodeTerminal from 'qrcode-terminal';
 import qrcodeImg from 'qrcode';
 import path from 'path';
@@ -48,19 +48,21 @@ export const initWhatsApp = async () => {
 		const { version } = await fetchLatestBaileysVersion();
 		console.log(`📱 Using WhatsApp Web version: ${version.join('.')}`);
 
-		// Create the socket connection
+		// Create the socket connection (ultra low-memory config for 512MB servers)
 		sock = makeWASocket({
 			version,
 			auth: {
 				creds: state.creds,
-				keys: makeCacheableSignalKeyStore(state.keys, logger),
+				keys: state.keys, // Use raw keys — no in-memory caching of signal sessions
 			},
 			printQRInTerminal: false, // We handle QR ourselves
 			logger,
 			browser: ['BlueFins Academy', 'Chrome', '120.0.0'],
 			generateHighQualityLinkPreview: false,
-			syncFullHistory: false, // Don't sync old messages — saves huge RAM
+			syncFullHistory: false, // Don't sync old messages
 			markOnlineOnConnect: false, // Don't mark as online
+			shouldSyncHistoryMessage: () => false, // Block ALL history sync to save RAM
+			getMessage: async () => ({ conversation: '' }), // Don't retry/cache failed messages
 		});
 
 		// Handle connection updates (QR, connected, disconnected)
