@@ -4,12 +4,29 @@
  */
 
 import express from 'express';
-import { getStatus, getQRDataURL, sendMessage, disconnectWhatsApp } from '../utils/whatsappService.js';
+import { getStatus, getQRDataURL, sendMessage, disconnectWhatsApp, initWhatsApp } from '../utils/whatsappService.js';
 import { checkAndNotify } from '../utils/expiryNotifier.js';
 import NotificationLog from '../models/NotificationLog.js';
 import Settings from '../models/Settings.js';
 
 const router = express.Router();
+
+// POST /api/whatsapp/connect — Manually start WhatsApp (admin clicks "Connect" button)
+router.post('/connect', async (req, res) => {
+	try {
+		const status = getStatus();
+		if (status.status === 'connected') {
+			return res.json({ success: true, message: 'WhatsApp is already connected.' });
+		}
+		if (status.status === 'initializing' || status.status === 'qr_pending') {
+			return res.json({ success: true, message: 'WhatsApp is already starting up. Please wait for the QR code.' });
+		}
+		await initWhatsApp();
+		res.json({ success: true, message: 'WhatsApp initialization started. QR code will appear shortly.' });
+	} catch (err) {
+		res.status(500).json({ success: false, message: err.message });
+	}
+});
 
 // GET /api/whatsapp/status — Check WhatsApp connection status
 router.get('/status', (req, res) => {

@@ -89,16 +89,13 @@ app.listen(PORT,
   console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
   console.log(`📍 API available at http://localhost:${PORT}/api`)
 
-  // Initialize WhatsApp client and expiry notification scheduler
-  import('./utils/whatsappService.js').then(({ initWhatsApp }) => {
-    initWhatsApp();
-  }).catch(err => {
-    console.error('⚠️ WhatsApp service failed to load (non-blocking):', err.message);
-  });
-
+  // Start expiry notification scheduler (safely skips if WhatsApp not connected)
   import('./utils/expiryNotifier.js').then(({ startExpiryNotifier }) => {
     startExpiryNotifier();
   }).catch(err => {
     console.error('⚠️ Expiry notifier failed to load (non-blocking):', err.message);
   });
+
+  // NOTE: WhatsApp is NOT auto-started to stay within Render's 512MB RAM limit.
+  // Admin must click "Connect WhatsApp" button in the admin panel to start it.
 })

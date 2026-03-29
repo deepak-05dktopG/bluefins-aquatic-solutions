@@ -19,7 +19,7 @@ const __dirname = path.dirname(__filename);
 const logger = pino({ level: 'silent' });
 
 let sock = null;
-let currentStatus = 'initializing'; // 'initializing' | 'disconnected' | 'qr_pending' | 'connected'
+let currentStatus = 'disconnected'; // 'disconnected' | 'initializing' | 'qr_pending' | 'connected'
 let currentQR = null;
 let connectedPhone = null;
 let retryCount = 0;

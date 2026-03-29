@@ -92,6 +92,22 @@ const WhatsAppStatus = () => {
         }
     };
 
+    const handleConnect = async () => {
+        try {
+            setLoading(true);
+            await api.post('/whatsapp/connect');
+            setLoading(false);
+            Swal.fire('Starting!', 'WhatsApp is connecting. QR code will appear in a few seconds.', 'info');
+            // Poll for status updates more frequently
+            setTimeout(fetchStatus, 3000);
+            setTimeout(fetchStatus, 8000);
+            setTimeout(fetchStatus, 15000);
+        } catch (err) {
+            setLoading(false);
+            Swal.fire('Error', 'Failed to start WhatsApp.', 'error');
+        }
+    };
+
     const runManualCheck = async () => {
         try {
             setLoading(true);
@@ -179,7 +195,13 @@ const WhatsAppStatus = () => {
                                 <div style={{ fontSize: 12, marginTop: 4 }}>This can take up to 60 seconds.</div>
                             </div>
                         ) : (
-                            <div style={{ padding: '24px', textAlign: 'center', color: '#ef4444', fontWeight: 600 }}>WhatsApp is disconnected. Check logs.</div>
+                            <div style={{ padding: '24px', textAlign: 'center' }}>
+                                <div style={{ fontSize: 40, marginBottom: 12 }}>📴</div>
+                                <div style={{ fontSize: 14, fontWeight: 600, color: '#64748b', marginBottom: 16 }}>WhatsApp is not running</div>
+                                <button onClick={handleConnect} disabled={loading} style={{ padding: '12px 32px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '15px', cursor: 'pointer', opacity: loading ? 0.6 : 1 }}>
+                                    {loading ? 'Starting...' : '🚀 Connect WhatsApp'}
+                                </button>
+                            </div>
                         )}
 
                         {status === 'connected' && (
