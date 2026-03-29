@@ -88,7 +88,9 @@ export const initWhatsApp = async () => {
 				'--disk-cache-size=1',
 				'--media-cache-size=1',
 				'--aggressive-cache-discard',
-				'--disable-cache'
+				'--disable-cache',
+				'--blink-settings=imagesEnabled=false',
+				'--disable-gl-drawing-for-tests'
 			],
 		};
 		console.log(`🔍 Chrome path: ${foundChrome || 'puppeteer bundled (auto)'}`);

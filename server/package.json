@@ -5,9 +5,9 @@
   "description": "Backend server for Blue Fins project",
   "main": "src/server.js",
   "scripts": {
-    "start": "node --max-old-space-size=350 src/server.js",
+    "start": "node --max-old-space-size=150 src/server.js",
     "dev": "nodemon src/server.js",
-    "production": "NODE_ENV=production node --max-old-space-size=350 src/server.js",
+    "production": "NODE_ENV=production node --max-old-space-size=150 src/server.js",
     "create-admin": "node src/scripts/createAdmin.js",
     "seed-admin": "node src/scripts/seedAdmin.js",
     "seed-test-plan": "node src/scripts/seedTestPlan.js",
