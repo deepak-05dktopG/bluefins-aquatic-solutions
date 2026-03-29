@@ -56,6 +56,8 @@ Create an admin user (server must have DB configured):
 ```bash
 cd server
 npm run create-admin -- --id "owner" --role superadmin
+
+
 ```
 
 Plain English: “Create a login account for the admin panel.”
@@ -67,3 +69,10 @@ Plain English: “Create a login account for the admin panel.”
 - What each folder/file means: see [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md)
 - Frontend details: see [client/README.md](client/README.md)
 - Backend details: see [server/README.md](server/README.md)
+
+
+
+
+
+
+now change the layout of the daily tracker page as that total amount detials in appear in aside. and also that need ot show permanent total expences and withdrawals form grocerchashbox shema, and in the schema also store the total money recieved from the each plan type, once those data created in dailytracker that also store in grocercash box according to the specific type also, and make a count on each plan type in grocer cash box permanently.

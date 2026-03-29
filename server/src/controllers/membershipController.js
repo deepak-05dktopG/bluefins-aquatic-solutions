@@ -917,7 +917,7 @@ export const registerPaidMembership = asyncHandler(async (req, res) => {
 			? payment.pricing.total
 			: payment.amount;
 		await DailyTracker.create({
-			type: 'Registration',
+			type: plan?.planName || plan?.name || 'Registration',
 			name: member?.name || 'New Member',
 			paymentType: (payment.provider || 'cash').toLowerCase(),
 			amount: finalAmount,
@@ -1027,7 +1027,7 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 			? payment.pricing.total
 			: payment.amount;
 		await DailyTracker.create({
-			type: 'Registration',
+			type: plan?.planName || plan?.name || 'Registration',
 			name: member?.name || 'New Member',
 			paymentType: (payment.provider || 'cash').toLowerCase(),
 			amount: finalAmount,
@@ -1042,6 +1042,9 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 			await incrementCashBox({
 				amount: finalAmount,
 				paymentType: payment.provider,
+				entryType: plan?.planName || plan?.name || 'Registration',
+				entryCountDelta: 1,
+				entryTotalDelta: finalAmount
 			});
 		} catch (e) { /* ignore cash box errors */ }
 	} catch (e) { /* ignore tracker errors */ }
@@ -1181,7 +1184,7 @@ export const verifyRazorpayPayment = asyncHandler(async (req, res) => {
 			? paymentDoc.pricing.total
 			: paymentDoc.amount;
 		await DailyTracker.create({
-			type: 'Registration',
+			type: out?.plan?.planName || out?.plan?.name || 'Registration',
 			name: paymentDoc?.memberDraft?.name || 'New Member',
 			paymentType: (paymentDoc.provider || 'gpay').toLowerCase(),
 			amount: finalAmount,
@@ -1439,6 +1442,12 @@ export const updateMember = asyncHandler(async (req, res) => {
 			if (member.planType !== 'public') {
 				d.setUTCHours(23, 59, 59, 999);
 			}
+			// If expiry date changed, reset WhatsApp reminder flags for the new cycle
+			if (member.expiryDate?.getTime() !== d.getTime()) {
+				member.reminderSent7 = false;
+				member.reminderSent3 = false;
+				member.reminderSent1 = false;
+			}
 			member.expiryDate = d;
 		}
 	}
@@ -1455,7 +1464,7 @@ export const updateMember = asyncHandler(async (req, res) => {
 
 	// Return the populated member back so the frontend can update its state
 	const updated = await Member.findById(member._id).populate('planId', 'planName type categoryRequired');
-	
+
 	const mObj = updated.toObject();
 	mObj.plan = mObj.planId ? { planName: mObj.planId.planName } : null; // map for frontend format match
 

@@ -1,7 +1,30 @@
-// dailyTrackerController.js - Controller for Daily Tracker API
 import DailyTracker from '../models/DailyTracker.js';
-import { incrementCashBox } from './grocerCashBoxController.js';
 import GrocerCashBox from '../models/GrocerCashBox.js';
+import MembershipPlan from '../models/MembershipPlan.js';
+import { incrementCashBox } from './grocerCashBoxController.js';
+
+// Helper to ensure all active plans are physically initialized in the CashBox document
+const ensureCashBoxStats = async (cashBox) => {
+  if (!cashBox) return;
+  const plans = await MembershipPlan.find({ isActive: true });
+  let updated = false;
+  
+  if (!cashBox.orderStats) { cashBox.orderStats = { count: 0, amount: 0 }; updated = true; }
+  if (!cashBox.oneHourOrderStats) { cashBox.oneHourOrderStats = { count: 0, amount: 0 }; updated = true; }
+  if (!cashBox.membershipStats) { cashBox.membershipStats = []; updated = true; }
+
+  for (const plan of plans) {
+    const exists = cashBox.membershipStats.find(p => p.planName === plan.planName);
+    if (!exists) {
+      cashBox.membershipStats.push({ planName: plan.planName, count: 0, amount: 0 });
+      updated = true;
+    }
+  }
+
+  if (updated) {
+    await cashBox.save();
+  }
+};
 
 // Get all tracker entries for a specific date (YYYY-MM-DD)
 export const getDailyTrackerByDate = async (req, res) => {
@@ -9,7 +32,8 @@ export const getDailyTrackerByDate = async (req, res) => {
     const { date } = req.query;
     if (!date) return res.status(400).json({ success: false, message: 'Date is required' });
     const entries = await DailyTracker.find({ date }).sort({ time: 1, createdAt: 1 });
-    const cashBox = await GrocerCashBox.findOne({});
+    let cashBox = await GrocerCashBox.findOne({});
+    if (cashBox) await ensureCashBoxStats(cashBox);
     res.json({ success: true, data: entries, cashBox: cashBox || { hardCash: 0, gpayCash: 0 } });
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });
@@ -30,7 +54,8 @@ export const getAllTrackerEntries = async (req, res) => {
     }
     const limitNum = Math.min(Number.isFinite(Number(limitParam)) ? Number(limitParam) : 500, 1000);
     const entries = await DailyTracker.find(filter).sort({ date: -1, time: -1 }).limit(limitNum);
-    const cashBox = await GrocerCashBox.findOne({});
+    let cashBox = await GrocerCashBox.findOne({});
+    if (cashBox) await ensureCashBoxStats(cashBox);
     res.json({ success: true, data: entries, cashBox: cashBox || { hardCash: 0, gpayCash: 0 } });
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });
@@ -53,20 +78,28 @@ export const addDailyTrackerEntry = async (req, res) => {
     await entry.save();
 
     if (entry.amount && entry.paymentType) {
-      if (entry.type === 'Order') {
+      if (entry.type !== 'Expense' && entry.type !== 'Withdrawal') {
         try {
           await incrementCashBox({
-              amount: entry.amount,
-              paymentType: entry.paymentType,
+            amount: entry.amount,
+            paymentType: entry.paymentType,
+            entryType: entry.type,
+            entryCountDelta: 1,
+            entryTotalDelta: entry.amount
           });
         } catch (err) {
-          console.error('Error incrementing GrocerCashBox for DailyTracker Order:', err);
+          console.error('Error incrementing GrocerCashBox for DailyTracker Order/1 Hour Order:', err);
         }
       } else if (entry.type === 'Expense' || entry.type === 'Withdrawal') {
         try {
           await incrementCashBox({
-              amount: -entry.amount,
-              paymentType: entry.paymentType,
+            amount: -entry.amount,
+            paymentType: entry.paymentType,
+            expenseDelta: entry.type === 'Expense' ? entry.amount : 0,
+            withdrawalDelta: entry.type === 'Withdrawal' ? entry.amount : 0,
+            entryType: entry.type,
+            entryCountDelta: 1,
+            entryTotalDelta: entry.amount
           });
         } catch (err) {
           console.error(`Error decrementing GrocerCashBox for DailyTracker ${entry.type}:`, err);
@@ -91,11 +124,14 @@ export const updateDailyTrackerEntry = async (req, res) => {
     // Step 1: Revert old entry's effect on cash box
     if (oldEntry.amount && oldEntry.paymentType) {
       let revertAmount = 0;
-      if (oldEntry.type === 'Order' || oldEntry.type === 'Registration') revertAmount = -oldEntry.amount;
-      else if (oldEntry.type === 'Expense' || oldEntry.type === 'Withdrawal') revertAmount = oldEntry.amount;
-      
-      if (revertAmount !== 0) {
-        await incrementCashBox({ amount: revertAmount, paymentType: oldEntry.paymentType });
+      let revertExpense = 0;
+      let revertWithdrawal = 0;
+      if (oldEntry.type !== 'Expense' && oldEntry.type !== 'Withdrawal') revertAmount = -oldEntry.amount;
+      else if (oldEntry.type === 'Expense') { revertAmount = oldEntry.amount; revertExpense = -oldEntry.amount; }
+      else if (oldEntry.type === 'Withdrawal') { revertAmount = oldEntry.amount; revertWithdrawal = -oldEntry.amount; }
+
+      if (revertAmount !== 0 || revertExpense !== 0 || revertWithdrawal !== 0) {
+        await incrementCashBox({ amount: revertAmount, paymentType: oldEntry.paymentType, expenseDelta: revertExpense, withdrawalDelta: revertWithdrawal, entryType: oldEntry.type, entryCountDelta: -1, entryTotalDelta: -oldEntry.amount });
       }
     }
 
@@ -105,11 +141,14 @@ export const updateDailyTrackerEntry = async (req, res) => {
     // Step 3: Apply new entry's effect on cash box
     if (updatedEntry.amount && updatedEntry.paymentType) {
       let applyAmount = 0;
-      if (updatedEntry.type === 'Order' || updatedEntry.type === 'Registration') applyAmount = updatedEntry.amount;
-      else if (updatedEntry.type === 'Expense' || updatedEntry.type === 'Withdrawal') applyAmount = -updatedEntry.amount;
-      
-      if (applyAmount !== 0) {
-        await incrementCashBox({ amount: applyAmount, paymentType: updatedEntry.paymentType });
+      let applyExpense = 0;
+      let applyWithdrawal = 0;
+      if (updatedEntry.type !== 'Expense' && updatedEntry.type !== 'Withdrawal') applyAmount = updatedEntry.amount;
+      else if (updatedEntry.type === 'Expense') { applyAmount = -updatedEntry.amount; applyExpense = updatedEntry.amount; }
+      else if (updatedEntry.type === 'Withdrawal') { applyAmount = -updatedEntry.amount; applyWithdrawal = updatedEntry.amount; }
+
+      if (applyAmount !== 0 || applyExpense !== 0 || applyWithdrawal !== 0) {
+        await incrementCashBox({ amount: applyAmount, paymentType: updatedEntry.paymentType, expenseDelta: applyExpense, withdrawalDelta: applyWithdrawal, entryType: updatedEntry.type, entryCountDelta: 1, entryTotalDelta: updatedEntry.amount });
       }
     }
 
@@ -141,11 +180,14 @@ export const deleteDailyTrackerById = async (req, res) => {
     // Step 1: Revert its effect on cash box
     if (entry.amount && entry.paymentType) {
       let revertAmount = 0;
-      if (entry.type === 'Order' || entry.type === 'Registration') revertAmount = -entry.amount;
-      else if (entry.type === 'Expense' || entry.type === 'Withdrawal') revertAmount = entry.amount;
-      
-      if (revertAmount !== 0) {
-        await incrementCashBox({ amount: revertAmount, paymentType: entry.paymentType });
+      let revertExpense = 0;
+      let revertWithdrawal = 0;
+      if (entry.type !== 'Expense' && entry.type !== 'Withdrawal') revertAmount = -entry.amount;
+      else if (entry.type === 'Expense') { revertAmount = entry.amount; revertExpense = -entry.amount; }
+      else if (entry.type === 'Withdrawal') { revertAmount = entry.amount; revertWithdrawal = -entry.amount; }
+
+      if (revertAmount !== 0 || revertExpense !== 0 || revertWithdrawal !== 0) {
+        await incrementCashBox({ amount: revertAmount, paymentType: entry.paymentType, expenseDelta: revertExpense, withdrawalDelta: revertWithdrawal, entryType: entry.type, entryCountDelta: -1, entryTotalDelta: -entry.amount });
       }
     }
 

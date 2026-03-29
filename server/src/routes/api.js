@@ -65,6 +65,7 @@ import {
 } from '../controllers/membershipController.js';
 
 import { scanAttendance, listAttendance, exportAttendanceCsv, deleteAttendance, bulkDeleteAttendance, purgeAttendanceBefore } from '../controllers/attendanceController.js';
+import whatsappRoutes from './whatsappRoutes.js';
 
 
 const router = express.Router();
@@ -148,5 +149,8 @@ router.patch('/daily-tracker/:id', requireAdminAuth, updateDailyTrackerEntry);
 router.delete('/daily-tracker/all', requireAdminAuth, deleteAllTrackerEntries);
 router.delete('/daily-tracker/:id', requireAdminAuth, deleteDailyTrackerById);
 router.delete('/daily-tracker', requireAdminAuth, deleteDailyTrackerByDate);
+
+// WhatsApp notification routes (admin only)
+router.use('/whatsapp', requireAdminAuth, whatsappRoutes);
 
 export default router;

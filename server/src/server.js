@@ -97,4 +97,17 @@ app.listen(PORT,
 () => {
   console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
   console.log(`📍 API available at http://localhost:${PORT}/api`)
+
+  // Initialize WhatsApp client and expiry notification scheduler
+  import('./utils/whatsappService.js').then(({ initWhatsApp }) => {
+    initWhatsApp();
+  }).catch(err => {
+    console.error('⚠️ WhatsApp service failed to load (non-blocking):', err.message);
+  });
+
+  import('./utils/expiryNotifier.js').then(({ startExpiryNotifier }) => {
+    startExpiryNotifier();
+  }).catch(err => {
+    console.error('⚠️ Expiry notifier failed to load (non-blocking):', err.message);
+  });
 })

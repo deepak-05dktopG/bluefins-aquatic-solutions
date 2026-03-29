@@ -75,9 +75,17 @@ const toSafePhonePart = (value, fallback = 'NA') => {
 // Formats a date as a readable string for the ID card (e.g. 'Mar 05, 2026')
 const formatDate = value => {
     if (!value) return ''
-    const d = value instanceof Date ? value : new Date(value)
-    if (Number.isNaN(d.getTime())) return ''
-    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: '2-digit' })
+    try {
+        let isoString = value instanceof Date ? value.toISOString() : (typeof value === 'string' ? value : new Date(value).toISOString());
+        if (!isoString || !isoString.includes('-')) return '';
+        const datePart = isoString.split('T')[0];
+        const [year, month, day] = datePart.split('-');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthName = months[parseInt(month, 10) - 1] || month;
+        return `${monthName} ${day}, ${year}`;
+    } catch (e) {
+        return '';
+    }
 };
 
 // Draws a rectangle with rounded corners on the canvas (card background/panels)

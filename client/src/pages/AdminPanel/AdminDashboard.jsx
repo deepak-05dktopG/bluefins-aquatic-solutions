@@ -15,6 +15,7 @@ import {
   FaFileAlt,
   FaQrcode,
   FaUsers,
+  FaWhatsapp,
 } from "react-icons/fa";
 
 // Admin dashboard — landing page after login, shows navigation cards for all admin features
@@ -100,6 +101,14 @@ const AdminDashboard = () => {
       icon: <FaFileAlt />,
       path: "/admin/posts",
       color: "#FFB6C1",
+      count: "",
+    },
+    {
+      title: "WhatsApp Status",
+      description: "Manage WhatsApp connection and notification logs",
+      icon: <FaWhatsapp />,
+      path: "/admin/whatsapp-status",
+      color: "#25D366",
       count: "",
     },
   ];

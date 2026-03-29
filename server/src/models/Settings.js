@@ -1,0 +1,15 @@
+/**
+ * What it is: Database model for system settings.
+ * Non-tech note: Stores global configurations like WhatsApp notification time.
+ */
+
+import mongoose from 'mongoose';
+
+const settingsSchema = new mongoose.Schema({
+  key: { type: String, required: true, unique: true },
+  value: { type: mongoose.Schema.Types.Mixed, required: true },
+}, { timestamps: true });
+
+const Settings = mongoose.models.Settings || mongoose.model('Settings', settingsSchema);
+
+export default Settings;

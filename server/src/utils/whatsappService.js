@@ -1,0 +1,180 @@
+/**
+ * What it is: WhatsApp Web client service.
+ * Non-tech note: Connects to WhatsApp via QR scan, then sends messages automatically.
+ */
+
+import pkg from 'whatsapp-web.js';
+const { Client, LocalAuth } = pkg;
+import qrcode from 'qrcode-terminal';
+import qrcodeImg from 'qrcode';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+let client = null;
+let currentStatus = 'disconnected'; // 'disconnected' | 'qr_pending' | 'connected'
+let currentQR = null;
+let connectedPhone = null;
+
+/**
+ * Initialize the WhatsApp client.
+ * Call this once when the server starts.
+ */
+export const initWhatsApp = () => {
+	try {
+		client = new Client({
+			authStrategy: new LocalAuth({
+				dataPath: path.join(__dirname, '../../.wwebjs_auth'),
+			}),
+			puppeteer: {
+				headless: true,
+				args: [
+					'--no-sandbox',
+					'--disable-setuid-sandbox',
+					'--disable-dev-shm-usage',
+					'--disable-accelerated-2d-canvas',
+					'--no-first-run',
+					'--disable-gpu',
+				],
+			},
+		});
+
+		client.on('qr', (qr) => {
+			currentStatus = 'qr_pending';
+			currentQR = qr;
+			console.log('\n📱 WhatsApp QR Code — Scan this with your phone:');
+			qrcode.generate(qr, { small: true });
+			console.log('Or visit /api/whatsapp/qr in your admin panel.\n');
+		});
+
+		client.on('ready', () => {
+			currentStatus = 'connected';
+			currentQR = null;
+			const info = client.info;
+			connectedPhone = info?.wid?.user || 'unknown';
+			console.log(`\n✅ WhatsApp connected! Logged in as: ${connectedPhone}\n`);
+		});
+
+		client.on('authenticated', () => {
+			console.log('🔐 WhatsApp session authenticated (saved for next restart).');
+		});
+
+		client.on('auth_failure', (msg) => {
+			currentStatus = 'disconnected';
+			currentQR = null;
+			console.error('❌ WhatsApp auth failed:', msg);
+		});
+
+		client.on('disconnected', (reason) => {
+			currentStatus = 'disconnected';
+			currentQR = null;
+			connectedPhone = null;
+			console.log('⚠️ WhatsApp disconnected:', reason);
+			// Attempt to reconnect after 30 seconds
+			setTimeout(() => {
+				console.log('🔄 Attempting to reconnect WhatsApp...');
+				client.initialize().catch(err => {
+					console.error('❌ WhatsApp reconnect failed:', err.message);
+				});
+			}, 30000);
+		});
+
+		client.initialize().catch(err => {
+			console.error('❌ WhatsApp initialization error:', err.message);
+			currentStatus = 'disconnected';
+		});
+
+		console.log('📱 WhatsApp client initializing... waiting for QR or auto-reconnect.');
+	} catch (err) {
+		console.error('❌ Failed to create WhatsApp client:', err.message);
+		currentStatus = 'disconnected';
+	}
+};
+
+/**
+ * Get the current WhatsApp connection status.
+ */
+export const getStatus = () => ({
+	status: currentStatus,
+	phone: connectedPhone,
+});
+
+/**
+ * Get the current QR code as a base64 data URL (for admin panel display).
+ * Returns null if no QR is pending.
+ */
+export const getQRDataURL = async () => {
+	if (!currentQR) return null;
+	try {
+		return await qrcodeImg.toDataURL(currentQR);
+	} catch {
+		return null;
+	}
+};
+
+/**
+ * Format a phone number for WhatsApp API.
+ * Accepts: "9876543210", "+919876543210", "919876543210"
+ * Returns: "919876543210@c.us"
+ */
+const formatPhone = (phone) => {
+	if (!phone) return null;
+	let cleaned = String(phone).replace(/[\s\-\+\(\)]/g, '');
+	// If 10 digits, assume Indian number
+	if (cleaned.length === 10 && /^[6-9]/.test(cleaned)) {
+		cleaned = '91' + cleaned;
+	}
+	// Remove leading + if present
+	if (cleaned.startsWith('+')) cleaned = cleaned.slice(1);
+	return cleaned + '@c.us';
+};
+
+/**
+ * Send a WhatsApp message to a phone number.
+ * @param {string} phone - The recipient's phone number
+ * @param {string} message - The message text
+ * @returns {{ success: boolean, error?: string }}
+ */
+export const sendMessage = async (phone, message) => {
+	if (currentStatus !== 'connected' || !client) {
+		return { success: false, error: 'WhatsApp is not connected' };
+	}
+
+	const chatId = formatPhone(phone);
+	if (!chatId) {
+		return { success: false, error: 'Invalid phone number' };
+	}
+
+	try {
+		// Check if the number is registered on WhatsApp
+		const isRegistered = await client.isRegisteredUser(chatId);
+		if (!isRegistered) {
+			return { success: false, error: `${phone} is not registered on WhatsApp` };
+		}
+
+		await client.sendMessage(chatId, message);
+		return { success: true };
+	} catch (err) {
+		return { success: false, error: err.message };
+	}
+};
+
+/**
+ * Disconnect and destroy the WhatsApp session.
+ * Use this if you want to switch to a different number.
+ */
+export const disconnectWhatsApp = async () => {
+	if (client) {
+		try {
+			await client.logout();
+			await client.destroy();
+		} catch (err) {
+			console.error('Error disconnecting WhatsApp:', err.message);
+		}
+	}
+	currentStatus = 'disconnected';
+	currentQR = null;
+	connectedPhone = null;
+};

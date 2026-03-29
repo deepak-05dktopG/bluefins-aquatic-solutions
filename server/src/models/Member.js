@@ -34,7 +34,9 @@ const memberSchema = new mongoose.Schema(
 		qrCode: { type: String },
 		qrPayload: { type: String },
 
-		reminderSent: { type: Boolean, default: false },
+		reminderSent7: { type: Boolean, default: false },
+		reminderSent3: { type: Boolean, default: false },
+		reminderSent1: { type: Boolean, default: false },
 	},
 	{ timestamps: true }
 )

@@ -2,7 +2,7 @@
 import mongoose from 'mongoose';
 
 const dailyTrackerSchema = new mongoose.Schema({
-  type: { type: String, enum: ['Order', 'Registration', 'Expense', 'Withdrawal'], required: true },
+  type: { type: String, required: true },
   name: { type: String, required: true },
   paymentType: { type: String, enum: ['cash', 'gpay'], required: true },
   amount: { type: Number, required: true },

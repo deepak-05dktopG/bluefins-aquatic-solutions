@@ -23,19 +23,28 @@ const safeReadJson = async res => {
 
 const formatDate = value => {
 	if (!value) return ''
-	const d = new Date(value)
-	if (Number.isNaN(d.getTime())) return ''
-	return d.toLocaleDateString()
+	try {
+		let isoString = typeof value === 'string' ? value : new Date(value).toISOString();
+		if (!isoString || !isoString.includes('-')) return '';
+		const datePart = isoString.split('T')[0];
+		const [year, month, day] = datePart.split('-');
+		return `${day}/${month}/${year}`;
+	} catch (e) {
+		return '';
+	}
 };
 
+// Convert a date value to YYYY-MM-DD for <input type="date">.
+// Uses string extraction to perfectly match backend storage.
 const toInputDate = value => {
 	if (!value) return ''
-	const d = new Date(value)
-	if (Number.isNaN(d.getTime())) return ''
-	const y = d.getFullYear()
-	const mo = String(d.getMonth() + 1).padStart(2, '0')
-	const dy = String(d.getDate()).padStart(2, '0')
-	return `${y}-${mo}-${dy}`
+	try {
+		let isoString = typeof value === 'string' ? value : new Date(value).toISOString();
+		if (!isoString || !isoString.includes('-')) return '';
+		return isoString.split('T')[0];
+	} catch (e) {
+		return '';
+	}
 }
 
 const endOfLocalDay = value => {
@@ -55,6 +64,7 @@ const daysUntil = (expiryDate, planType, joinDate) => {
 		const diff = expiryD.getTime() - now.getTime();
 		return Math.ceil(diff / (1000 * 60 * 60 * 24));
 	}
+	// Use UTC date parts since backend stores dates at UTC
 	const expiryUTC = Date.UTC(expiryD.getUTCFullYear(), expiryD.getUTCMonth(), expiryD.getUTCDate());
 	let startD = now;
 	if (joinDate) {
@@ -363,9 +373,9 @@ export default function Members() {
 			if (field === 'planId' || field === 'joinDate') {
 				const plan = allPlans.find(p => String(p._id) === next.planId)
 				if (plan && next.joinDate && plan.durationInDays && plan.type !== 'public') {
-					const d = new Date(next.joinDate)
+					const d = new Date(next.joinDate + 'T00:00:00Z')
 					if (!isNaN(d.getTime())) {
-						d.setDate(d.getDate() + plan.durationInDays)
+						d.setUTCDate(d.getUTCDate() + plan.durationInDays)
 						next.expiryDate = toInputDate(d)
 					}
 				}
