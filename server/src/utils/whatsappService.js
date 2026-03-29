@@ -95,7 +95,6 @@ export const initWhatsApp = async () => {
 				'--disable-background-timer-throttling',
 				'--disable-renderer-backgrounding',
 				'--disable-features=IsolateOrigins,site-per-process,DialMediaRouteProvider',
-				'--js-flags="--max-old-space-size=150"', // Hard limit Google Chrome JS memory 
 				'--disable-web-security',
 				'--window-size=800,600'
 			],
