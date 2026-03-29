@@ -101,6 +101,12 @@ export const initWhatsApp = async () => {
 					console.log(`⚠️ WhatsApp disconnected (code: ${statusCode}). Reconnecting in ${delay / 1000}s... (Attempt ${retryCount}/${MAX_RETRIES})`);
 					currentStatus = 'disconnected';
 					connectedPhone = null;
+					// IMPORTANT: Destroy old socket BEFORE creating new one to prevent memory leak
+					try {
+						sock.ev.removeAllListeners();
+						sock.ws.close();
+					} catch (_) {}
+					sock = null;
 					setTimeout(() => initWhatsApp(), delay);
 				} else {
 					console.error('❌ WhatsApp connection failed permanently. Please restart the server.');
