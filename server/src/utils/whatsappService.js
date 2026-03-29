@@ -96,7 +96,11 @@ export const initWhatsApp = async () => {
 				'--disable-renderer-backgrounding',
 				'--disable-features=IsolateOrigins,site-per-process,DialMediaRouteProvider',
 				'--disable-web-security',
-				'--window-size=800,600'
+				'--window-size=800,600',
+				'--disk-cache-size=1',
+				'--media-cache-size=1',
+				'--aggressive-cache-discard',
+				'--disable-cache'
 			],
 		};
 		console.log(`🔍 Chrome path: ${foundChrome || 'puppeteer bundled (auto)'}`);
