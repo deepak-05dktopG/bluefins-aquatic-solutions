@@ -94,7 +94,10 @@ export const initWhatsApp = async () => {
 				'--safebrowsing-disable-auto-update',
 				'--disable-background-timer-throttling',
 				'--disable-renderer-backgrounding',
-				'--disable-features=IsolateOrigins,site-per-process,DialMediaRouteProvider'
+				'--disable-features=IsolateOrigins,site-per-process,DialMediaRouteProvider',
+				'--js-flags="--max-old-space-size=150"', // Hard limit Google Chrome JS memory 
+				'--disable-web-security',
+				'--window-size=800,600'
 			],
 		};
 		console.log(`🔍 Chrome path: ${foundChrome || 'puppeteer bundled (auto)'}`);
