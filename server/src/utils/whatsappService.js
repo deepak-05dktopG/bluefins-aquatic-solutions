@@ -4,15 +4,12 @@
  */
 
 import pkg from 'whatsapp-web.js';
-const { Client, RemoteAuth } = pkg;
+const { Client, LocalAuth } = pkg;
 import qrcode from 'qrcode-terminal';
 import qrcodeImg from 'qrcode';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import mongoose from 'mongoose';
-import wwebjsMongo from 'wwebjs-mongo';
-const { MongoStore } = wwebjsMongo;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,16 +25,7 @@ let connectedPhone = null;
  */
 export const initWhatsApp = async () => {
 	try {
-		// Wait for MongoDB to be connected before initializing the session store
-		console.log('⏳ Waiting for database connection before starting WhatsApp...');
-		let dbRetries = 0;
-		while (mongoose.connection.readyState !== 1 && dbRetries < 20) {
-			await new Promise(resolve => setTimeout(resolve, 1000));
-			dbRetries++;
-		}
-		if (mongoose.connection.readyState !== 1) {
-			console.error('❌ Database connection timed out. WhatsApp will run without session persistence!');
-		}
+		console.log('⏳ Starting WhatsApp client initialization...');
 		// Build a list of candidate Chrome paths to check
 		const chromePaths = [
 			// 1. Explicit env override (set this in Render environment variables)
@@ -105,29 +93,13 @@ export const initWhatsApp = async () => {
 		};
 		console.log(`🔍 Chrome path: ${foundChrome || 'puppeteer bundled (auto)'}`);
 
-		// Use MongoDB to persist WhatsApp session
-		const store = new MongoStore({ mongoose: mongoose });
-
+		// Use lightweight LocalAuth to completely avoid Render RAM limits.
 		client = new Client({
-			authStrategy: new RemoteAuth({
-				store: store,
-				backupSyncIntervalMs: 300000, // Save session every 5 mins
-				clientId: 'bluefins-prod',
+			authStrategy: new LocalAuth({
 				dataPath: path.join(__dirname, '../../.wwebjs_auth')
 			}),
 			puppeteer: puppeteerConfig,
 		});
-
-		// Hack to fix whatsapp-web.js RemoteAuth bug where it crashes looking for 'Default'
-		// It expects Puppeteer to create a /Default folder, which newer versions skip sometimes.
-		setInterval(() => {
-			try {
-				const defaultPath = path.join(__dirname, '../../.wwebjs_auth/wwebjs_temp_session_bluefins-prod/Default');
-				if (!fs.existsSync(defaultPath)) {
-					fs.mkdirSync(defaultPath, { recursive: true });
-				}
-			} catch (err) {}
-		}, 10000);
 
 		client.on('qr', (qr) => {
 			currentStatus = 'qr_pending';
@@ -146,11 +118,7 @@ export const initWhatsApp = async () => {
 		});
 
 		client.on('authenticated', () => {
-			console.log('🔐 WhatsApp session authenticated.');
-		});
-
-		client.on('remote_session_saved', () => {
-			console.log('💾 WhatsApp session securely saved to MongoDB (will survive server restarts).');
+			console.log('🔐 WhatsApp session authenticated locally.');
 		});
 
 		client.on('auth_failure', (msg) => {
