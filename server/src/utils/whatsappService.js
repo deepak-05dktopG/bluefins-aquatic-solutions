@@ -8,6 +8,7 @@ const { Client, LocalAuth } = pkg;
 import qrcode from 'qrcode-terminal';
 import qrcodeImg from 'qrcode';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -24,21 +25,72 @@ let connectedPhone = null;
  */
 export const initWhatsApp = () => {
 	try {
+		// Build a list of candidate Chrome paths to check
+		const chromePaths = [
+			// 1. Explicit env override (set this in Render environment variables)
+			process.env.CHROMIUM_PATH,
+			// 2. Project-local puppeteer cache (set PUPPETEER_CACHE_DIR to this path in Render)
+			//    Render project lives at /opt/render/project/src/
+			...(() => {
+				const cacheDir = process.env.PUPPETEER_CACHE_DIR
+					|| path.join(__dirname, '../../../.puppeteer_cache');
+				// Scan for the chrome binary inside the versioned subfolder
+				try {
+					if (fs.existsSync(cacheDir)) {
+						const found = [];
+						const scan = (dir, depth = 0) => {
+							if (depth > 5) return;
+							for (const entry of fs.readdirSync(dir)) {
+								const full = path.join(dir, entry);
+								if (entry === 'chrome' && fs.statSync(full).isFile()) found.push(full);
+								else if (fs.statSync(full).isDirectory()) scan(full, depth + 1);
+							}
+						};
+						scan(cacheDir);
+						return found;
+					}
+				} catch (_) {}
+				return [];
+			})(),
+			// 3. Common system paths on Linux cloud servers
+			'/usr/bin/google-chrome-stable',
+			'/usr/bin/google-chrome',
+			'/usr/bin/chromium-browser',
+			'/usr/bin/chromium',
+			'/snap/bin/chromium',
+		];
+
+		const foundChrome = chromePaths.find(p => p && fs.existsSync(p));
+		const puppeteerConfig = {
+			headless: true,
+			// Only override executablePath if we found a real binary — otherwise let puppeteer find its own
+			...(foundChrome && { executablePath: foundChrome }),
+			args: [
+				'--no-sandbox',
+				'--disable-setuid-sandbox',
+				'--disable-dev-shm-usage',
+				'--disable-accelerated-2d-canvas',
+				'--no-first-run',
+				'--no-zygote',
+				'--single-process',
+				'--disable-gpu',
+				'--disable-software-rasterizer',
+				'--disable-extensions',
+				'--disable-background-networking',
+				'--disable-default-apps',
+				'--disable-sync',
+				'--hide-scrollbars',
+				'--mute-audio',
+				'--safebrowsing-disable-auto-update',
+			],
+		};
+		console.log(`🔍 Chrome path: ${foundChrome || 'puppeteer bundled (auto)'}`);
+
 		client = new Client({
 			authStrategy: new LocalAuth({
 				dataPath: path.join(__dirname, '../../.wwebjs_auth'),
 			}),
-			puppeteer: {
-				headless: true,
-				args: [
-					'--no-sandbox',
-					'--disable-setuid-sandbox',
-					'--disable-dev-shm-usage',
-					'--disable-accelerated-2d-canvas',
-					'--no-first-run',
-					'--disable-gpu',
-				],
-			},
+			puppeteer: puppeteerConfig,
 		});
 
 		client.on('qr', (qr) => {

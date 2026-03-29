@@ -122,4 +122,14 @@ router.get('/logs', async (req, res) => {
 	}
 });
 
+// DELETE /api/whatsapp/logs — Clear all notification history
+router.delete('/logs', async (req, res) => {
+	try {
+		const result = await NotificationLog.deleteMany({});
+		res.json({ success: true, message: `Cleared ${result.deletedCount} notification log(s).` });
+	} catch (err) {
+		res.status(500).json({ success: false, message: err.message });
+	}
+});
+
 export default router;

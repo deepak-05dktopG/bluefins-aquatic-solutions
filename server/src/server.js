@@ -22,20 +22,16 @@ const allowedOrigins = [
   'https://blufinsaquatics.netlify.app',
   'https://bluefins.netlify.app',
   'https://bluefins-aquatic-solutions.netlify.app',
-  "https://bluefinsaquaticsolutions.com"
+  'https://bluefinsaquaticsolutions.com',
+  'https://www.bluefinsaquaticsolutions.com',
 ]
 
 app.use(cors({
-  // Checks if the incoming request's origin is in our whitelist (localhost dev + Netlify production)
   origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true)
-
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.'
-      return callback(new Error(msg), false)
-    }
-    return callback(null, true)
+    if (!origin) return callback(null, true) // Allow curl, mobile apps, Postman
+    if (allowedOrigins.includes(origin)) return callback(null, true)
+    if (process.env.NODE_ENV !== 'production') return callback(null, true) // Dev: allow all
+    return callback(new Error(`CORS: Origin ${origin} not allowed`), false)
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

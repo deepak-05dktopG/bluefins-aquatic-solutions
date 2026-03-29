@@ -337,60 +337,133 @@ const DailyTracker = () => {
         @media screen {
           .print-only { display: none !important; }
         }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        /* ===== RESPONSIVE STYLES ===== */
+        .dt-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .dt-title {
+          font-weight: 900;
+          font-size: 2.4rem;
+          color: #0f172a;
+          letter-spacing: -0.5px;
+          margin: 0;
+        }
+        .dt-toggle-group {
+          display: flex;
+          gap: 8px;
+          flex-shrink: 0;
+        }
+        .dt-filter-bar {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 24px;
+          flex-wrap: wrap;
+          align-items: center;
+        }
+        .dt-filter-bar input,
+        .dt-filter-bar select {
+          flex: 1;
+          min-width: 130px;
+        }
+        .dt-filter-bar button {
+          white-space: nowrap;
+        }
+        .dt-main-layout {
+          display: flex;
+          gap: 20px;
+          align-items: flex-start;
+          margin-top: 10px;
+        }
+        .dt-sidebar {
+          width: 280px;
+          flex-shrink: 0;
+          background: #fff;
+          border-radius: 14px;
+          overflow: hidden;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .dt-table-wrap {
+          flex: 1;
+          min-width: 0;
+          overflow-x: auto;
+        }
+        .dt-modal-form {
+          background: #fff;
+          padding: 36px;
+          border-radius: 14px;
+          min-width: 370px;
+          max-width: 420px;
+          box-shadow: 0 2px 24px rgba(0,0,0,0.20);
+          max-height: 90vh;
+          overflow-y: auto;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        @media (max-width: 768px) {
+          .dt-title { font-size: 1.6rem; }
+          .dt-toggle-group button { padding: 6px 12px !important; font-size: 12px !important; }
+          .dt-main-layout { flex-direction: column; gap: 16px; }
+          .dt-sidebar { width: 100% !important; }
+          .dt-cashbox-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+          }
+          .dt-modal-form {
+            min-width: unset;
+            padding: 20px 16px;
+            border-radius: 10px;
+            margin: 8px;
+          }
+          .dt-modal-form h3 { font-size: 18px !important; }
+          .dt-modal-row { flex-direction: column !important; }
+          .dt-filter-bar button { flex: 1 1 140px; }
+        }
+
+        @media (max-width: 480px) {
+          .dt-title { font-size: 1.3rem; }
+          .no-print > div { padding: 12px !important; }
+          .dt-filter-bar { gap: 8px; }
+          .dt-filter-bar input,
+          .dt-filter-bar select { min-width: 100%; }
+        }
       `}</style>
 
       <div className="no-print" style={{ padding: 0, margin: 0, width: '100%', background: '#f8fafc', minHeight: '100vh' }}>
-        <div style={{
-          background: '#ffffff',
-          borderRadius: 0,
-          boxShadow: 'none',
-          padding: '20px',
-          margin: 0,
-          border: 'none',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <h2 style={{ fontWeight: 900, fontSize: '2.4rem', color: '#0f172a', letterSpacing: -0.5, margin: 0 }}>Daily Tracker</h2>
-            {/* View Mode Toggle */}
-            <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ background: '#ffffff', borderRadius: 0, boxShadow: 'none', padding: '20px', margin: 0, border: 'none' }}>
+          <div className="dt-header">
+            <h2 className="dt-title">Daily Tracker</h2>
+            <div className="dt-toggle-group">
               <button
                 onClick={() => setViewMode('date')}
-                style={{
-                  padding: '8px 20px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 14, cursor: 'pointer',
-                  background: viewMode === 'date' ? '#2563eb' : '#f1f5f9',
-                  color: viewMode === 'date' ? '#fff' : '#475569'
-                }}
+                style={{ padding: '8px 20px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 14, cursor: 'pointer', background: viewMode === 'date' ? '#2563eb' : '#f1f5f9', color: viewMode === 'date' ? '#fff' : '#475569' }}
               >📅 By Date</button>
               <button
                 onClick={() => setViewMode('all')}
-                style={{
-                  padding: '8px 20px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 14, cursor: 'pointer',
-                  background: viewMode === 'all' ? '#7c3aed' : '#f1f5f9',
-                  color: viewMode === 'all' ? '#fff' : '#475569'
-                }}
-              >📊 All Entries</button>
+                style={{ padding: '8px 20px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 14, cursor: 'pointer', background: viewMode === 'all' ? '#7c3aed' : '#f1f5f9', color: viewMode === 'all' ? '#fff' : '#475569' }}
+              >📊 All</button>
             </div>
           </div>
           {/* <div style={{ color: '#FF5252', fontWeight: 600, marginBottom: 18, fontSize: 15 }}>
           <span style={{ verticalAlign: 'middle', marginRight: 6 }}>⚠️</span>
           For one-hour/Rupees 150 entries, use <b>Order</b> type here. Do <b>not</b> register as a member.
         </div> */}
-          <div style={{ display: 'flex', gap: 16, marginBottom: 32, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="dt-filter-bar">
             {viewMode === 'date' ? (
               <>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={e => setDate(e.target.value)}
-                  style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', minWidth: 140, fontSize: 15 }}
-                  title="Select date"
-                />
-                <input
-                  placeholder="Search by name, notes, etc."
-                  value={filter}
-                  onChange={e => setFilter(e.target.value)}
-                  style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', minWidth: 220, fontSize: 15 }}
-                  title="Search entries"
-                />
+                <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 15 }} title="Select date" />
+                <input placeholder="Search..." value={filter} onChange={e => setFilter(e.target.value)} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 15 }} title="Search entries" />
                 <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ padding: 10, borderRadius: 8, fontSize: 15, border: '1px solid #cbd5e1' }} title="Filter by type">
                   <option value="">All Types</option>
                   {filterTypeOptions.map(t => <option key={t}>{t}</option>)}
@@ -403,9 +476,9 @@ const DailyTracker = () => {
                 </button>
               </>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%', justifyContent: 'space-between' }}>
-                <span style={{ color: '#7c3aed', fontWeight: 700, fontSize: 16 }}>Showing all history ({allRows.length} entries)</span>
-                <button onClick={downloadAndClear} style={{ padding: '10px 22px', borderRadius: 8, background: '#dc2626', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }} title="Download ALL CSV then PURGE database">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                <span style={{ color: '#7c3aed', fontWeight: 700, fontSize: 16 }}>All history ({allRows.length} entries)</span>
+                <button onClick={downloadAndClear} style={{ padding: '10px 22px', borderRadius: 8, background: '#dc2626', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 18 }}>⬇️🗑️</span> Download &amp; Clear All
                 </button>
               </div>
@@ -417,13 +490,13 @@ const DailyTracker = () => {
               Loading data...
             </div>
           ) : null}
-          <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', marginTop: 10 }}>
+          <div className="dt-main-layout">
             {/* ASIDE - CASH BOX SIDEBAR */}
-            <div style={{ width: '280px', flexShrink: 0, background: '#fff', borderRadius: 14, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+            <div className="dt-sidebar">
               <div style={{ background: '#1e293b', color: '#fff', padding: '16px', fontWeight: 900, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span>💰</span> Central Cash Box
               </div>
-              <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div className="dt-cashbox-grid" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div style={{ background: '#f1f5f9', padding: '12px', borderRadius: 8, borderLeft: '4px solid #10b981' }}>
                    <div style={{ fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Cash Balance</div>
                    <div style={{ fontSize: 20, fontWeight: 800, color: '#0f172a' }}>₹ {cashBox.hardCash?.toLocaleString('en-IN') || 0}</div>
@@ -475,7 +548,7 @@ const DailyTracker = () => {
             </div>
 
             {/* MAIN TABLE */}
-            <div style={{ flex: 1, minWidth: 0, overflowX: 'auto' }}>
+            <div className="dt-table-wrap">
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, background: '#fff', borderRadius: 14, overflow: 'hidden', minWidth: 900, border: '1px solid #e2e8f0' }}>
               <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
                 <tr style={{ background: '#f1f5f9', fontWeight: 900, fontSize: 15, color: '#1e293b' }}>
@@ -563,8 +636,8 @@ const DailyTracker = () => {
 
         {/* Modal for Add Entry */}
         {showModal && (
-          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-            <form onSubmit={saveModal} style={{ background: '#fff', padding: 36, borderRadius: 14, minWidth: 370, boxShadow: '0 2px 24px rgba(0,0,0,0.20)', maxWidth: 420 }}>
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '10px', boxSizing: 'border-box' }}>
+            <form onSubmit={saveModal} className="dt-modal-form">
               <h3 style={{ fontWeight: 900, fontSize: 24, marginBottom: 8, color: '#2563eb', letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 22 }}>📝</span> Add Daily Entry
               </h3>
@@ -572,7 +645,7 @@ const DailyTracker = () => {
                 <span style={{ color: '#ef4444' }}>Admins: Double-check amount and type before saving.</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18, marginTop: 10 }}>
-                <div style={{ display: 'flex', gap: 12 }}>
+                <div className="dt-modal-row" style={{ display: 'flex', gap: 12 }}>
                   <div style={{ flex: 1 }}>
                     <label style={{ fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>Type <span style={{ color: '#ef4444' }}>*</span></label>
                     <select name="type" value={formType} onChange={e => setFormType(e.target.value)} required style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 15 }}>
@@ -588,7 +661,7 @@ const DailyTracker = () => {
                     </select>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 12 }}>
+                <div className="dt-modal-row" style={{ display: 'flex', gap: 12 }}>
                   <div style={{ flex: 1 }}>
                     <label style={{ fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>Name <span style={{ color: '#ef4444' }}>*</span></label>
                     <input name="name" placeholder="Full name or description" defaultValue={modalData?.name || ''} required style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 15 }} />
@@ -598,7 +671,7 @@ const DailyTracker = () => {
                     <input name="amount" type="number" min="0" step="0.01" placeholder="0.00" defaultValue={modalData?.amount || ''} required style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 15 }} />
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 12 }}>
+                <div className="dt-modal-row" style={{ display: 'flex', gap: 12 }}>
                   <div style={{ flex: 1 }}>
                     <label style={{ fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>Date <span style={{ color: '#ef4444' }}>*</span></label>
                     <input name="date" type="date" defaultValue={modalData?.date || date} readOnly required style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 15, opacity: 0.7, cursor: 'not-allowed', backgroundColor: '#f9fafb' }} />

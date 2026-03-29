@@ -124,6 +124,26 @@ const WhatsAppStatus = () => {
         }
     };
 
+    const clearLogs = async () => {
+        const result = await Swal.fire({
+            title: 'Clear Notification History?',
+            text: 'This will permanently delete all notification logs. Members reminder flags will NOT be reset.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: 'Yes, Clear All'
+        });
+        if (result.isConfirmed) {
+            try {
+                const { data } = await api.delete('/whatsapp/logs');
+                Swal.fire('Cleared!', data.message, 'success');
+                fetchLogs();
+            } catch (err) {
+                Swal.fire('Error', 'Failed to clear logs.', 'error');
+            }
+        }
+    };
+
     return (
         <div style={{ minHeight: '100vh', background: '#f8fafc', fontFamily: 'Inter, system-ui, sans-serif' }}>
             <AdminNavbar />
@@ -190,9 +210,12 @@ const WhatsAppStatus = () => {
                 <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', overflow: 'hidden' }}>
                     <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>Notification History</h3>
-                        <div style={{ display: 'flex', gap: '20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                             <div style={{ fontSize: '14px', color: '#64748b' }}>Passed: <b style={{ color: '#16a34a' }}>{counts.sent}</b></div>
                             <div style={{ fontSize: '14px', color: '#64748b' }}>Failed: <b style={{ color: '#dc2626' }}>{counts.failed}</b></div>
+                            <button onClick={clearLogs} disabled={logs.length === 0} style={{ padding: '6px 14px', background: '#fff', border: '1.5px solid #ef4444', color: '#ef4444', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', opacity: logs.length === 0 ? 0.4 : 1 }}>
+                                🗑 Clear History
+                            </button>
                         </div>
                     </div>
                     <div style={{ overflowX: 'auto' }}>
