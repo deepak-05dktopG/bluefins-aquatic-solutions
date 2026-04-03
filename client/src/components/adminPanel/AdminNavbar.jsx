@@ -20,6 +20,7 @@ const AdminNavbar = () => {
 
     const isDashboard = location.pathname === '/admin/dashboard'
     const isOfflineMembership = location.pathname === '/admin/offline-membership'
+    const isManagePlans = location.pathname === '/admin/manage-plans'
 
     // Returns style object for admin nav links with active state highlighting
     const linkStyle = active => {
@@ -98,6 +99,10 @@ const AdminNavbar = () => {
 				<div className="admin-navbar__links" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
 					<Link to="/admin/dashboard" style={linkStyle(isDashboard)}>
 						<FaRocket /> Dashboard
+					</Link>
+
+					<Link to="/admin/manage-plans" style={linkStyle(isManagePlans)}>
+						<FaRocket /> Manage Plans
 					</Link>
 
 					<Link to="/admin/offline-membership" style={linkStyle(isOfflineMembership)}>

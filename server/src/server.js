@@ -31,7 +31,7 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}))
+})) 
 
 // Capture raw body (needed for Razorpay webhook signature verification)
 app.use(

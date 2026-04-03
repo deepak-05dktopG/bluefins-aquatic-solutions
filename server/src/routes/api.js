@@ -65,6 +65,7 @@ import {
 } from '../controllers/membershipController.js';
 
 import { scanAttendance, listAttendance, exportAttendanceCsv, deleteAttendance, bulkDeleteAttendance, purgeAttendanceBefore } from '../controllers/attendanceController.js';
+import { adminListPlans, createPlan, updatePlan, deletePlan } from '../controllers/planController.js';
 import whatsappRoutes from './whatsappRoutes.js';
 
 
@@ -119,6 +120,12 @@ router.get('/membership/plans', listPlans);
 router.get('/membership/public-id/:id', getPublicMemberData);
 router.post('/membership/plans/seed', requireAdminAuth, seedOfficialPlans);
 router.post('/membership/register', registerPaidMembership);
+
+// Admin Plan Management (CRUD)
+router.get('/admin/plans', requireAdminAuth, adminListPlans);
+router.post('/admin/plans', requireAdminAuth, createPlan);
+router.patch('/admin/plans/:id', requireAdminAuth, updatePlan);
+router.delete('/admin/plans/:id', requireAdminAuth, deletePlan);
 
 // Admin-only: offline (cash) registration
 router.post('/admin/membership/offline-register', requireAdminAuth, registerOfflineMembership);
