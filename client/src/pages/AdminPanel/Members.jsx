@@ -482,8 +482,8 @@ export default function Members() {
 						<table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1250px' }}>
 							<thead>
 								<tr style={{ background: 'rgba(10,14,39,0.7)' }}>
-									{['', 'Member', 'Phone', 'Plan', 'Status', 'Join', 'Expiry', 'Days Left', 'Visits', 'QR / Actions', ''].map(h => (
-										<th key={h} style={{ textAlign: 'left', padding: '10px 12px', color: 'rgba(255,255,255,0.65)', fontWeight: 600, fontSize: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+									{['', 'Member', 'Phone', 'Plan', 'Status', 'Join', 'Expiry', 'Days Left', 'Visits', 'QR / Actions', ''].map((h, i) => (
+										<th key={i} style={{ textAlign: 'left', padding: '10px 12px', color: 'rgba(255,255,255,0.65)', fontWeight: 600, fontSize: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
 											{h === '' ? (
 												<input type="checkbox" checked={allSelectedOnPage} onChange={toggleSelectAllOnPage} disabled={loading || items.length === 0} title="Select all on this page" style={{ transform: 'translateY(1px)' }} />
 											) : h}

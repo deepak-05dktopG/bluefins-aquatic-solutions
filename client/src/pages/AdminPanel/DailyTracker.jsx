@@ -11,6 +11,7 @@ import {
 } from '../../api/dailyTracker';
 import api from '../../api/api';
 import Swal from 'sweetalert2';
+import { formatHHmmTo12Hour } from '../../utils/dateTime';
 
 
 
@@ -315,7 +316,7 @@ const DailyTracker = () => {
   const earningEntriesUI = filtered.filter(r => r.type !== 'Expense' && r.type !== 'Withdrawal');
   const totalCount = earningEntriesUI.length;
 
-  const typeOptions = ['Order', '1 Hour Order', 'Expense', 'Withdrawal', ...membershipPlans];
+  const typeOptions = ['Order', '1 Hour Order', 'Expense', 'Withdrawal'];
   const filterTypeOptions = ['Order', '1 Hour Order', 'Expense', 'Withdrawal', ...membershipPlans];
 
   return (
@@ -606,7 +607,7 @@ const DailyTracker = () => {
                           : <>₹ {Number(row.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>}
                       </td>
                       <td style={{ padding: '14px 14px', verticalAlign: 'middle', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>{row.date}</td>
-                      <td style={{ padding: '14px 14px', verticalAlign: 'middle', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>{row.time}</td>
+                      <td style={{ padding: '14px 14px', verticalAlign: 'middle', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>{formatHHmmTo12Hour(row.time)}</td>
                       <td style={{ padding: '14px 14px', verticalAlign: 'middle', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>
                         {isEditing
                           ? <input value={editDraft.notes} onChange={e => setEditDraft(d => ({ ...d, notes: e.target.value }))} style={{ padding: '5px 8px', borderRadius: 6, border: '1.5px solid #2563eb', width: '100%', fontSize: 14 }} />
@@ -709,7 +710,7 @@ const DailyTracker = () => {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '2px' }}>
               <span>{printData.date}</span>
-              <span>{printData.time}</span>
+              <span>{formatHHmmTo12Hour(printData.time)}</span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>

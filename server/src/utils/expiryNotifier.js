@@ -102,25 +102,13 @@ export const checkAndNotify = async () => {
 	for (const check of checks) {
 		const { start, end } = getDateRange(check.days);
 
-		// DEBUG: Print the exact search window being used
-		console.log(`\n📅 [DEBUG] Checking ${check.days}-day window:`);
-		console.log(`   Search UTC: ${start.toISOString()} → ${end.toISOString()}`);
-
-		// Also do a raw count with NO filters to see what's in the DB for that window
-		const allInWindow = await Member.find({ expiryDate: { $gte: start, $lte: end } }).select('name status phone expiryDate reminderSent7 reminderSent3 reminderSent1');
-		console.log(`   Members with expiry in this window (no filters): ${allInWindow.length}`);
-		allInWindow.forEach(m => {
-			console.log(`     → ${m.name} | status:${m.status} | phone:${m.phone} | expiry:${m.expiryDate?.toISOString()} | r7:${m.reminderSent7}`);
-		});
-
-		// Find any member (Active or Expiring) who hasn't been reminded yet
+		// Find members whose expiry falls in this window and haven't been reminded yet
 		const members = await Member.find({
 			status: { $ne: 'expired' },        // Includes 'active' and 'expiring'
 			expiryDate: { $gte: start, $lte: end },
 			[check.reminderField]: { $ne: true },
 			phone: { $exists: true, $ne: '' },
 		});
-		console.log(`   After all filters: ${members.length} members to notify`);
 
 		if (members.length === 0) continue;
 

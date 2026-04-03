@@ -691,6 +691,13 @@ export const updatePlan = asyncHandler(async (req, res) => {
 	res.json({ success: true, data: normalizePlanForClient(plan) });
 });
 
+// Admin: Delete a membership plan
+export const deletePlan = asyncHandler(async (req, res) => {
+	const plan = await MembershipPlan.findByIdAndDelete(req.params.id);
+	if (!plan) return res.status(404).json({ success: false, message: 'Plan not found' });
+	res.json({ success: true, message: 'Plan deleted successfully' });
+});
+
 // Returns all membership plans with pricing, charges config, and test mode info for the frontend
 export const listPlans = asyncHandler(async (req, res) => {
 	try {
@@ -1039,12 +1046,13 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 		const finalAmount = (payment.pricing && typeof payment.pricing.total === 'number')
 			? payment.pricing.total
 			: payment.amount;
+		const trackerDate = joinDateOverride ? String(joinDateOverride).slice(0, 10) : indiaNow.date;
 		await DailyTracker.create({
 			type: plan?.planName || plan?.name || 'Registration',
 			name: member?.name || 'New Member',
 			paymentType: (payment.provider || 'cash').toLowerCase(),
 			amount: finalAmount,
-			date: indiaNow.date,
+			date: trackerDate,
 			time: indiaNow.time,
 			notes: `Plan: ${plan?.planName || plan?.name || ''}`,
 			memberId: createdMembers[0]?._id,

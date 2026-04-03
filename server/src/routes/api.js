@@ -64,9 +64,11 @@ import {
   updateMember,
   createPlan,
   updatePlan,
+  deletePlan,
 } from '../controllers/membershipController.js';
 
 import { scanAttendance, listAttendance, exportAttendanceCsv, deleteAttendance, bulkDeleteAttendance, purgeAttendanceBefore } from '../controllers/attendanceController.js';
+import whatsappRoutes from './whatsappRoutes.js';
 
 
 const router = express.Router();
@@ -124,6 +126,7 @@ router.post('/membership/register', registerPaidMembership);
 // Admin simple plan management
 router.post('/admin/membership/plans', requireAdminAuth, createPlan);
 router.patch('/admin/membership/plans/:id', requireAdminAuth, updatePlan);
+router.delete('/admin/membership/plans/:id', requireAdminAuth, deletePlan);
 
 // Admin-only: offline (cash) registration
 router.post('/admin/membership/offline-register', requireAdminAuth, registerOfflineMembership);
@@ -155,5 +158,7 @@ router.delete('/daily-tracker/all', requireAdminAuth, deleteAllTrackerEntries);
 router.delete('/daily-tracker/:id', requireAdminAuth, deleteDailyTrackerById);
 router.delete('/daily-tracker', requireAdminAuth, deleteDailyTrackerByDate);
 
-export default router;
+// WhatsApp notification routes
+router.use('/whatsapp', whatsappRoutes);
+
 export default router;

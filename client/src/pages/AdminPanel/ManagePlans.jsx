@@ -60,6 +60,55 @@ const ManagePlans = () => {
         });
     };
 
+    const handleDelete = async (planId) => {
+        const result = await Swal.fire({
+            title: 'Delete Plan?',
+            text: "This action cannot be undone!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#FF6B6B',
+            cancelButtonColor: '#667eea',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel',
+            background: 'linear-gradient(135deg, #1a1f3a, #0f1629)',
+            color: '#fff'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await api.delete(`/admin/membership/plans/${planId}`);
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: 'Plan deleted successfully',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: 'linear-gradient(135deg, #4ECDC4, #54A0FF)',
+                    color: '#fff',
+                    iconColor: '#fff'
+                });
+                fetchPlans(); // Refresh the list
+            } catch (err) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'error',
+                    title: 'Error',
+                    text: err.response?.data?.message || 'Failed to delete plan',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: 'linear-gradient(135deg, #FF6B6B, #FF9FF3)',
+                    color: '#fff',
+                    iconColor: '#fff'
+                });
+            }
+        }
+    };
+
     return (
         <div style={{ minHeight: '100vh', background: '#0a0f1a', color: '#fff', fontFamily: 'system-ui' }}>
             <AdminNavbar />
@@ -74,7 +123,6 @@ const ManagePlans = () => {
                         <option value="yearly">Yearly</option>
                         <option value="summer">Summer</option>
                         <option value="family">Family</option>
-                        <option value="public">Public / Daily</option>
                     </select>
                     <input required type="number" value={form.basePrice} onChange={e => setForm({...form, basePrice: e.target.value})} placeholder="Price (₹)" style={{ width: '100px', padding: '10px', borderRadius: '5px', border: '1px solid #444', background: '#111', color: '#fff' }} />
                     <input type="number" value={form.durationInDays} onChange={e => setForm({...form, durationInDays: e.target.value})} placeholder="Days" style={{ width: '80px', padding: '10px', borderRadius: '5px', border: '1px solid #444', background: '#111', color: '#fff' }} />
@@ -106,8 +154,9 @@ const ManagePlans = () => {
                                     <td style={{ padding: '15px', textTransform: 'capitalize' }}>{p.type}</td>
                                     <td style={{ padding: '15px' }}>{p.basePrice}</td>
                                     <td style={{ padding: '15px' }}>{p.durationInDays || '-'}</td>
-                                    <td style={{ padding: '15px' }}>
+                                    <td style={{ padding: '15px', display: 'flex', gap: '10px' }}>
                                         <button onClick={() => handleEdit(p)} style={{ padding: '5px 15px', background: 'transparent', color: '#3b82f6', border: '1px solid #3b82f6', borderRadius: '5px', cursor: 'pointer' }}>Edit</button>
+                                        <button onClick={() => handleDelete(p._id)} style={{ padding: '5px 15px', background: 'transparent', color: '#ef4444', border: '1px solid #ef4444', borderRadius: '5px', cursor: 'pointer' }}>Delete</button>
                                     </td>
                                 </tr>
                             ))}

@@ -550,7 +550,7 @@ function AttendanceScan() {
 
     const useFullViewportPreview = scanning
 
-    const tipText = 'Zoom the QR (bring it closer) and keep it centered inside the box.'
+    const tipText = 'Zoom the QR (bring it closer) and keep it centered.'
 
     return (
         <div

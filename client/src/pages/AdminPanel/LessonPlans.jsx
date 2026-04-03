@@ -23,8 +23,8 @@ const LessonPlans = () => {
 
   // Yearly Plans State
   const [yearlyPlans] = useState([
-    { id: 1, year: 2025-2026, title: "Annual Swimming Curriculum", pdfUrl: "/assets/lessonPlan/yearly plan.pdf", uploadDate: "2025-01-15" },
-    { id: 2, year: 2025-2026, title: "Level of Learning", pdfUrl: "/assets/lessonPlan/level of learning.pdf", uploadDate: "2025-06-20" },
+    { id: 1, year: "2025-2026", title: "Annual Swimming Curriculum", pdfUrl: "/assets/lessonPlan/yearly plan.pdf", uploadDate: "2025-01-15" },
+    { id: 2, year: "2025-2026", title: "Level of Learning", pdfUrl: "/assets/lessonPlan/level of learning.pdf", uploadDate: "2025-06-20" },
   ]);
   const [selectedYearlyPlan, setSelectedYearlyPlan] = useState(null);
 
