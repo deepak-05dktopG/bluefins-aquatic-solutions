@@ -31,9 +31,8 @@ import OfflineMembership from './pages/AdminPanel/OfflineMembership'
 import DailyTracker from './pages/AdminPanel/DailyTracker'
 import Posts from './pages/AdminPanel/Posts'
 import WeeklyWorksheets from './pages/AdminPanel/WeeklyWorksheets'
-import WhatsAppStatus from './pages/AdminPanel/WhatsAppStatus'
-import ManagePlans from './pages/AdminPanel/ManagePlans'
 import PublicMemberCard from './pages/PublicMemberCard'
+import ManagePlans from './pages/AdminPanel/ManagePlans'
 
 
 
@@ -71,19 +70,19 @@ function App() {
   function ScrollToTop() {
     const location = useLocation();
     React.useEffect(
-    // Runs scroll-to-top and AOS refresh when the route changes
-    () => {
-      window.scrollTo(0, 0);
-      setTimeout(
-      // Briefly delays AOS refresh to let DOM updates settle after navigation
+      // Runs scroll-to-top and AOS refresh when the route changes
       () => {
-        if (typeof AOS.refreshHard === 'function') {
-          AOS.refreshHard();
-          return;
-        }
-        AOS.refresh();
-      }, 100);
-    }, [location.pathname]);
+        window.scrollTo(0, 0);
+        setTimeout(
+          // Briefly delays AOS refresh to let DOM updates settle after navigation
+          () => {
+            if (typeof AOS.refreshHard === 'function') {
+              AOS.refreshHard();
+              return;
+            }
+            AOS.refresh();
+          }, 100);
+      }, [location.pathname]);
     return null;
   }
 
@@ -102,27 +101,27 @@ function App() {
 
   // Initialize scroll listener for AOS refresh
   React.useEffect(
-  // Keeps AOS animations in sync by refreshing on scroll events
-  () => {
-    // Triggers AOS refresh on every scroll to detect newly visible elements
-    const handleScroll = () => {
-      AOS.refresh();
-    };
-    window.addEventListener('scroll', handleScroll);
-    return (
-      // Removes scroll event listener on component unmount
-      () => {
-        return window.removeEventListener('scroll', handleScroll);
-      }
-    );
-  }, []);
+    // Keeps AOS animations in sync by refreshing on scroll events
+    () => {
+      // Triggers AOS refresh on every scroll to detect newly visible elements
+      const handleScroll = () => {
+        AOS.refresh();
+      };
+      window.addEventListener('scroll', handleScroll);
+      return (
+        // Removes scroll event listener on component unmount
+        () => {
+          return window.removeEventListener('scroll', handleScroll);
+        }
+      );
+    }, []);
 
   return (
     <div className="app">
-      
+
       <main className="main-content">
-	  <ScannerExitRedirect />
-      <ScrollToTop />
+        <ScannerExitRedirect />
+        <ScrollToTop />
         <AppErrorBoundary resetKey={appLocation.pathname}>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -145,21 +144,20 @@ function App() {
             <Route path="/admin/feedback" element={<MembersFeedback />} />
             <Route path="/admin/worksheets" element={<WeeklyWorksheets />} />
             <Route path="/admin/posts" element={<Posts />} />
-		    <Route path="/admin/attendance" element={<AttendanceRecords />} />
-		    <Route path="/admin/attendance/scan" element={<AttendanceScan />} />
-      {/* OfflineMembership route is now admin-only, not public. Only accessible via admin panel UI. */}
-      <Route path="/admin/offline-membership" element={<OfflineMembership />} />
-      <Route path="/admin/daily-tracker" element={<DailyTracker />} />
-      <Route path="/admin/whatsapp-status" element={<WhatsAppStatus />} />
-      <Route path="/admin/manage-plans" element={<ManagePlans />} />
+            <Route path="/admin/attendance" element={<AttendanceRecords />} />
+            <Route path="/admin/attendance/scan" element={<AttendanceScan />} />
+            {/* OfflineMembership route is now admin-only, not public. Only accessible via admin panel UI. */}
+            <Route path="/admin/offline-membership" element={<OfflineMembership />} />
+            <Route path="/admin/daily-tracker" element={<DailyTracker />} />
+            <Route path="/admin/manage-plans" element={<ManagePlans />} />
 
             {/* Fallbacks to avoid blank pages on removed/unknown routes */}
             <Route path="/admin/*" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AppErrorBoundary>
-      </main> 
-	  <FooterMaybe />
+      </main>
+      <FooterMaybe />
     </div>
   )
 }

@@ -62,11 +62,11 @@ import {
   deleteMember,
   getPublicMemberData,
   updateMember,
+  createPlan,
+  updatePlan,
 } from '../controllers/membershipController.js';
 
 import { scanAttendance, listAttendance, exportAttendanceCsv, deleteAttendance, bulkDeleteAttendance, purgeAttendanceBefore } from '../controllers/attendanceController.js';
-import { adminListPlans, createPlan, updatePlan, deletePlan } from '../controllers/planController.js';
-import whatsappRoutes from './whatsappRoutes.js';
 
 
 const router = express.Router();
@@ -121,11 +121,9 @@ router.get('/membership/public-id/:id', getPublicMemberData);
 router.post('/membership/plans/seed', requireAdminAuth, seedOfficialPlans);
 router.post('/membership/register', registerPaidMembership);
 
-// Admin Plan Management (CRUD)
-router.get('/admin/plans', requireAdminAuth, adminListPlans);
-router.post('/admin/plans', requireAdminAuth, createPlan);
-router.patch('/admin/plans/:id', requireAdminAuth, updatePlan);
-router.delete('/admin/plans/:id', requireAdminAuth, deletePlan);
+// Admin simple plan management
+router.post('/admin/membership/plans', requireAdminAuth, createPlan);
+router.patch('/admin/membership/plans/:id', requireAdminAuth, updatePlan);
 
 // Admin-only: offline (cash) registration
 router.post('/admin/membership/offline-register', requireAdminAuth, registerOfflineMembership);
@@ -157,7 +155,5 @@ router.delete('/daily-tracker/all', requireAdminAuth, deleteAllTrackerEntries);
 router.delete('/daily-tracker/:id', requireAdminAuth, deleteDailyTrackerById);
 router.delete('/daily-tracker', requireAdminAuth, deleteDailyTrackerByDate);
 
-// WhatsApp notification routes (admin only)
-router.use('/whatsapp', requireAdminAuth, whatsappRoutes);
-
+export default router;
 export default router;

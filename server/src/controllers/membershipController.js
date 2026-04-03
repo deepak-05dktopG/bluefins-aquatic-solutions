@@ -678,6 +678,19 @@ const normalizePlanForClient = planDoc => {
 	}
 };
 
+// Admin: Create a new membership plan
+export const createPlan = asyncHandler(async (req, res) => {
+	const plan = await MembershipPlan.create(req.body);
+	res.json({ success: true, data: normalizePlanForClient(plan) });
+});
+
+// Admin: Update an existing membership plan
+export const updatePlan = asyncHandler(async (req, res) => {
+	const plan = await MembershipPlan.findByIdAndUpdate(req.params.id, req.body, { new: true });
+	if (!plan) return res.status(404).json({ success: false, message: 'Plan not found' });
+	res.json({ success: true, data: normalizePlanForClient(plan) });
+});
+
 // Returns all membership plans with pricing, charges config, and test mode info for the frontend
 export const listPlans = asyncHandler(async (req, res) => {
 	try {

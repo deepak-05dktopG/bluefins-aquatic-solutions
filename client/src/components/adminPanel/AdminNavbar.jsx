@@ -9,38 +9,38 @@ import { FaRocket, FaSignOutAlt } from 'react-icons/fa'
 
 // Admin panel top navigation bar with Dashboard, Offline Membership links and Logout
 const AdminNavbar = () => {
-    const location = useLocation()
-    const navigate = useNavigate()
+	const location = useLocation()
+	const navigate = useNavigate()
 
-    // Clears admin session token and redirects to the public homepage
-    const handleLogout = () => {
-        clearAdminToken()
-        navigate('/', { replace: true })
-    };
+	// Clears admin session token and redirects to the public homepage
+	const handleLogout = () => {
+		clearAdminToken()
+		navigate('/', { replace: true })
+	};
 
-    const isDashboard = location.pathname === '/admin/dashboard'
-    const isOfflineMembership = location.pathname === '/admin/offline-membership'
-    const isManagePlans = location.pathname === '/admin/manage-plans'
+	const isDashboard = location.pathname === '/admin/dashboard'
+	const isOfflineMembership = location.pathname === '/admin/offline-membership'
+	const isManagePlans = location.pathname === '/admin/manage-plans'
 
-    // Returns style object for admin nav links with active state highlighting
-    const linkStyle = active => {
-        return ({
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 18px',
-            background: active ? 'rgba(0, 255, 212, 0.15)' : 'transparent',
-            color: active ? '#00FFD4' : 'rgba(255, 255, 255, 0.7)',
-            border: active ? '1px solid #00FFD4' : '1px solid transparent',
-            borderRadius: '8px',
-            textDecoration: 'none',
-            fontWeight: 500,
-            fontSize: '0.9rem',
-            transition: 'all 0.3s ease'
-        });
-    };
+	// Returns style object for admin nav links with active state highlighting
+	const linkStyle = active => {
+		return ({
+			display: 'flex',
+			alignItems: 'center',
+			gap: '8px',
+			padding: '10px 18px',
+			background: active ? 'rgba(0, 255, 212, 0.15)' : 'transparent',
+			color: active ? '#00FFD4' : 'rgba(255, 255, 255, 0.7)',
+			border: active ? '1px solid #00FFD4' : '1px solid transparent',
+			borderRadius: '8px',
+			textDecoration: 'none',
+			fontWeight: 500,
+			fontSize: '0.9rem',
+			transition: 'all 0.3s ease'
+		});
+	};
 
-    return (
+	return (
 		<nav
 			className="admin-navbar"
 			style={{
