@@ -962,7 +962,7 @@ export const registerPaidMembership = asyncHandler(async (req, res) => {
 import { incrementCashBox } from './grocerCashBoxController.js';
 // Registers an offline membership (admin counter): creates members with no gateway fees, records cash payment
 export const registerOfflineMembership = asyncHandler(async (req, res) => {
-	const { planId, member, selection, familyMembers, collectedBy, paymentMethod, discountPct, joinDate: joinDateOverride, expiryDate: expiryDateOverride } = req.body;
+	const { planId, member, selection, familyMembers, collectedBy, paymentMethod, discountPct, paidAmount: paidAmountRaw, joinDate: joinDateOverride, expiryDate: expiryDateOverride } = req.body;
 	if (!planId) return res.status(400).json({ success: false, message: 'planId is required' });
 	if (!collectedBy || !String(collectedBy).trim()) {
 		return res.status(400).json({ success: false, message: 'collectedBy (admin name) is required' });
@@ -1000,6 +1000,18 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 
 	const orderId = `${method}_${crypto.randomUUID().replaceAll('-', '')}`;
 	const paymentId = `${method}_${Date.now()}`;
+
+	// Calculate final amount (after discount)
+	const finalAmount = (draftRes.amountRes.computed?.pricing?.total != null)
+		? draftRes.amountRes.computed.pricing.total
+		: draftRes.amountRes.amount;
+
+	// Partial payment: how much was actually paid now
+	const paidNow = (paidAmountRaw != null && !isNaN(Number(paidAmountRaw)))
+		? Math.max(0, Math.min(Number(paidAmountRaw), finalAmount))
+		: finalAmount;
+	const pendingAmt = Math.max(0, Math.round((finalAmount - paidNow) * 100) / 100);
+	const paymentStatusVal = pendingAmt <= 0 ? 'paid' : (paidNow <= 0 ? 'pending' : 'partial');
 
 	const createdMembers = await createMembersForDraft({
 		plan,
@@ -1039,33 +1051,42 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 		memberIds: createdMembers.map(x => x._id),
 	});
 
-	// Add to DailyTracker (use discounted/final price)
+	// Stamp payment fields on all created members
+	if (createdMembers.length > 0) {
+		await Member.updateMany(
+			{ _id: { $in: createdMembers.map(m => m._id) } },
+			{ $set: { paidAmount: paidNow, pendingAmount: pendingAmt, paymentStatus: paymentStatusVal } }
+		);
+		createdMembers.forEach(m => {
+			m.paidAmount = paidNow;
+			m.pendingAmount = pendingAmt;
+			m.paymentStatus = paymentStatusVal;
+		});
+	}
+
+	// Add to DailyTracker — only log the amount actually collected now
 	try {
 		const indiaNow = getIndiaNow();
-		// Use the final price after discount (if available)
-		const finalAmount = (payment.pricing && typeof payment.pricing.total === 'number')
-			? payment.pricing.total
-			: payment.amount;
 		const trackerDate = joinDateOverride ? String(joinDateOverride).slice(0, 10) : indiaNow.date;
 		await DailyTracker.create({
 			type: plan?.planName || plan?.name || 'Registration',
 			name: member?.name || 'New Member',
 			paymentType: (payment.provider || 'cash').toLowerCase(),
-			amount: finalAmount,
+			amount: paidNow,
 			date: trackerDate,
 			time: indiaNow.time,
-			notes: `Plan: ${plan?.planName || plan?.name || ''}`,
+			notes: `Plan: ${plan?.planName || plan?.name || ''}${pendingAmt > 0 ? ` | Pending: ₹${pendingAmt}` : ''}`,
 			memberId: createdMembers[0]?._id,
 			paymentId: payment._id,
 		});
-		// Update GrocerCashBox for this registration
+		// Update GrocerCashBox for the amount collected now
 		try {
 			await incrementCashBox({
-				amount: finalAmount,
+				amount: paidNow,
 				paymentType: payment.provider,
 				entryType: plan?.planName || plan?.name || 'Registration',
 				entryCountDelta: 1,
-				entryTotalDelta: finalAmount
+				entryTotalDelta: paidNow
 			});
 		} catch (e) { /* ignore cash box errors */ }
 	} catch (e) { /* ignore tracker errors */ }
@@ -1260,10 +1281,23 @@ export const razorpayWebhook = asyncHandler(async (req, res) => {
 
 // Returns paginated, searchable member list with plan details and attendance counts for admin panel
 export const listMembers = asyncHandler(async (req, res) => {
-	const { q, status, planType, planId, page, limit, sort, order } = req.query
+	const { q, status, paymentStatus, planType, planId, page, limit, sort, order } = req.query
 	const filter = {}
-	if (status && ['active', 'expired'].includes(String(status))) {
-		filter.status = String(status)
+	if (status) {
+		if (['active', 'expired'].includes(String(status))) {
+			filter.status = String(status)
+		} else if (status === 'has-pending') {
+			filter.pendingAmount = { $gt: 0 };
+		} else if (status === 'paid') {
+			filter.paymentStatus = 'paid';
+		}
+	}
+	if (paymentStatus) {
+		if (paymentStatus === 'has-pending') {
+			filter.pendingAmount = { $gt: 0 };
+		} else if (['paid', 'partial', 'pending'].includes(String(paymentStatus))) {
+			filter.paymentStatus = String(paymentStatus);
+		}
 	}
 	if (planType && String(planType).trim()) {
 		filter.planType = String(planType).trim()
@@ -1385,6 +1419,9 @@ export const listMembers = asyncHandler(async (req, res) => {
 				publicSlot: m.publicSlot,
 				qrCode: m.qrCode,
 				qrPayload: m.qrPayload,
+				paidAmount: m.paidAmount,
+				pendingAmount: m.pendingAmount,
+				paymentStatus: m.paymentStatus,
 				createdAt: m.createdAt,
 				updatedAt: m.updatedAt,
 			}
@@ -1419,7 +1456,7 @@ export const updateMember = asyncHandler(async (req, res) => {
 	const { id } = req.params;
 	if (!id) return res.status(400).json({ success: false, message: 'Member ID is required' });
 
-	const { name, phone, planId, joinDate, expiryDate } = req.body;
+	const { name, phone, planId, joinDate, expiryDate, paidAmount, pendingAmount, paymentStatus } = req.body;
 
 	const member = await Member.findById(id);
 	if (!member) return res.status(404).json({ success: false, message: 'Member not found' });
@@ -1471,6 +1508,22 @@ export const updateMember = asyncHandler(async (req, res) => {
 			}
 			member.expiryDate = d;
 		}
+	}
+
+	// Update partial payment fields if provided
+	if (paidAmount !== undefined && paidAmount !== '' && !isNaN(Number(paidAmount))) {
+		member.paidAmount = Math.max(0, Number(paidAmount));
+	}
+	if (pendingAmount !== undefined && pendingAmount !== '' && !isNaN(Number(pendingAmount))) {
+		member.pendingAmount = Math.max(0, Number(pendingAmount));
+	}
+	if (paymentStatus !== undefined && ['paid', 'partial', 'pending'].includes(paymentStatus)) {
+		member.paymentStatus = paymentStatus;
+	} else if (member.paidAmount != null) {
+		// Auto-recalculate paymentStatus if not explicitly set
+		if (member.pendingAmount <= 0) member.paymentStatus = 'paid';
+		else if (member.paidAmount <= 0) member.paymentStatus = 'pending';
+		else member.paymentStatus = 'partial';
 	}
 
 	// Recalculate status based on new dates

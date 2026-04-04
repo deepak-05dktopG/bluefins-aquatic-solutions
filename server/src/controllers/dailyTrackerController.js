@@ -52,7 +52,7 @@ export const getAllTrackerEntries = async (req, res) => {
       if (fromDate) filter.date.$gte = fromDate;
       if (toDate) filter.date.$lte = toDate;
     }
-    const limitNum = Math.min(Number.isFinite(Number(limitParam)) ? Number(limitParam) : 500, 1000);
+    const limitNum = Math.min(Number.isFinite(Number(limitParam)) ? Number(limitParam) : 500, 10000);
     const entries = await DailyTracker.find(filter).sort({ date: -1, time: -1 }).limit(limitNum);
     let cashBox = await GrocerCashBox.findOne({});
     if (cashBox) await ensureCashBoxStats(cashBox);

@@ -37,6 +37,11 @@ const memberSchema = new mongoose.Schema(
 		reminderSent7: { type: Boolean, default: false },
 		reminderSent3: { type: Boolean, default: false },
 		reminderSent1: { type: Boolean, default: false },
+
+		// Partial payment tracking
+		paidAmount: { type: Number, default: null },
+		pendingAmount: { type: Number, default: 0 },
+		paymentStatus: { type: String, enum: ['paid', 'partial', 'pending'], default: 'paid' },
 	},
 	{ timestamps: true }
 )

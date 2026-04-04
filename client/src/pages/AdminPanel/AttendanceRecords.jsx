@@ -227,7 +227,8 @@ function AttendanceRecords() {
 			const url = window.URL.createObjectURL(blob)
 			const a = document.createElement('a')
 			a.href = url
-			a.download = `bluefins-attendance-${dateFrom || 'all'}-to-${dateTo || 'all'}.csv`
+			const dt = new Date().toISOString().split('T')[0];
+			a.download = `bluefins-attendance-${dateFrom || 'all'}-to-${dateTo || 'all'}_generated-${dt}.csv`
 			document.body.appendChild(a)
 			a.click()
 			a.remove()

@@ -321,7 +321,7 @@ export default function Members() {
 
 	const onExport = () => {
 		const rows = [
-			['Name', 'Phone', 'Plan', 'Plan Type', 'Status', 'Join Date', 'Expiry Date', 'Days Left', 'Visits', 'Member ID', 'Group ID'],
+			['Name', 'Phone', 'Plan', 'Plan Type', 'Status', 'Join Date', 'Expiry Date', 'Days Left', 'Visits', 'Paid', 'Pending', 'Payment Status', 'Member ID', 'Group ID'],
 			...items.map(m => {
 				const daysLeft = daysUntil(m.expiryDate, m.planType, m.joinDate)
 				return [
@@ -329,11 +329,15 @@ export default function Members() {
 					formatDate(m.joinDate), formatDate(m.expiryDate),
 					daysLeft == null ? '' : String(daysLeft),
 					m.attendanceDaysCount == null ? '' : String(m.attendanceDaysCount),
+					m.paidAmount != null ? String(m.paidAmount) : '',
+					m.pendingAmount != null ? String(m.pendingAmount) : '',
+					m.paymentStatus || 'paid',
 					m._id, m.membershipGroupId || '',
 				]
 			}),
 		]
-		downloadCsv({ rows, filename: `bluefins-members-page-${page}.csv` })
+		const dt = new Date().toISOString().split('T')[0];
+		downloadCsv({ rows, filename: `bluefins-members-${dt}-page-${page}.csv` })
 	};
 
 	const badgeFor = m => {
@@ -355,6 +359,9 @@ export default function Members() {
 			planId: String(m.planId?._id || m.planId || ''),
 			joinDate: toInputDate(m.joinDate),
 			expiryDate: toInputDate(m.expiryDate),
+			paidAmount: m.paidAmount != null ? String(m.paidAmount) : '',
+			pendingAmount: m.pendingAmount != null ? String(m.pendingAmount) : '',
+			paymentStatus: m.paymentStatus || 'paid',
 		})
 		setEditError('')
 	}
@@ -445,9 +452,10 @@ export default function Members() {
 							<input value={q} onChange={e => { setPage(1); setQ(e.target.value) }} placeholder="Search name / phone / group id" style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(10,14,39,0.6)', color: 'rgba(255,255,255,0.9)', outline: 'none' }} />
 						</div>
 						<select value={status} onChange={e => { setPage(1); setStatus(e.target.value) }} style={{ padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(10,14,39,0.6)', color: 'rgba(255,255,255,0.9)', outline: 'none' }}>
-							<option value="">All status</option>
-							<option value="active">Active</option>
-							<option value="expired">Expired</option>
+							<option value="">All statuses</option>
+							<option value="active">Active Members</option>
+							<option value="expired">Expired Members</option>
+							<option value="has-pending">Pending Fees ⚠️</option>
 						</select>
 						<select value={planType} onChange={e => { setPage(1); setPlanType(e.target.value) }} style={{ padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(10,14,39,0.6)', color: 'rgba(255,255,255,0.9)', outline: 'none' }}>
 							<option value="">All active plans</option>
@@ -482,7 +490,7 @@ export default function Members() {
 						<table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1250px' }}>
 							<thead>
 								<tr style={{ background: 'rgba(10,14,39,0.7)' }}>
-									{['', 'Member', 'Phone', 'Plan', 'Status', 'Join', 'Expiry', 'Days Left', 'Visits', 'QR / Actions', ''].map((h, i) => (
+									{['', 'Member', 'Phone', 'Plan', 'Status', 'Join', 'Expiry', 'Days Left', 'Visits', 'Paid', 'Pending', 'QR / Actions', ''].map((h, i) => (
 										<th key={i} style={{ textAlign: 'left', padding: '10px 12px', color: 'rgba(255,255,255,0.65)', fontWeight: 600, fontSize: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
 											{h === '' ? (
 												<input type="checkbox" checked={allSelectedOnPage} onChange={toggleSelectAllOnPage} disabled={loading || items.length === 0} title="Select all on this page" style={{ transform: 'translateY(1px)' }} />
@@ -577,6 +585,30 @@ export default function Members() {
 													{m.attendanceDaysCount == null ? '—' : m.attendanceDaysCount}
 												</td>
 
+												{/* Paid Amount */}
+												<td style={{ padding: '10px 12px', fontSize: '0.85rem', fontWeight: 600 }}>
+													{isEditing ? (
+														<input type="number" min={0} value={editDraft.paidAmount} onChange={e => handleDraftChange('paidAmount', e.target.value)} style={{ ...inlineInputStyle, width: 80 }} placeholder="Paid" />
+													) : (
+														m.paidAmount != null 
+															? <span style={{ color: '#00FFD4' }}>₹{m.paidAmount}</span>
+															: <span style={{ color: 'rgba(255,255,255,0.3)' }}>—</span>
+													)}
+												</td>
+
+												{/* Pending Amount */}
+												<td style={{ padding: '10px 12px', fontSize: '0.85rem', fontWeight: 600 }}>
+													{isEditing ? (
+														<input type="number" min={0} value={editDraft.pendingAmount} onChange={e => handleDraftChange('pendingAmount', e.target.value)} style={{ ...inlineInputStyle, width: 80 }} placeholder="Pending" />
+													) : (
+														m.paidAmount != null ? (
+															m.pendingAmount > 0 
+																? <span style={{ color: '#FF6B6B', fontWeight: 700 }}>₹{m.pendingAmount} ⚠️</span>
+																: <span style={{ color: '#00FFD4' }}>✓ Cleared</span>
+														) : <span style={{ color: 'rgba(255,255,255,0.3)' }}>—</span>
+													)}
+												</td>
+
 												{/* QR + action buttons */}
 												<td style={{ padding: '10px 12px' }}>
 													<div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -644,7 +676,7 @@ export default function Members() {
 
 								{!loading && items.length === 0 ? (
 									<tr>
-										<td colSpan={11} style={{ padding: '16px 12px', color: 'rgba(255,255,255,0.6)', fontWeight: 600, fontSize: '0.9rem' }}>
+										<td colSpan={13} style={{ padding: '16px 12px', color: 'rgba(255,255,255,0.6)', fontWeight: 600, fontSize: '0.9rem' }}>
 											No members found for current filters.
 										</td>
 									</tr>

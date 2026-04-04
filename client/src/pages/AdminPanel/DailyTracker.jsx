@@ -65,7 +65,7 @@ const getPaymentColor = (ptype) => {
   }
 };
 
-function exportToCSV(rows, cashBox) {
+function exportToCSV(rows, cashBox, dateSuffix = null) {
   const header = ['Type', 'Name', 'Payment Type', 'Amount', 'Date', 'Time', 'Details/Notes'];
   const csvRows = rows.map(r =>
     [r.type, r.name, r.paymentType, r.amount, r.date, r.time, r.notes].map(x => `"${x ?? ''}"`).join(',')
@@ -80,10 +80,16 @@ function exportToCSV(rows, cashBox) {
   const earningEntries = rows.filter(r => r.type !== 'Expense' && r.type !== 'Withdrawal');
   const totalEarningCount = earningEntries.length;
 
+  const cashRowsTotal = earningEntries.filter(r => (r.paymentType || '').toLowerCase() === 'cash').reduce((sum, r) => sum + Number(r.amount), 0);
+  const gpayRowsTotal = earningEntries.filter(r => (r.paymentType || '').toLowerCase() === 'gpay').reduce((sum, r) => sum + Number(r.amount), 0);
+
+  const breakdownStatsStr = Object.entries(typeTotals).map(([t, v]) => `${t}: Rupees ${v}`).join(' | ');
+  const combinedStatsStr = `${breakdownStatsStr}${breakdownStatsStr ? ' | ' : ''}Cash Earnings: Rupees ${cashRowsTotal} | GPay Earnings: Rupees ${gpayRowsTotal}`;
+
   // Add totals row (with 'Rupees' instead of symbol)
   const totalsRow = [
     `Totals (Earning Entries: ${totalEarningCount})`, '', '', '', '', '',
-    `${Object.entries(typeTotals).map(([t, v]) => `${t}: Rupees ${v}`).join(' | ')}`
+    `"${combinedStatsStr}"`
   ].join(',');
 
   const cashBoxRow = [
@@ -98,7 +104,8 @@ function exportToCSV(rows, cashBox) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `daily-tracker-${getNow().date}.csv`;
+  const suffix = dateSuffix ? `-${dateSuffix}` : `-${getNow().date}`;
+  a.download = `daily-tracker${suffix}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -122,6 +129,7 @@ const DailyTracker = () => {
   // "All Entries" view mode
   const [viewMode, setViewMode] = useState('date'); // 'date' | 'all'
   const [allRows, setAllRows] = useState([]);
+  const [dateRange, setDateRange] = useState({ from: '', to: '' });
 
   // Inline editing
   const [editingId, setEditingId] = useState(null);
@@ -149,7 +157,7 @@ const DailyTracker = () => {
         setRows(res.data || []);
         if (res.cashBox) setCashBox(res.cashBox);
       } else {
-        const res = await fetchAllTrackerEntries();
+        const res = await fetchAllTrackerEntries({ fromDate: dateRange.from, toDate: dateRange.to, limit: 10000 });
         setAllRows(res.data || []);
         if (res.cashBox) setCashBox(res.cashBox);
       }
@@ -269,8 +277,19 @@ const DailyTracker = () => {
       Swal.fire('Nothing to clear', 'There are no entries to process.', 'info');
       return;
     }
+    let suffix;
+    if (viewMode === 'all') {
+      if (dateRange?.from || dateRange?.to) {
+        suffix = `${dateRange.from || 'start'}_to_${dateRange.to || 'end'}_cleared-${getNow().date}`;
+      } else {
+        suffix = `FULL-HISTORY-${getNow().date}`;
+      }
+    } else {
+      suffix = date;
+    }
+    
     // Step 1: Download CSV first
-    exportToCSV(dataToExport, cashBox);
+    exportToCSV(dataToExport, cashBox, suffix);
     // Step 2: Confirm deletion
     const isFullPurge = viewMode === 'all';
     const result = await Swal.fire({
@@ -315,6 +334,20 @@ const DailyTracker = () => {
 
   const earningEntriesUI = filtered.filter(r => r.type !== 'Expense' && r.type !== 'Withdrawal');
   const totalCount = earningEntriesUI.length;
+
+  const totalCashCollected = earningEntriesUI
+    .filter(r => (r.paymentType || '').toLowerCase() === 'cash')
+    .reduce((sum, r) => sum + Number(r.amount), 0);
+
+  const totalGpayCollected = earningEntriesUI
+    .filter(r => (r.paymentType || '').toLowerCase() === 'gpay')
+    .reduce((sum, r) => sum + Number(r.amount), 0);
+
+  const totalExpensesUI = filtered
+    .filter(r => r.type === 'Expense')
+    .reduce((sum, r) => sum + Number(r.amount), 0);
+
+  const netProfit = (totalCashCollected + totalGpayCollected) - totalExpensesUI;
 
   const typeOptions = ['Order', '1 Hour Order', 'Expense', 'Withdrawal'];
   const filterTypeOptions = ['Order', '1 Hour Order', 'Expense', 'Withdrawal', ...membershipPlans];
@@ -456,10 +489,7 @@ const DailyTracker = () => {
               >📊 All</button>
             </div>
           </div>
-          {/* <div style={{ color: '#FF5252', fontWeight: 600, marginBottom: 18, fontSize: 15 }}>
-          <span style={{ verticalAlign: 'middle', marginRight: 6 }}>⚠️</span>
-          For one-hour/Rupees 150 entries, use <b>Order</b> type here. Do <b>not</b> register as a member.
-        </div> */}
+
           <div className="dt-filter-bar">
             {viewMode === 'date' ? (
               <>
@@ -479,9 +509,23 @@ const DailyTracker = () => {
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%', justifyContent: 'space-between', flexWrap: 'wrap' }}>
                 <span style={{ color: '#7c3aed', fontWeight: 700, fontSize: 16 }}>All history ({allRows.length} entries)</span>
-                <button onClick={downloadAndClear} style={{ padding: '10px 22px', borderRadius: 8, background: '#dc2626', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 18 }}>⬇️🗑️</span> Download &amp; Clear All
-                </button>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <input type="date" value={dateRange.from} onChange={e => setDateRange({...dateRange, from: e.target.value})} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }} />
+                  <span style={{ color: '#64748b', fontSize: 14 }}>to</span>
+                  <input type="date" value={dateRange.to} onChange={e => setDateRange({...dateRange, to: e.target.value})} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }} />
+                  <button onClick={() => fetchData()} style={{ padding: '10px 16px', borderRadius: 8, background: '#7c3aed', color: '#fff', fontWeight: 700, border: 'none', fontSize: 14, cursor: 'pointer' }}>Apply</button>
+                  <button onClick={() => { setDateRange({from: '', to: ''}); setTimeout(() => setViewMode('date'), 0); setTimeout(() => setViewMode('all'), 100); }} style={{ padding: '10px 16px', borderRadius: 8, background: '#e2e8f0', color: '#475569', fontWeight: 700, border: 'none', fontSize: 14, cursor: 'pointer' }}>Clear Filters</button>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={() => exportToCSV(allRows, cashBox, dateRange.from || dateRange.to ? `${dateRange.from || 'start'}_to_${dateRange.to || 'end'}_generated-${getNow().date}` : `ALL-HISTORY-${getNow().date}`)} style={{ padding: '10px 22px', borderRadius: 8, background: '#10b981', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 18 }}>⬇️</span> Download CSV
+                  </button>
+                  <button onClick={downloadAndClear} style={{ padding: '10px 22px', borderRadius: 8, background: '#dc2626', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 18 }}>⬇️🗑️</span> Download &amp; Clear All
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -555,7 +599,7 @@ const DailyTracker = () => {
                 <tr style={{ background: '#f1f5f9', fontWeight: 900, fontSize: 15, color: '#1e293b' }}>
                   <th colSpan={3} style={{ padding: '14px 14px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>Totals <span style={{ color: '#2563eb', fontSize: 13, marginLeft: 8 }}>(Earning Entries: {totalCount})</span></th>
                   <th colSpan={4} style={{ padding: '14px 14px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>
-                    {allTypesInCurrentView.map(t => `${t}: Rupees ${totals[t] || 0}`).join(' | ')}
+                    {allTypesInCurrentView.map(t => `${t}: Rupees ${totals[t] || 0}`).join(' | ')} {allTypesInCurrentView.length > 0 ? ' | ' : ''}Cash Earnings: Rupees {totalCashCollected} | GPay Earnings: Rupees {totalGpayCollected}
                   </th>
                 </tr>
 

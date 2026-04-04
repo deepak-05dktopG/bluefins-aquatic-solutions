@@ -152,6 +152,7 @@ const OfflineMembership = () => {
     const [selection, setSelection] = useState({
     })
     const [discountPct, setDiscountPct] = useState('')
+    const [paidAmountInput, setPaidAmountInput] = useState('')
     const [paymentMethod, setPaymentMethod] = useState('cash')
     const [familyMembers, setFamilyMembers] = useState([emptyFamilyMember])
     const [collectedBy, setCollectedBy] = useState(/**
@@ -455,6 +456,7 @@ const OfflineMembership = () => {
                 collectedBy: normalizeText(collectedBy),
                 planId: selectedPlanId,
                 discountPct: parseDiscountPct(discountPct).ok ? parseDiscountPct(discountPct).pct : 0,
+                paidAmount: paidAmountInput !== '' && !isNaN(Number(paidAmountInput)) ? Number(paidAmountInput) : undefined,
                 paymentMethod,
                 member: {
                     name: normalizedMember.name,
@@ -510,6 +512,7 @@ const OfflineMembership = () => {
         setMember(emptyMember)
         setSelection({ category: 'kids', coachingAddOn: false, quantity: 1, publicSlot: { date: '', startTime: '10:00', endTime: '' } })
         setDiscountPct('')
+        setPaidAmountInput('')
         setPaymentMethod('cash')
         setFamilyMembers([emptyFamilyMember])
         setJoinDate(todayStr())
@@ -1056,13 +1059,50 @@ const OfflineMembership = () => {
                                         </div>
                                     ) : null}
 
+                                    {/* ── Partial Payment Input ── */}
+                                    {computedTotal != null && (
+                                        <div className="mt-3 p-3" style={{ borderRadius: 12, border: '1px solid rgba(255,215,0,0.35)', background: 'rgba(255,215,0,0.07)' }}>
+                                            <div style={{ color: '#FFD700', fontWeight: 700, marginBottom: 8, fontSize: 14 }}>
+                                                💰 Payment Collection
+                                            </div>
+                                            <div className="row g-2">
+                                                <div className="col-12 col-md-6">
+                                                    <label className="form-label" style={{ color: '#fff', fontSize: 13 }}>
+                                                        Total Payable
+                                                    </label>
+                                                    <div style={{ color: '#00FFD4', fontWeight: 900, fontSize: 18 }}>
+                                                        {formatInr(computedTotal)}
+                                                    </div>
+                                                </div>
+                                                <div className="col-12 col-md-6">
+                                                    <label className="form-label" style={{ color: '#fff', fontSize: 13 }}>
+                                                        Amount Paid Now <span style={{ color: 'rgba(255,255,255,0.5)', fontWeight: 400 }}>(leave blank = full amount)</span>
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        min={0}
+                                                        max={computedTotal}
+                                                        step="0.01"
+                                                        className="form-control form-control-sm"
+                                                        placeholder={`Full: ₹${computedTotal}`}
+                                                        value={paidAmountInput}
+                                                        onChange={e => setPaidAmountInput(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                            {/* Live pending preview */}
+                                            {paidAmountInput !== '' && !isNaN(Number(paidAmountInput)) && Number(paidAmountInput) < computedTotal && (
+                                                <div className="mt-2" style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(255,107,107,0.15)', border: '1px solid rgba(255,107,107,0.4)' }}>
+                                                    <span style={{ color: '#FF6B6B', fontWeight: 700 }}>⚠️ Pending Amount: </span>
+                                                    <span style={{ color: '#fff', fontWeight: 900 }}>{formatInr(Math.max(0, computedTotal - Number(paidAmountInput)))}</span>
+                                                    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, marginLeft: 8 }}>will be tracked as outstanding balance</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
                                     <div className="d-flex justify-content-between mt-4">
-                                        <button className="btn btn-outline-light btn-sm" onClick={/**
-                                             * Go back to plan selection.
-                                         */
-                                            () => {
-                                                return setStep(STEP.PLAN);
-                                            }} disabled={busy}>
+                                        <button className="btn btn-outline-light btn-sm" onClick={() => setStep(STEP.PLAN)} disabled={busy}>
                                             Back
                                         </button>
                                         <button className="btn btn-success btn-sm" onClick={submitOffline} disabled={busy}>
@@ -1080,10 +1120,25 @@ const OfflineMembership = () => {
                                             className="p-2"
                                             style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(255,255,255,0.05)' }}
                                         >
-                                            <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>Total collected</div>
+                                            <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12 }}>Total Payable</div>
                                             <div style={{ color: '#fff', fontWeight: 900, fontSize: 18 }}>
                                                 {formatInr(result?.payment?.pricing?.total ?? computedTotal)}
                                             </div>
+                                            {/* Paid now */}
+                                            {result?.members?.[0]?.paidAmount != null && (
+                                                <div style={{ marginTop: 6, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                                                    <div>
+                                                        <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>Paid now: </span>
+                                                        <span style={{ color: '#00FFD4', fontWeight: 700 }}>{formatInr(result.members[0].paidAmount)}</span>
+                                                    </div>
+                                                    {result.members[0].pendingAmount > 0 && (
+                                                        <div>
+                                                            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>Pending: </span>
+                                                            <span style={{ color: '#FF6B6B', fontWeight: 700 }}>{formatInr(result.members[0].pendingAmount)}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                             <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 4 }}>
                                                 Payment type: {paymentTypeLabel(result?.payment?.provider || 'cash')}
                                             </div>
