@@ -36,13 +36,13 @@ const round2 = n => {
     return Math.round((x + Number.EPSILON) * 100) / 100
 }
 
-const parseDiscountPct = v => {
+const parseDiscountAmt = v => {
     const raw = normalizeText(v)
-    if (!raw) return { ok: true, pct: 0 }
+    if (!raw) return { ok: true, amount: 0 }
     const n = Number(raw)
-    if (!Number.isFinite(n)) return { ok: false, message: 'Discount (%) must be a number' }
-    if (n < 0 || n > 100) return { ok: false, message: 'Discount (%) must be between 0 and 100' }
-    return { ok: true, pct: n }
+    if (!Number.isFinite(n)) return { ok: false, message: 'Discount must be a number' }
+    if (n < 0) return { ok: false, message: 'Discount cannot be negative' }
+    return { ok: true, amount: n }
 }
 
 /**
@@ -151,7 +151,7 @@ const OfflineMembership = () => {
     const [member, setMember] = useState(emptyMember)
     const [selection, setSelection] = useState({
     })
-    const [discountPct, setDiscountPct] = useState('')
+    const [discountAmt, setDiscountAmt] = useState('')
     const [paidAmountInput, setPaidAmountInput] = useState('')
     const [paymentMethod, setPaymentMethod] = useState('cash')
     const [familyMembers, setFamilyMembers] = useState([emptyFamilyMember])
@@ -250,15 +250,15 @@ const OfflineMembership = () => {
         }, [selectedPlan, selection, testAmountInr])
 
     // Unified discount calculation to ensure consistency
-    const { discountPctValue, discountAmount, totalAfterDiscount } = useMemo(() => {
+    const { discountAmount, totalAfterDiscount } = useMemo(() => {
         const subtotal = computedSubtotal;
-        if (subtotal == null) return { discountPctValue: 0, discountAmount: 0, totalAfterDiscount: null };
-        const disc = parseDiscountPct(discountPct);
-        const pct = disc.ok ? disc.pct : 0;
-        const discountAmt = pct > 0 ? round2(Number(subtotal) * (pct / 100)) : 0;
-        const total = round2(Math.max(0, Number(subtotal) - discountAmt));
-        return { discountPctValue: pct, discountAmount: discountAmt, totalAfterDiscount: total };
-    }, [computedSubtotal, discountPct]);
+        if (subtotal == null) return { discountAmount: 0, totalAfterDiscount: null };
+        const disc = parseDiscountAmt(discountAmt);
+        const amt = disc.ok ? disc.amount : 0;
+        const discountAmtVal = Math.min(Number(subtotal), amt); // Cannot discount more than subtotal
+        const total = round2(Math.max(0, Number(subtotal) - discountAmtVal));
+        return { discountAmount: discountAmtVal, totalAfterDiscount: total };
+    }, [computedSubtotal, discountAmt]);
 
     // For compatibility with existing code
     const computedTotal = totalAfterDiscount;
@@ -371,7 +371,7 @@ const OfflineMembership = () => {
     const validate = () => {
         if (!selectedPlan) return 'Please select a plan'
         if (!normalizeText(collectedBy)) return 'Collected by (admin name) is required'
-        const disc = parseDiscountPct(discountPct)
+        const disc = parseDiscountAmt(discountAmt)
         if (!disc.ok) return disc.message
         if (!OFFLINE_PAYMENT_METHOD_LABEL[paymentMethod]) return 'Select a valid payment method'
 
@@ -455,7 +455,7 @@ const OfflineMembership = () => {
             const payload = {
                 collectedBy: normalizeText(collectedBy),
                 planId: selectedPlanId,
-                discountPct: parseDiscountPct(discountPct).ok ? parseDiscountPct(discountPct).pct : 0,
+                discountAmt: parseDiscountAmt(discountAmt).ok ? parseDiscountAmt(discountAmt).amount : 0,
                 paidAmount: paidAmountInput !== '' && !isNaN(Number(paidAmountInput)) ? Number(paidAmountInput) : undefined,
                 paymentMethod,
                 member: {
@@ -511,7 +511,7 @@ const OfflineMembership = () => {
         setError('')
         setMember(emptyMember)
         setSelection({ category: 'kids', coachingAddOn: false, quantity: 1, publicSlot: { date: '', startTime: '10:00', endTime: '' } })
-        setDiscountPct('')
+        setDiscountAmt('')
         setPaidAmountInput('')
         setPaymentMethod('cash')
         setFamilyMembers([emptyFamilyMember])
@@ -700,16 +700,15 @@ const OfflineMembership = () => {
 
                                     <div className="row g-2" style={{ marginBottom: 10 }}>
                                         <div className="col-12 col-md-4">
-                                            <label className="form-label" style={{ color: '#fff' }}>Discount (%)</label>
+                                            <label className="form-label" style={{ color: '#fff' }}>Discount Amount (₹)</label>
                                             <input
                                                 type="number"
                                                 min={0}
-                                                max={100}
-                                                step={1}
+                                                step="1"
                                                 className="form-control form-control-sm"
                                                 placeholder="0"
-                                                value={discountPct}
-                                                onChange={e => setDiscountPct(e.target.value)}
+                                                value={discountAmt}
+                                                onChange={e => setDiscountAmt(e.target.value)}
                                             />
                                             <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 12, marginTop: 6 }}>
                                                 Applied only for offline registration.
@@ -1261,10 +1260,10 @@ const OfflineMembership = () => {
                                     </div>
                                 )}
 
-                                {computedDiscountAmount != null && Number(computedDiscountAmount) > 0 && parseDiscountPct(discountPct).ok ? (
+                                {computedDiscountAmount != null && Number(computedDiscountAmount) > 0 && parseDiscountAmt(discountAmt).ok ? (
                                     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
                                         <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
-                                            Discount ({parseDiscountPct(discountPct).pct}%)
+                                            Discount Deduction
                                         </div>
                                         <div style={{ color: '#fff', fontWeight: 900 }}>- {formatInr(computedDiscountAmount)}</div>
                                     </div>

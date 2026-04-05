@@ -49,9 +49,14 @@ const Badge = ({ children, color }) => {
 };
 const getTypeColor = (type) => {
   switch (type) {
+    case 'Stock':
     case 'Order':
     case '1 Hour Order':
+    case '1 Hour':
+    case '1 Hour Stock':
+    case 'Public Stock':
     case 'Public Order': return 'green';
+    case 'Pending Amount': return 'purple';
     case 'Expense': return 'red';
     case 'Withdrawal': return 'gray';
     default: return 'blue'; // Assume blue for all dynamic membership plans
@@ -317,13 +322,12 @@ const DailyTracker = () => {
     }
   };
 
-  // Filtered rows (only for date mode)
-  const filtered = viewMode === 'all'
-    ? allRows
-    : rows.filter(r =>
-      (!filter || Object.values(r).some(v => String(v).toLowerCase().includes(filter.toLowerCase()))) &&
-      (!typeFilter || r.type === typeFilter)
-    );
+  // Filtered rows (for both date and all modes)
+  const baseRows = viewMode === 'all' ? allRows : rows;
+  const filtered = baseRows.filter(r =>
+    (!filter || Object.values(r).some(v => String(v).toLowerCase().includes(filter.toLowerCase()))) &&
+    (!typeFilter || r.type === typeFilter)
+  );
 
   // Running totals
   const allTypesInCurrentView = [...new Set(filtered.map(r => r.type))];
@@ -349,8 +353,8 @@ const DailyTracker = () => {
 
   const netProfit = (totalCashCollected + totalGpayCollected) - totalExpensesUI;
 
-  const typeOptions = ['Order', '1 Hour Order', 'Expense', 'Withdrawal'];
-  const filterTypeOptions = ['Order', '1 Hour Order', 'Expense', 'Withdrawal', ...membershipPlans];
+  const typeOptions = ['Stock', '1 Hour Order', 'Pending Amount', 'Expense', 'Withdrawal'];
+  const filterTypeOptions = ['Stock', '1 Hour Order', 'Pending Amount', 'Expense', 'Withdrawal', ...membershipPlans];
 
   return (
     <>
@@ -507,24 +511,34 @@ const DailyTracker = () => {
                 </button>
               </>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-                <span style={{ color: '#7c3aed', fontWeight: 700, fontSize: 16 }}>All history ({allRows.length} entries)</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                  <span style={{ color: '#7c3aed', fontWeight: 700, fontSize: 16 }}>All history ({filtered.length} entries shown)</span>
+                  
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button onClick={() => exportToCSV(filtered, cashBox, dateRange.from || dateRange.to ? `${dateRange.from || 'start'}_to_${dateRange.to || 'end'}_generated-${getNow().date}` : `ALL-HISTORY-${getNow().date}`)} style={{ padding: '10px 22px', borderRadius: 8, background: '#10b981', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 18 }}>⬇️</span> Download CSV
+                    </button>
+                    <button onClick={downloadAndClear} style={{ padding: '10px 22px', borderRadius: 8, background: '#dc2626', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 18 }}>⬇️🗑️</span> Download &amp; Clear All
+                    </button>
+                  </div>
+                </div>
                 
+                {/* Secondary row of filters for All-History */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <input type="date" value={dateRange.from} onChange={e => setDateRange({...dateRange, from: e.target.value})} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }} />
                   <span style={{ color: '#64748b', fontSize: 14 }}>to</span>
                   <input type="date" value={dateRange.to} onChange={e => setDateRange({...dateRange, to: e.target.value})} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }} />
-                  <button onClick={() => fetchData()} style={{ padding: '10px 16px', borderRadius: 8, background: '#7c3aed', color: '#fff', fontWeight: 700, border: 'none', fontSize: 14, cursor: 'pointer' }}>Apply</button>
-                  <button onClick={() => { setDateRange({from: '', to: ''}); setTimeout(() => setViewMode('date'), 0); setTimeout(() => setViewMode('all'), 100); }} style={{ padding: '10px 16px', borderRadius: 8, background: '#e2e8f0', color: '#475569', fontWeight: 700, border: 'none', fontSize: 14, cursor: 'pointer' }}>Clear Filters</button>
-                </div>
+                  <button onClick={() => fetchData()} style={{ padding: '10px 16px', borderRadius: 8, background: '#7c3aed', color: '#fff', fontWeight: 700, border: 'none', fontSize: 14, cursor: 'pointer' }}>Apply Date Range</button>
+                  
+                  <input placeholder="Search..." value={filter} onChange={e => setFilter(e.target.value)} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, flex: 1, minWidth: 150 }} title="Search entries in current view" />
+                  <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ padding: 10, borderRadius: 8, fontSize: 13, border: '1px solid #cbd5e1' }} title="Filter by type">
+                    <option value="">All Types</option>
+                    {filterTypeOptions.map(t => <option key={t}>{t}</option>)}
+                  </select>
 
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button onClick={() => exportToCSV(allRows, cashBox, dateRange.from || dateRange.to ? `${dateRange.from || 'start'}_to_${dateRange.to || 'end'}_generated-${getNow().date}` : `ALL-HISTORY-${getNow().date}`)} style={{ padding: '10px 22px', borderRadius: 8, background: '#10b981', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 18 }}>⬇️</span> Download CSV
-                  </button>
-                  <button onClick={downloadAndClear} style={{ padding: '10px 22px', borderRadius: 8, background: '#dc2626', color: '#fff', fontWeight: 700, border: 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 18 }}>⬇️🗑️</span> Download &amp; Clear All
-                  </button>
+                  <button onClick={() => { setDateRange({from: '', to: ''}); setFilter(''); setTypeFilter(''); setTimeout(() => setViewMode('date'), 0); setTimeout(() => setViewMode('all'), 100); }} style={{ padding: '10px 16px', borderRadius: 8, background: '#e2e8f0', color: '#475569', fontWeight: 700, border: 'none', fontSize: 14, cursor: 'pointer' }}>Clear Filters</button>
                 </div>
               </div>
             )}
@@ -570,7 +584,7 @@ const DailyTracker = () => {
                    const memStats = cashBox.membershipStats || [];
                    
                    const items = [
-                     { name: 'Order', stats: orderStats },
+                     { name: 'Stock', stats: orderStats },
                      { name: '1 Hour Order', stats: oneHourOrderStats },
                      ...memStats.map(m => ({ name: m.planName, stats: m }))
                    ];

@@ -962,7 +962,7 @@ export const registerPaidMembership = asyncHandler(async (req, res) => {
 import { incrementCashBox } from './grocerCashBoxController.js';
 // Registers an offline membership (admin counter): creates members with no gateway fees, records cash payment
 export const registerOfflineMembership = asyncHandler(async (req, res) => {
-	const { planId, member, selection, familyMembers, collectedBy, paymentMethod, discountPct, paidAmount: paidAmountRaw, joinDate: joinDateOverride, expiryDate: expiryDateOverride } = req.body;
+	const { planId, member, selection, familyMembers, collectedBy, paymentMethod, discountAmt, paidAmount: paidAmountRaw, joinDate: joinDateOverride, expiryDate: expiryDateOverride } = req.body;
 	if (!planId) return res.status(400).json({ success: false, message: 'planId is required' });
 	if (!collectedBy || !String(collectedBy).trim()) {
 		return res.status(400).json({ success: false, message: 'collectedBy (admin name) is required' });
@@ -980,20 +980,20 @@ export const registerOfflineMembership = asyncHandler(async (req, res) => {
 	}
 
 
-	// Parse discount percentage (from frontend, default 0)
-	const discountPercent = Number(discountPct) || 0;
+	// Parse discount amount (from frontend, default 0)
+	const discountAmountInput = Number(discountAmt) || 0;
 
 	// Prepare draft and apply discount logic (pass date overrides for backdating existing members)
 	let draftRes = prepareOfflineMembershipDraft({ plan, member, selection, familyMembers, joinDateOverride, expiryDateOverride });
 	if (!draftRes.ok) return res.status(400).json({ success: false, message: draftRes.message });
 
 	// Apply discount to pricing if needed
-	if (discountPercent > 0 && draftRes.amountRes && draftRes.amountRes.computed && draftRes.amountRes.computed.pricing) {
+	if (discountAmountInput > 0 && draftRes.amountRes && draftRes.amountRes.computed && draftRes.amountRes.computed.pricing) {
 		const baseAmount = draftRes.amountRes.computed.pricing.subtotal ?? draftRes.amountRes.amount;
-		const discountAmount = Math.round((baseAmount * discountPercent) * 100) / 10000; // percent, 2 decimals
-		const totalAfterDiscount = Math.max(0, Math.round((baseAmount - (baseAmount * discountPercent / 100)) * 100) / 100);
-		draftRes.amountRes.computed.pricing.discountPct = discountPercent;
-		draftRes.amountRes.computed.pricing.discountAmount = Math.round((baseAmount - totalAfterDiscount) * 100) / 100;
+		const discountAmount = Math.min(baseAmount, Math.max(0, discountAmountInput));
+		const totalAfterDiscount = Math.max(0, Math.round((baseAmount - discountAmount) * 100) / 100);
+		draftRes.amountRes.computed.pricing.discountPct = undefined;
+		draftRes.amountRes.computed.pricing.discountAmount = discountAmount;
 		draftRes.amountRes.computed.pricing.total = totalAfterDiscount;
 		draftRes.amountRes.amount = totalAfterDiscount;
 	}

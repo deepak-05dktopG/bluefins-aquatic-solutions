@@ -17,10 +17,10 @@ export async function incrementCashBox({ amount, paymentType, expenseDelta = 0, 
   if (withdrawalDelta !== 0) cashBox.lifetimeWithdrawal = (cashBox.lifetimeWithdrawal || 0) + withdrawalDelta;
 
   if (entryType && (entryCountDelta !== 0 || entryTotalDelta !== 0)) {
-    if (entryType === 'Order') {
+    if (entryType === 'Stock' || entryType === 'Order') {
       cashBox.orderStats.count = Math.max(0, cashBox.orderStats.count + entryCountDelta);
       cashBox.orderStats.amount = Math.max(0, cashBox.orderStats.amount + entryTotalDelta);
-    } else if (entryType === '1 Hour Order' || entryType === 'Public Order') {
+    } else if (entryType === '1 Hour' || entryType === '1 Hour Stock' || entryType === 'Public Stock' || entryType === '1 Hour Order' || entryType === 'Public Order') {
       cashBox.oneHourOrderStats.count = Math.max(0, cashBox.oneHourOrderStats.count + entryCountDelta);
       cashBox.oneHourOrderStats.amount = Math.max(0, cashBox.oneHourOrderStats.amount + entryTotalDelta);
     } else if (entryType !== 'Expense' && entryType !== 'Withdrawal') {
