@@ -645,7 +645,7 @@ export default function Members() {
 														{/* WhatsApp */}
 														<button onClick={() => {
 															const url = `https://bluefinsaquaticsolutions.com/member/id/${m._id}`
-															const message = `Hello *${m.name.toUpperCase()}* 👋\n\nWelcome to *Kuberalaxmi Sports Academy*! 🏊‍♂️ Thank you for registering with us.\n\nYour Official Digital Member ID Card is ready. 🪪\nPlease use the secure link below to view and download your ID card for attendance and entry:\n\n👉 ${url}\n\nWe look forward to seeing you at the pool! 🌊\n\nRegards,\n*Team Kuberalaxmi Sports Academy* 💙`;
+															const message = `Hello *${m.name.toUpperCase()}* \n\nWelcome to *Kuberalaxmi Sports Academy*!  Thank you for registering with us.\n\nYour Official Digital Member ID Card is ready. \nPlease use the secure link below to view and download your ID card for attendance and entry:\n\n ${url}\n\nWe look forward to seeing you at the pool! \n\nRegards,\n*Team Kuberalaxmi Sports Academy* `;
 															const whatsappUrl = `https://wa.me/91${m.phone}?text=${encodeURIComponent(message)}`
 															window.open(whatsappUrl, '_blank')
 														}} disabled={loading || !m.qrCode} title="Send ID via WhatsApp" aria-label={`Send ID via WhatsApp for ${m.name}`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, background: 'rgba(37,211,102,0.15)', color: '#25D366', border: '1px solid rgba(37,211,102,0.35)', borderRadius: '9px', cursor: loading || !m.qrCode ? 'not-allowed' : 'pointer' }}>

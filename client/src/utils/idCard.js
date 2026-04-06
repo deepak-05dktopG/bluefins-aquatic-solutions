@@ -730,6 +730,19 @@ export const buildMemberIdCardPng = async (
 
     // Keep QR clear; no center overlay.
 
+    // Branding footer (Subtle advertisement - drawn BEFORE restore so it's inside the card clip)
+    ctx.save()
+    ctx.textAlign = 'center'
+    setFont(ctx, { weight: 400, size: 14 })
+    ctx.fillStyle = 'rgba(255,255,255,0.75)'
+    ctx.strokeStyle = 'rgba(0,0,0,0.60)'
+    ctx.lineWidth = 3
+    ctx.lineJoin = 'round'
+    const footerY = cardY + cardH - 18
+    ctx.strokeText('Scale your business online & automated: +91 90254 54148, +91 91509 18528', canvas.width / 2, footerY)
+    ctx.fillText('Scale your business online & automated: +91 90254 54148, +91 91509 18528', canvas.width / 2, footerY)
+    ctx.restore()
+
     // Finish clip
     ctx.restore()
 
