@@ -1456,7 +1456,7 @@ export const updateMember = asyncHandler(async (req, res) => {
 	const { id } = req.params;
 	if (!id) return res.status(400).json({ success: false, message: 'Member ID is required' });
 
-	const { name, phone, planId, joinDate, expiryDate, paidAmount, pendingAmount, paymentStatus } = req.body;
+	const { name, phone, planId, joinDate, expiryDate, paidAmount, pendingAmount, paymentStatus, attendanceDaysCount } = req.body;
 
 	const member = await Member.findById(id);
 	if (!member) return res.status(404).json({ success: false, message: 'Member not found' });
@@ -1524,6 +1524,11 @@ export const updateMember = asyncHandler(async (req, res) => {
 		if (member.pendingAmount <= 0) member.paymentStatus = 'paid';
 		else if (member.paidAmount <= 0) member.paymentStatus = 'pending';
 		else member.paymentStatus = 'partial';
+	}
+
+	// Allow admin to manually correct visit count
+	if (attendanceDaysCount !== undefined && attendanceDaysCount !== '' && !isNaN(Number(attendanceDaysCount))) {
+		member.attendanceDaysCount = Math.max(0, Math.floor(Number(attendanceDaysCount)));
 	}
 
 	// Recalculate status based on new dates

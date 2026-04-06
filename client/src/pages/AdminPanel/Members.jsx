@@ -362,6 +362,7 @@ export default function Members() {
 			paidAmount: m.paidAmount != null ? String(m.paidAmount) : '',
 			pendingAmount: m.pendingAmount != null ? String(m.pendingAmount) : '',
 			paymentStatus: m.paymentStatus || 'paid',
+			attendanceDaysCount: m.attendanceDaysCount != null ? String(m.attendanceDaysCount) : '0',
 		})
 		setEditError('')
 	}
@@ -582,7 +583,18 @@ export default function Members() {
 
 												{/* Visits */}
 												<td style={{ padding: '10px 12px', color: 'rgba(255,255,255,0.75)', fontWeight: 600, fontSize: '0.85rem' }}>
-													{m.attendanceDaysCount == null ? '—' : m.attendanceDaysCount}
+													{isEditing ? (
+														<input
+															type="number"
+															min={0}
+															value={editDraft.attendanceDaysCount}
+															onChange={e => handleDraftChange('attendanceDaysCount', e.target.value)}
+															style={{ ...inlineInputStyle, width: 70 }}
+															placeholder="Visits"
+														/>
+													) : (
+														m.attendanceDaysCount == null ? '—' : m.attendanceDaysCount
+													)}
 												</td>
 
 												{/* Paid Amount */}
