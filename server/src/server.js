@@ -15,32 +15,26 @@ connectDB()
 const app = express()
  
 // Middleware 
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://localhost:3000',
-  'https://blufinsaquatics.netlify.app',
-  'https://bluefins.netlify.app',
-  'https://bluefins-aquatic-solutions.netlify.app',
-  'https://bluefinsaquaticsolutions.com',
-  'https://www.bluefinsaquaticsolutions.com',
-]
- 
 app.use(cors({
-  origin: function (origin, callback) {
-      // Allow specific origins, or allow all if in dev mode
-      if (!origin || process.env.NODE_ENV !== 'production' || allowedOrigins.includes(origin) || origin.endsWith('bluefinsaquaticsolutions.com')) {
-          callback(null, true);
-      } else {
-          // Temporarily allow everything to prevent deployment breakages while testing
-          callback(null, true); 
-      }
+  origin: (origin, callback) => {
+    const allowed = [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:3000',
+      'https://blufinsaquatics.netlify.app',
+      'https://bluefins.netlify.app',
+      'https://bluefins-aquatic-solutions.netlify.app',
+      /^https:\/\/(.*\.)?bluefinsaquaticsolutions\.com$/
+    ];
+    if (!origin || allowed.some(o => typeof o === 'string' ? o === origin : o.test(origin))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  // Removed allowedHeaders to let `cors` package automatically reflect requested headers
-  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
-})) 
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS']
+})); 
 // Capture raw body (needed for Razorpay webhook signature verification)
 app.use(
   express.json({
@@ -92,7 +86,7 @@ app.use((err, req, res, _next) => {
 const PORT = process.env.PORT || 8000
 
 // Start the server and log the API URL
-app.listen(PORT, '0.0.0.0',
+app.listen(PORT,
 () => {
   console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
   console.log(`📍 API available at http://localhost:${PORT}/api`)
