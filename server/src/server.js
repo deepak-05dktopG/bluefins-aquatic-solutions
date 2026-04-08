@@ -22,6 +22,7 @@ const allowedOrigins = [
   'https://blufinsaquatics.netlify.app',
   'https://bluefins.netlify.app',
   'https://bluefins-aquatic-solutions.netlify.app',
+  'https://bluefins-backend.onrender.com/api/admin/login',
   'https://bluefinsaquaticsolutions.com',
   'https://www.bluefinsaquaticsolutions.com',
 ]
