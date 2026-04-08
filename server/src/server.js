@@ -22,7 +22,6 @@ const allowedOrigins = [
   'https://blufinsaquatics.netlify.app',
   'https://bluefins.netlify.app',
   'https://bluefins-aquatic-solutions.netlify.app',
-  'https://bluefins-backend.onrender.com/api/admin/login',
   'https://bluefinsaquaticsolutions.com',
   'https://www.bluefinsaquaticsolutions.com',
 ]
@@ -93,7 +92,7 @@ app.use((err, req, res, _next) => {
 const PORT = process.env.PORT || 8000
 
 // Start the server and log the API URL
-app.listen(PORT,
+app.listen(PORT, '0.0.0.0',
 () => {
   console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
   console.log(`📍 API available at http://localhost:${PORT}/api`)
