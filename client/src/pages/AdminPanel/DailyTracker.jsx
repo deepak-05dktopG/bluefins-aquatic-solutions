@@ -746,10 +746,10 @@ const DailyTracker = () => {
                 </div>
               </div>
               <div style={{ marginTop: 28, display: 'flex', gap: 14, justifyContent: 'flex-end' }}>
-                <button type="button" onClick={closeModal} style={{ background: '#f1f5f9', color: '#333', padding: '10px 28px', borderRadius: 7, border: 'none', fontWeight: 700, fontSize: 16 }}>Cancel</button>
-                <button type="submit" name="action" value="save" style={{ background: '#2563eb', color: '#fff', padding: '10px 20px', borderRadius: 7, border: 'none', fontWeight: 800, fontSize: 16, letterSpacing: 1, boxShadow: '0 4px 6px -1px #2563eb44' }}>Save</button>
+                <button type="button" onClick={closeModal} disabled={loading} style={{ background: '#f1f5f9', color: '#333', padding: '10px 28px', borderRadius: 7, border: 'none', fontWeight: 700, fontSize: 16, opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>Cancel</button>
+                <button type="submit" name="action" value="save" disabled={loading} style={{ background: '#2563eb', color: '#fff', padding: '10px 20px', borderRadius: 7, border: 'none', fontWeight: 800, fontSize: 16, letterSpacing: 1, boxShadow: '0 4px 6px -1px #2563eb44', opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>{loading ? 'Saving...' : 'Save'}</button>
                 {formType === 'Public Order' || formType === 'Order' || formType === '1 Hour Order' ? (
-                  <button type="submit" name="action" value="print" style={{ background: '#059669', color: '#fff', padding: '10px 20px', borderRadius: 7, border: 'none', fontWeight: 800, fontSize: 16, letterSpacing: 1, boxShadow: '0 4px 6px -1px #05966944' }}>Save & Print</button>
+                  <button type="submit" name="action" value="print" disabled={loading} style={{ background: '#059669', color: '#fff', padding: '10px 20px', borderRadius: 7, border: 'none', fontWeight: 800, fontSize: 16, letterSpacing: 1, boxShadow: '0 4px 6px -1px #05966944', opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>{loading ? 'Saving...' : 'Save & Print'}</button>
                 ) : ''}
               </div>
             </form>
