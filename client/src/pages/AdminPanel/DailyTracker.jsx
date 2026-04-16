@@ -175,7 +175,7 @@ const DailyTracker = () => {
 
   const startEdit = (row) => {
     setEditingId(row._id);
-    setEditDraft({ name: row.name, paymentType: row.paymentType, amount: row.amount, notes: row.notes || '' });
+    setEditDraft({ type: row.type, name: row.name, paymentType: row.paymentType, amount: row.amount, notes: row.notes || '' });
   };
   const cancelEdit = () => { setEditingId(null); setEditDraft({}); };
   const saveEdit = async (id) => {
@@ -550,34 +550,90 @@ const DailyTracker = () => {
             </div>
           ) : null}
           <div className="dt-main-layout">
-            {/* ASIDE - CASH BOX SIDEBAR */}
+            {/* ASIDE - SUMMARY + CASH BOX SIDEBAR */}
             <div className="dt-sidebar">
-              <div style={{ background: '#1e293b', color: '#fff', padding: '16px', fontWeight: 900, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+              {/* ── Display Summary (filter-aware) ── */}
+              <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#fff', padding: '14px 16px', fontWeight: 900, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>📊</span> Display Summary
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#38bdf8', marginLeft: 'auto', background: 'rgba(56,189,248,0.15)', padding: '2px 8px', borderRadius: 99 }}>{filtered.length} entries</span>
+              </div>
+              <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10, borderBottom: '1px solid #e2e8f0' }}>
+                {/* Overall cash / gpay earnings */}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ flex: 1, background: 'linear-gradient(135deg, #fefce8, #fef9c3)', padding: '10px 12px', borderRadius: 8, borderLeft: '4px solid #eab308', boxShadow: '0 1px 3px rgba(234,179,8,0.15)' }}>
+                    <div style={{ fontSize: 10, color: '#a16207', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 }}>Cash</div>
+                    <div style={{ fontSize: 18, fontWeight: 900, color: '#78350f' }}>₹{totalCashCollected.toLocaleString('en-IN')}</div>
+                  </div>
+                  <div style={{ flex: 1, background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', padding: '10px 12px', borderRadius: 8, borderLeft: '4px solid #7c3aed', boxShadow: '0 1px 3px rgba(124,58,237,0.15)' }}>
+                    <div style={{ fontSize: 10, color: '#6d28d9', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 }}>GPay</div>
+                    <div style={{ fontSize: 18, fontWeight: 900, color: '#4c1d95' }}>₹{totalGpayCollected.toLocaleString('en-IN')}</div>
+                  </div>
+                </div>
+                {/* Per-type breakdown — only types present in filtered view */}
+                {allTypesInCurrentView.map(type => {
+                  const typeRows = filtered.filter(r => r.type === type);
+                  const cashAmt = typeRows.filter(r => (r.paymentType || '').toLowerCase() === 'cash').reduce((s, r) => s + Number(r.amount), 0);
+                  const gpayAmt = typeRows.filter(r => (r.paymentType || '').toLowerCase() === 'gpay').reduce((s, r) => s + Number(r.amount), 0);
+                  const total = cashAmt + gpayAmt;
+                  // For "1 Hour Order", count = total ÷ 150 (each person pays ₹150)
+                  const count = type === '1 Hour Order' ? Math.floor(total / 150) : typeRows.length;
+                  // Color theme per type
+                  const themes = {
+                    'Stock':          { bg: '#ecfdf5', border: '#10b981', label: '#065f46', amount: '#047857', countBg: '#d1fae5', countText: '#047857' },
+                    '1 Hour Order':   { bg: '#ecfdf5', border: '#059669', label: '#064e3b', amount: '#047857', countBg: '#d1fae5', countText: '#047857' },
+                    'Expense':        { bg: '#fef2f2', border: '#ef4444', label: '#991b1b', amount: '#dc2626', countBg: '#fee2e2', countText: '#dc2626' },
+                    'Withdrawal':     { bg: '#f8fafc', border: '#64748b', label: '#334155', amount: '#475569', countBg: '#e2e8f0', countText: '#475569' },
+                    'Pending Amount': { bg: '#faf5ff', border: '#a855f7', label: '#6b21a8', amount: '#7c3aed', countBg: '#f3e8ff', countText: '#7c3aed' },
+                  };
+                  const defaultTheme = { bg: '#eff6ff', border: '#3b82f6', label: '#1e40af', amount: '#2563eb', countBg: '#dbeafe', countText: '#2563eb' };
+                  const t = themes[type] || defaultTheme;
+                  return (
+                    <div key={type} style={{ background: t.bg, padding: '8px 10px', borderRadius: 8, borderLeft: `4px solid ${t.border}`, border: '1px solid #0f172a', borderLeftWidth: 4, borderLeftColor: t.border, transition: 'transform 0.15s', cursor: 'default' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: t.label, textTransform: 'uppercase', letterSpacing: 0.3 }}>{type}</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: t.countText, background: t.countBg, padding: '1px 8px', borderRadius: 99 }}>Count: {count}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 10, fontSize: 11, fontWeight: 700, alignItems: 'center' }}>
+                        {cashAmt > 0 && <span style={{ color: '#a16207' }}>Cash ₹{cashAmt.toLocaleString('en-IN')}</span>}
+                        {gpayAmt > 0 && <span style={{ color: '#6d28d9' }}>GPay ₹{gpayAmt.toLocaleString('en-IN')}</span>}
+                        <span style={{ marginLeft: 'auto', color: t.amount, fontWeight: 900, fontSize: 14 }}>₹{total.toLocaleString('en-IN')}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+                {allTypesInCurrentView.length === 0 && (
+                  <div style={{ color: '#94a3b8', fontSize: 12, textAlign: 'center', padding: 8, fontStyle: 'italic' }}>No entries to summarize</div>
+                )}
+              </div>
+
+              {/* ── Central Cash Box ── */}
+              <div style={{ background: '#1e293b', color: '#fff', padding: '14px 16px', fontWeight: 900, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span>💰</span> Central Cash Box
               </div>
-              <div className="dt-cashbox-grid" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div style={{ background: '#f1f5f9', padding: '12px', borderRadius: 8, borderLeft: '4px solid #10b981' }}>
-                   <div style={{ fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Cash Balance</div>
-                   <div style={{ fontSize: 20, fontWeight: 800, color: '#0f172a' }}>₹ {cashBox.hardCash?.toLocaleString('en-IN') || 0}</div>
+              <div className="dt-cashbox-grid" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ background: '#f1f5f9', padding: '10px 12px', borderRadius: 8, borderLeft: '4px solid #10b981' }}>
+                   <div style={{ fontSize: 11, color: '#475569', fontWeight: 700, textTransform: 'uppercase', marginBottom: 2 }}>Cash Balance</div>
+                   <div style={{ fontSize: 18, fontWeight: 800, color: '#0f172a' }}>₹ {cashBox.hardCash?.toLocaleString('en-IN') || 0}</div>
                 </div>
-                <div style={{ background: '#f1f5f9', padding: '12px', borderRadius: 8, borderLeft: '4px solid #3b82f6' }}>
-                   <div style={{ fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>GPay Balance</div>
-                   <div style={{ fontSize: 20, fontWeight: 800, color: '#0f172a' }}>₹ {cashBox.gpayCash?.toLocaleString('en-IN') || 0}</div>
+                <div style={{ background: '#f1f5f9', padding: '10px 12px', borderRadius: 8, borderLeft: '4px solid #3b82f6' }}>
+                   <div style={{ fontSize: 11, color: '#475569', fontWeight: 700, textTransform: 'uppercase', marginBottom: 2 }}>GPay Balance</div>
+                   <div style={{ fontSize: 18, fontWeight: 800, color: '#0f172a' }}>₹ {cashBox.gpayCash?.toLocaleString('en-IN') || 0}</div>
                 </div>
-                <div style={{ background: '#fef2f2', padding: '12px', borderRadius: 8, borderLeft: '4px solid #ef4444' }}>
-                   <div style={{ fontSize: 12, color: '#991b1b', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Lifetime Expense</div>
-                   <div style={{ fontSize: 18, fontWeight: 800, color: '#7f1d1d' }}>₹ {(cashBox.lifetimeExpense || 0).toLocaleString('en-IN')}</div>
+                <div style={{ background: '#fef2f2', padding: '10px 12px', borderRadius: 8, borderLeft: '4px solid #ef4444' }}>
+                   <div style={{ fontSize: 11, color: '#991b1b', fontWeight: 700, textTransform: 'uppercase', marginBottom: 2 }}>Lifetime Expense</div>
+                   <div style={{ fontSize: 16, fontWeight: 800, color: '#7f1d1d' }}>₹ {(cashBox.lifetimeExpense || 0).toLocaleString('en-IN')}</div>
                 </div>
-                <div style={{ background: '#f0fdf4', padding: '12px', borderRadius: 8, borderLeft: '4px solid #10b981' }}>
-                   <div style={{ fontSize: 12, color: '#065f46', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Lifetime Withdrawal</div>
-                   <div style={{ fontSize: 18, fontWeight: 800, color: '#064e3b' }}>₹ {(cashBox.lifetimeWithdrawal || 0).toLocaleString('en-IN')}</div>
+                <div style={{ background: '#f0fdf4', padding: '10px 12px', borderRadius: 8, borderLeft: '4px solid #10b981' }}>
+                   <div style={{ fontSize: 11, color: '#065f46', fontWeight: 700, textTransform: 'uppercase', marginBottom: 2 }}>Lifetime Withdrawal</div>
+                   <div style={{ fontSize: 16, fontWeight: 800, color: '#064e3b' }}>₹ {(cashBox.lifetimeWithdrawal || 0).toLocaleString('en-IN')}</div>
                 </div>
               </div>
               
-              <div style={{ background: '#1e293b', color: '#fff', padding: '16px', fontWeight: 900, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8, borderTop: '1px solid #334155' }}>
+              {/* ── All-Time Totals ── */}
+              <div style={{ background: '#1e293b', color: '#fff', padding: '14px 16px', fontWeight: 900, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8, borderTop: '1px solid #334155' }}>
                 <span>📋</span> All-Time Totals
               </div>
-              <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {(() => {
                    const orderStats = cashBox.orderStats || { count: 0, amount: 0 };
                    const oneHourOrderStats = cashBox.oneHourOrderStats || { count: 0, amount: 0 };
@@ -590,18 +646,16 @@ const DailyTracker = () => {
                    ];
 
                    return items.map(item => {
+                     const displayCount = item.name === '1 Hour Order' ? Math.floor((item.stats.amount || 0) / 150) : item.stats.count;
                      return (
-                       <div key={item.name} style={{ background: '#f8fafc', padding: '12px', borderRadius: 8, border: '1px solid #e2e8f0' }}>
-                         <div style={{ fontSize: 14, color: '#0f172a', fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 }}>
-                           {item.name}
-                         </div>
-                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
-                           <div style={{ color: '#475569', fontSize: 13, fontWeight: 600 }}>Count: {item.stats.count}</div>
-                           <div style={{ color: '#10b981', fontSize: 14, fontWeight: 800 }}>₹{(item.stats.amount || 0).toLocaleString('en-IN')}</div>
-                         </div>
+                     <div key={item.name} style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                         <span style={{ fontSize: 12, color: '#0f172a', fontWeight: 800, textTransform: 'uppercase' }}>{item.name}</span>
+                         <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Count: {displayCount}</span>
                        </div>
-                     );
-                   });
+                       <div style={{ fontSize: 14, fontWeight: 800, color: '#10b981', marginTop: 4 }}>₹{(item.stats.amount || 0).toLocaleString('en-IN')}</div>
+                     </div>
+                   )});
                 })()}
               </div>
             </div>
@@ -610,12 +664,6 @@ const DailyTracker = () => {
             <div className="dt-table-wrap">
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, background: '#fff', borderRadius: 14, overflow: 'hidden', minWidth: 900, border: '1px solid #e2e8f0' }}>
               <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
-                <tr style={{ background: '#f1f5f9', fontWeight: 900, fontSize: 15, color: '#1e293b' }}>
-                  <th colSpan={3} style={{ padding: '14px 14px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>Totals <span style={{ color: '#2563eb', fontSize: 13, marginLeft: 8 }}>(Earning Entries: {totalCount})</span></th>
-                  <th colSpan={4} style={{ padding: '14px 14px', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>
-                    {allTypesInCurrentView.map(t => `${t}: Rupees ${totals[t] || 0}`).join(' | ')} {allTypesInCurrentView.length > 0 ? ' | ' : ''}Cash Earnings: Rupees {totalCashCollected} | GPay Earnings: Rupees {totalGpayCollected}
-                  </th>
-                </tr>
 
                 <tr style={{ background: '#f8fafc', color: '#475569', fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                   <th style={{ padding: '16px 14px', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>Type</th>
@@ -644,7 +692,16 @@ const DailyTracker = () => {
                       onMouseLeave={(e) => !isEditing && (e.currentTarget.style.background = idx % 2 === 0 ? '#f8fafc' : '#ffffff')}
                     >
                       <td style={{ padding: '14px 14px', verticalAlign: 'middle', borderBottom: '1px solid #e2e8f0' }}>
-                        <Badge color={getTypeColor(row.type)}>{row.type}</Badge>
+                        {isEditing
+                          ? <select value={editDraft.type} onChange={e => setEditDraft(d => ({ ...d, type: e.target.value }))} style={{ padding: '5px 8px', borderRadius: 6, border: '1.5px solid #2563eb', fontSize: 14, minWidth: 120 }}>
+                              <option value="Stock">Stock</option>
+                              <option value="1 Hour Order">1 Hour Order</option>
+                              <option value="Pending Amount">Pending Amount</option>
+                              <option value="Expense">Expense</option>
+                              <option value="Withdrawal">Withdrawal</option>
+                              {membershipPlans.map(p => <option key={p} value={p}>{p}</option>)}
+                            </select>
+                          : <Badge color={getTypeColor(row.type)}>{row.type}</Badge>}
                       </td>
                       <td style={{ padding: '14px 14px', verticalAlign: 'middle', fontWeight: 600, color: '#1e293b', borderBottom: '1px solid #e2e8f0' }}>
                         {isEditing
