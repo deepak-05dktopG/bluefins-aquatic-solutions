@@ -355,6 +355,13 @@ const DailyTracker = () => {
 
   const netProfit = (totalCashCollected + totalGpayCollected) - totalExpensesUI;
 
+  const formatDateText = (d) => d ? d.split('-').reverse().join('-') : '';
+  const displayDateText = viewMode === 'date'
+    ? (date ? `For ${formatDateText(date)}` : '')
+    : (dateRange.from || dateRange.to 
+        ? `From ${formatDateText(dateRange.from) || 'Start'} to ${formatDateText(dateRange.to) || 'End'}` 
+        : 'All Time');
+
   const typeOptions = ['Stock', '1 Hour Order', 'Pending Amount', 'Expense', 'Withdrawal', ...membershipPlans];
   const filterTypeOptions = ['Stock', '1 Hour Order', 'Pending Amount', 'Expense', 'Withdrawal', ...membershipPlans];
 
@@ -555,8 +562,9 @@ const DailyTracker = () => {
             {/* ASIDE - SUMMARY + CASH BOX SIDEBAR */}
             <div className="dt-sidebar">
               {/* ── Display Summary (filter-aware) ── */}
-              <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#fff', padding: '14px 16px', fontWeight: 900, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#fff', padding: '14px 16px', fontWeight: 900, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <span>📊</span> Display Summary
+                {displayDateText && <span style={{ fontSize: 11, fontWeight: 500, color: '#e2e8f0', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: 99 }}>{displayDateText}</span>}
                 <span style={{ fontSize: 11, fontWeight: 600, color: '#38bdf8', marginLeft: 'auto', background: 'rgba(56,189,248,0.15)', padding: '2px 8px', borderRadius: 99 }}>{filtered.length} entries</span>
                 <button onClick={() => setSummaryMaximized(true)} title="Maximize summary" style={{ background: 'none', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, color: '#94a3b8', cursor: 'pointer', fontSize: 14, padding: '2px 7px', marginLeft: 6, lineHeight: 1 }}>⛶</button>
               </div>
@@ -755,30 +763,31 @@ const DailyTracker = () => {
 
         {/* Display Summary Fullscreen Overlay */}
         {summaryMaximized && (
-          <div onClick={() => setSummaryMaximized(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(6px)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-            <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 780, maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}>
-              {/* Header */}
-              <div style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', color: '#fff', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                <span style={{ fontSize: 20 }}>📊</span>
-                <span style={{ fontWeight: 900, fontSize: 18 }}>Display Summary</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#38bdf8', background: 'rgba(56,189,248,0.15)', padding: '2px 10px', borderRadius: 99 }}>{filtered.length} entries</span>
-                <button onClick={() => setSummaryMaximized(false)} style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: 18, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
-              </div>
-              {/* Body */}
-              <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+          <div style={{ position: 'fixed', inset: 0, background: '#fff', zIndex: 1100, display: 'flex', flexDirection: 'column' }}>
+            {/* Header */}
+            <div style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', color: '#fff', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 20 }}>📊</span>
+              <span style={{ fontWeight: 900, fontSize: 18 }}>Display Summary</span>
+              {displayDateText && <span style={{ fontSize: 13, fontWeight: 500, color: '#e2e8f0', background: 'rgba(255,255,255,0.1)', padding: '3px 12px', borderRadius: 99, marginLeft: 8 }}>{displayDateText}</span>}
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#38bdf8', marginLeft: 'auto', background: 'rgba(56,189,248,0.15)', padding: '2px 10px', borderRadius: 99 }}>{filtered.length} entries</span>
+              <button onClick={() => setSummaryMaximized(false)} style={{ marginLeft: 10, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: 18, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+            </div>
+            {/* Body */}
+            <div style={{ padding: '24px', flex: 1, overflowY: 'auto', background: '#f8fafc' }}>
+              <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {/* Cash / GPay top */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-                  <div style={{ background: 'linear-gradient(135deg, #fefce8, #fef9c3)', padding: '14px 16px', borderRadius: 10, borderLeft: '4px solid #eab308', boxShadow: '0 2px 6px rgba(234,179,8,0.15)' }}>
-                    <div style={{ fontSize: 11, color: '#a16207', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Cash Earnings</div>
-                    <div style={{ fontSize: 26, fontWeight: 900, color: '#78350f' }}>₹{totalCashCollected.toLocaleString('en-IN')}</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+                  <div style={{ background: 'linear-gradient(135deg, #fefce8, #fef9c3)', padding: '20px', borderRadius: 12, borderLeft: '6px solid #eab308', boxShadow: '0 4px 12px rgba(234,179,8,0.1)' }}>
+                    <div style={{ fontSize: 13, color: '#a16207', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Cash Earnings</div>
+                    <div style={{ fontSize: 32, fontWeight: 900, color: '#78350f' }}>₹{totalCashCollected.toLocaleString('en-IN')}</div>
                   </div>
-                  <div style={{ background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', padding: '14px 16px', borderRadius: 10, borderLeft: '4px solid #7c3aed', boxShadow: '0 2px 6px rgba(124,58,237,0.15)' }}>
-                    <div style={{ fontSize: 11, color: '#6d28d9', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>GPay Earnings</div>
-                    <div style={{ fontSize: 26, fontWeight: 900, color: '#4c1d95' }}>₹{totalGpayCollected.toLocaleString('en-IN')}</div>
+                  <div style={{ background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', padding: '20px', borderRadius: 12, borderLeft: '6px solid #7c3aed', boxShadow: '0 4px 12px rgba(124,58,237,0.1)' }}>
+                    <div style={{ fontSize: 13, color: '#6d28d9', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>GPay Earnings</div>
+                    <div style={{ fontSize: 32, fontWeight: 900, color: '#4c1d95' }}>₹{totalGpayCollected.toLocaleString('en-IN')}</div>
                   </div>
                 </div>
                 {/* Per-type grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
                   {allTypesInCurrentView.map(type => {
                     const typeRows = filtered.filter(r => r.type === type);
                     const cashAmt = typeRows.filter(r => (r.paymentType || '').toLowerCase() === 'cash').reduce((s, r) => s + Number(r.amount), 0);
@@ -795,21 +804,23 @@ const DailyTracker = () => {
                     const defaultTheme = { bg: '#eff6ff', border: '#3b82f6', label: '#1e40af', amount: '#2563eb', countBg: '#dbeafe', countText: '#2563eb' };
                     const t = themes[type] || defaultTheme;
                     return (
-                      <div key={type} style={{ background: t.bg, padding: '12px 14px', borderRadius: 10, border: '1px solid #0f172a', borderLeftWidth: 4, borderLeftColor: t.border }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                          <span style={{ fontSize: 13, fontWeight: 800, color: t.label, textTransform: 'uppercase', letterSpacing: 0.3 }}>{type}</span>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: t.countText, background: t.countBg, padding: '2px 10px', borderRadius: 99 }}>Count: {count}</span>
+                      <div key={type} style={{ background: t.bg, padding: '16px 20px', borderRadius: 12, border: '1px solid rgba(15,23,42,0.1)', borderLeftWidth: 6, borderLeftColor: t.border, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                          <span style={{ fontSize: 14, fontWeight: 800, color: t.label, textTransform: 'uppercase', letterSpacing: 0.3 }}>{type}</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: t.countText, background: t.countBg, padding: '3px 12px', borderRadius: 99 }}>Count: {count}</span>
                         </div>
-                        <div style={{ display: 'flex', gap: 12, fontSize: 12, fontWeight: 700, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: 14, fontSize: 13, fontWeight: 700, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
                           {cashAmt > 0 && <span style={{ color: '#a16207' }}>Cash ₹{cashAmt.toLocaleString('en-IN')}</span>}
                           {gpayAmt > 0 && <span style={{ color: '#6d28d9' }}>GPay ₹{gpayAmt.toLocaleString('en-IN')}</span>}
-                          <span style={{ marginLeft: 'auto', color: t.amount, fontWeight: 900, fontSize: 16 }}>₹{total.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: `1px solid ${t.border}40`, paddingTop: 8, marginTop: 'auto' }}>
+                          <span style={{ color: t.amount, fontWeight: 900, fontSize: 20 }}>₹{total.toLocaleString('en-IN')}</span>
                         </div>
                       </div>
                     );
                   })}
                   {allTypesInCurrentView.length === 0 && (
-                    <div style={{ gridColumn: '1/-1', color: '#94a3b8', fontSize: 13, textAlign: 'center', padding: 20, fontStyle: 'italic' }}>No entries to summarize</div>
+                    <div style={{ gridColumn: '1/-1', color: '#94a3b8', fontSize: 15, textAlign: 'center', padding: 40, fontStyle: 'italic', background: '#fff', borderRadius: 12 }}>No entries to summarize</div>
                   )}
                 </div>
               </div>
