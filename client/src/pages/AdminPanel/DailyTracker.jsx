@@ -139,6 +139,8 @@ const DailyTracker = () => {
   // Inline editing
   const [editingId, setEditingId] = useState(null);
   const [editDraft, setEditDraft] = useState({});
+  // Display Summary maximize
+  const [summaryMaximized, setSummaryMaximized] = useState(false);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -353,7 +355,7 @@ const DailyTracker = () => {
 
   const netProfit = (totalCashCollected + totalGpayCollected) - totalExpensesUI;
 
-  const typeOptions = ['Stock', '1 Hour Order', 'Pending Amount', 'Expense', 'Withdrawal'];
+  const typeOptions = ['Stock', '1 Hour Order', 'Pending Amount', 'Expense', 'Withdrawal', ...membershipPlans];
   const filterTypeOptions = ['Stock', '1 Hour Order', 'Pending Amount', 'Expense', 'Withdrawal', ...membershipPlans];
 
   return (
@@ -556,6 +558,7 @@ const DailyTracker = () => {
               <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#fff', padding: '14px 16px', fontWeight: 900, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span>📊</span> Display Summary
                 <span style={{ fontSize: 11, fontWeight: 600, color: '#38bdf8', marginLeft: 'auto', background: 'rgba(56,189,248,0.15)', padding: '2px 8px', borderRadius: 99 }}>{filtered.length} entries</span>
+                <button onClick={() => setSummaryMaximized(true)} title="Maximize summary" style={{ background: 'none', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, color: '#94a3b8', cursor: 'pointer', fontSize: 14, padding: '2px 7px', marginLeft: 6, lineHeight: 1 }}>⛶</button>
               </div>
               <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10, borderBottom: '1px solid #e2e8f0' }}>
                 {/* Overall cash / gpay earnings */}
@@ -749,6 +752,70 @@ const DailyTracker = () => {
             </div>
           </div>
         </div>
+
+        {/* Display Summary Fullscreen Overlay */}
+        {summaryMaximized && (
+          <div onClick={() => setSummaryMaximized(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(6px)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 780, maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}>
+              {/* Header */}
+              <div style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', color: '#fff', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                <span style={{ fontSize: 20 }}>📊</span>
+                <span style={{ fontWeight: 900, fontSize: 18 }}>Display Summary</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#38bdf8', background: 'rgba(56,189,248,0.15)', padding: '2px 10px', borderRadius: 99 }}>{filtered.length} entries</span>
+                <button onClick={() => setSummaryMaximized(false)} style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: 18, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+              </div>
+              {/* Body */}
+              <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+                {/* Cash / GPay top */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                  <div style={{ background: 'linear-gradient(135deg, #fefce8, #fef9c3)', padding: '14px 16px', borderRadius: 10, borderLeft: '4px solid #eab308', boxShadow: '0 2px 6px rgba(234,179,8,0.15)' }}>
+                    <div style={{ fontSize: 11, color: '#a16207', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Cash Earnings</div>
+                    <div style={{ fontSize: 26, fontWeight: 900, color: '#78350f' }}>₹{totalCashCollected.toLocaleString('en-IN')}</div>
+                  </div>
+                  <div style={{ background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)', padding: '14px 16px', borderRadius: 10, borderLeft: '4px solid #7c3aed', boxShadow: '0 2px 6px rgba(124,58,237,0.15)' }}>
+                    <div style={{ fontSize: 11, color: '#6d28d9', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>GPay Earnings</div>
+                    <div style={{ fontSize: 26, fontWeight: 900, color: '#4c1d95' }}>₹{totalGpayCollected.toLocaleString('en-IN')}</div>
+                  </div>
+                </div>
+                {/* Per-type grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {allTypesInCurrentView.map(type => {
+                    const typeRows = filtered.filter(r => r.type === type);
+                    const cashAmt = typeRows.filter(r => (r.paymentType || '').toLowerCase() === 'cash').reduce((s, r) => s + Number(r.amount), 0);
+                    const gpayAmt = typeRows.filter(r => (r.paymentType || '').toLowerCase() === 'gpay').reduce((s, r) => s + Number(r.amount), 0);
+                    const total = cashAmt + gpayAmt;
+                    const count = type === '1 Hour Order' ? Math.floor(total / 150) : typeRows.length;
+                    const themes = {
+                      'Stock':          { bg: '#ecfdf5', border: '#10b981', label: '#065f46', amount: '#047857', countBg: '#d1fae5', countText: '#047857' },
+                      '1 Hour Order':   { bg: '#ecfdf5', border: '#059669', label: '#064e3b', amount: '#047857', countBg: '#d1fae5', countText: '#047857' },
+                      'Expense':        { bg: '#fef2f2', border: '#ef4444', label: '#991b1b', amount: '#dc2626', countBg: '#fee2e2', countText: '#dc2626' },
+                      'Withdrawal':     { bg: '#f8fafc', border: '#64748b', label: '#334155', amount: '#475569', countBg: '#e2e8f0', countText: '#475569' },
+                      'Pending Amount': { bg: '#faf5ff', border: '#a855f7', label: '#6b21a8', amount: '#7c3aed', countBg: '#f3e8ff', countText: '#7c3aed' },
+                    };
+                    const defaultTheme = { bg: '#eff6ff', border: '#3b82f6', label: '#1e40af', amount: '#2563eb', countBg: '#dbeafe', countText: '#2563eb' };
+                    const t = themes[type] || defaultTheme;
+                    return (
+                      <div key={type} style={{ background: t.bg, padding: '12px 14px', borderRadius: 10, border: '1px solid #0f172a', borderLeftWidth: 4, borderLeftColor: t.border }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                          <span style={{ fontSize: 13, fontWeight: 800, color: t.label, textTransform: 'uppercase', letterSpacing: 0.3 }}>{type}</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: t.countText, background: t.countBg, padding: '2px 10px', borderRadius: 99 }}>Count: {count}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 12, fontSize: 12, fontWeight: 700, alignItems: 'center', flexWrap: 'wrap' }}>
+                          {cashAmt > 0 && <span style={{ color: '#a16207' }}>Cash ₹{cashAmt.toLocaleString('en-IN')}</span>}
+                          {gpayAmt > 0 && <span style={{ color: '#6d28d9' }}>GPay ₹{gpayAmt.toLocaleString('en-IN')}</span>}
+                          <span style={{ marginLeft: 'auto', color: t.amount, fontWeight: 900, fontSize: 16 }}>₹{total.toLocaleString('en-IN')}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {allTypesInCurrentView.length === 0 && (
+                    <div style={{ gridColumn: '1/-1', color: '#94a3b8', fontSize: 13, textAlign: 'center', padding: 20, fontStyle: 'italic' }}>No entries to summarize</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Modal for Add Entry */}
         {showModal && (
